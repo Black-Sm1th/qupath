@@ -27,7 +27,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -35,22 +34,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.CubicCurveTo;
-import javafx.scene.shape.QuadCurve;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextBoundsType;
-import javafx.scene.transform.Transform;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -62,22 +45,37 @@ import org.slf4j.LoggerFactory;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableIntegerValue;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.ClosePath;
+import javafx.scene.shape.CubicCurveTo;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.QuadCurve;
 import javafx.scene.shape.QuadCurveTo;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextBoundsType;
+import javafx.scene.transform.Transform;
 import qupath.lib.geom.Point2;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.prefs.PathPrefs;
@@ -86,8 +84,8 @@ import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathObjectTools;
 import qupath.lib.roi.EllipseROI;
 import qupath.lib.roi.LineROI;
-import qupath.lib.roi.RoiTools;
 import qupath.lib.roi.RectangleROI;
+import qupath.lib.roi.RoiTools;
 import qupath.lib.roi.interfaces.ROI;
 
 /**
@@ -107,9 +105,12 @@ public class IconFactory {
 		static {
 	        // Register a custom default font
 	        GlyphFontRegistry.register("icomoon", IconFactory.class.getClassLoader().getResourceAsStream("fonts/icomoon.ttf") , 12);
+	        // Register a second custom font
+	        GlyphFontRegistry.register("iconMoonNew", IconFactory.class.getClassLoader().getResourceAsStream("fonts/icomoonNew.ttf") , 12);
 	    }
 
 		private static GlyphFont icoMoon = GlyphFontRegistry.font("icomoon");
+		private static GlyphFont iconMoonNew = GlyphFontRegistry.font("iconMoonNew");
 		private static GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
 
 		static class FontIconSupplier implements IntFunction<Node> {
@@ -278,6 +279,18 @@ public class IconFactory {
 
 		static IntFunction<Node> createViewerGridIcon(int rows, int cols) {
 			return i -> new DuplicatableNode(() -> drawViewerGridIcon(i, rows, cols));
+		}
+
+		static IntFunction<Node> iconMoonNew(char c) {
+			return new FontIconSupplier(iconMoonNew, c);
+		}
+		
+		static IntFunction<Node> iconMoonNew(char c, ObservableIntegerValue color) {
+			return new FontIconSupplier(iconMoonNew, c, color);
+		}
+
+		static IntFunction<Node> iconMoonNew(char c, Color color) {
+			return new FontIconSupplier(iconMoonNew, c, color);
 		}
 
 	}
