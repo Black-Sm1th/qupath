@@ -308,7 +308,7 @@ public class IconFactory {
 									DETECTIONS_FILL(IconSuppliers.fillDetectionsIcon()),
 									DOWNLOAD(IconSuppliers.fontAwesome(FontAwesome.Glyph.DOWNLOAD)),
 
-									ELLIPSE_TOOL(IconSuppliers.ellipseToolIcon()),
+									ELLIPSE_TOOL(IconSuppliers.icoMoon('\ue923')),
 									EXTRACT_REGION(IconSuppliers.icoMoon('\ue90a')),
 
 									GRID(IconSuppliers.icoMoon('\ue90b')),
@@ -321,26 +321,26 @@ public class IconFactory {
 
 									LOG_VIEWER(IconSuppliers.fontAwesome(FontAwesome.Glyph.LIST_ALT)), // Shows list in window
 //									LOG_VIEWER(IconSuppliers.fontAwesome(FontAwesome.Glyph.LIST_UL)), // Alternative
-									LINE_TOOL(IconSuppliers.lineToolIcon()),
+									LINE_TOOL(IconSuppliers.icoMoon('\ue924')),
 									LOCATION(IconSuppliers.icoMoon('\ue90d')),
 									
-									MEASURE(IconSuppliers.icoMoon('\ue90e')),
+									MEASURE(IconSuppliers.icoMoon('\ue936')),
 									MINUS(IconSuppliers.fontAwesome(FontAwesome.Glyph.MINUS)),
-									MOVE_TOOL(IconSuppliers.icoMoon('\ue90f')),
+									MOVE_TOOL(IconSuppliers.icoMoon('\ue920')),
 									
 									NUCLEI_ONLY(IconSuppliers.icoMoon('\ue910')),
 									
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									
-									PIXEL_CLASSIFICATION(IconSuppliers.pixelClassifierOverlayIcon()),
+									PIXEL_CLASSIFICATION(IconSuppliers.icoMoon('\ue925')),
 									
 									PLAYBACK_PLAY(IconSuppliers.icoMoon('\ue912')),
 									POINTS_TOOL(IconSuppliers.pointsToolIcon()),
 									POLYGON_TOOL(IconSuppliers.polygonToolIcon()),
 									
-									POLYLINE_TOOL(IconSuppliers.polylineToolIcon()),
+									POLYLINE_TOOL(IconSuppliers.icoMoon('\ue926')),
 									
-									RECTANGLE_TOOL(IconSuppliers.rectangleToolIcon()),
+									RECTANGLE_TOOL(IconSuppliers.icoMoon('\ue922')),
 									REFRESH(IconSuppliers.fontAwesome(FontAwesome.Glyph.REFRESH)),
 
 									SELECTION_MODE(IconSuppliers.selectionModeIcon()),

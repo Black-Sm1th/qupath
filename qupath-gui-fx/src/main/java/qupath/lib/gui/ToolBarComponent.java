@@ -24,13 +24,11 @@ package qupath.lib.gui;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import org.controlsfx.control.decoration.Decorator;
 import org.controlsfx.control.decoration.GraphicDecoration;
 import org.slf4j.Logger;
@@ -59,12 +57,12 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.text.TextAlignment;
+import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.actions.ActionTools;
 import qupath.lib.gui.actions.AutomateActions;
 import qupath.lib.gui.actions.CommonActions;
 import qupath.lib.gui.actions.OverlayActions;
 import qupath.lib.gui.actions.ViewerActions;
-import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.localization.QuPathResources;
 import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.gui.tools.IconFactory;
@@ -75,7 +73,6 @@ import qupath.lib.gui.viewer.tools.ExtendedPathTool;
 import qupath.lib.gui.viewer.tools.PathTool;
 import qupath.lib.images.ImageData;
 import qupath.lib.objects.PathObject;
-import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 
 class ToolBarComponent {
 
@@ -94,7 +91,7 @@ class ToolBarComponent {
 	@SuppressWarnings("unused")
 	private ObservableValue<? extends QuPathViewer> viewerProperty; // Keep to prevent garbage collection
 
-	private ToolBar toolbar = new ToolBar();
+	private ToolBar toolbar;
 
 	ToolBarComponent(ToolManager toolManager,
 					 ViewerActions viewerManagerActions,
@@ -106,6 +103,10 @@ class ToolBarComponent {
 
 		logger.trace("Initializing toolbar");
 		
+		toolbar = new ToolBar();
+		toolbar.getStyleClass().add("qupath-toolbar");
+		toolbar.setStyle("-fx-background-color: rgba(255,255,255,0.85); -fx-background-radius: 20; -fx-padding: 5;");
+		
 		var magLabel = new ViewerMagnificationLabel();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
 		magLabel.setViewer(viewerProperty.getValue());
@@ -115,7 +116,9 @@ class ToolBarComponent {
 
 		// Show analysis panel
 		List<Node> nodes = new ArrayList<>();
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(commonActions.SHOW_ANALYSIS_PANE));
+		var analysisBtn = ActionTools.createToggleButtonWithGraphicOnly(commonActions.SHOW_ANALYSIS_PANE);
+		analysisBtn.getStyleClass().add("qupath-tool-button");
+		nodes.add(analysisBtn);
 		nodes.add(new Separator(Orientation.VERTICAL));
 
 		// Record index where tools start
@@ -125,28 +128,40 @@ class ToolBarComponent {
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(toolManager.getSelectionModeAction()));			
+		var selectionBtn = ActionTools.createToggleButtonWithGraphicOnly(toolManager.getSelectionModeAction());
+		selectionBtn.getStyleClass().add("qupath-tool-button");
+		nodes.add(selectionBtn);
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
-		nodes.add(ActionTools.createButtonWithGraphicOnly(commonActions.BRIGHTNESS_CONTRAST));
+		var brightnessBtn = ActionTools.createButtonWithGraphicOnly(commonActions.BRIGHTNESS_CONTRAST);
+		brightnessBtn.getStyleClass().add("qupath-tool-button");
+		nodes.add(brightnessBtn);
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
 		nodes.add(magLabel);
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.ZOOM_TO_FIT));
+		var zoomBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.ZOOM_TO_FIT);
+		zoomBtn.getStyleClass().add("qupath-tool-button");
+		nodes.add(zoomBtn);
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_ANNOTATIONS));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.FILL_ANNOTATIONS));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_NAMES));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_TMA_GRID));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_DETECTIONS));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.FILL_DETECTIONS));
-		// TODO: Consider removing 'Show connections' button until it becomes more useful
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_CONNECTIONS));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_PIXEL_CLASSIFICATION));
+		// Add overlay buttons
+		var annotationsBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_ANNOTATIONS);
+		var fillAnnotationsBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.FILL_ANNOTATIONS);
+		var namesBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_NAMES);
+		var tmaBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_TMA_GRID);
+		var detectionsBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_DETECTIONS);
+		var fillDetectionsBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.FILL_DETECTIONS);
+		var connectionsBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_CONNECTIONS);
+		var pixelBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_PIXEL_CLASSIFICATION);
+
+		for (var btn : Arrays.asList(annotationsBtn, fillAnnotationsBtn, namesBtn, tmaBtn, 
+				detectionsBtn, fillDetectionsBtn, connectionsBtn, pixelBtn)) {
+			btn.getStyleClass().add("qupath-tool-button");
+			nodes.add(btn);
+		}
 
 		final Slider sliderOpacity = new Slider(0, 1, 1);
 		var overlayOptions = overlayActions.getOverlayOptions();
@@ -159,6 +174,7 @@ class ToolBarComponent {
 		var btnMeasure = new MenuButton();
 		btnMeasure.setGraphic(IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.TABLE));
 		btnMeasure.setTooltip(new Tooltip(getDescription("showMeasurementsTable")));
+		btnMeasure.getStyleClass().add("qupath-tool-button");
 		btnMeasure.getItems().addAll(
 				ActionTools.createMenuItem(commonActions.MEASURE_TMA),
 				ActionTools.createMenuItem(commonActions.MEASURE_ANNOTATIONS),
@@ -166,19 +182,34 @@ class ToolBarComponent {
 				);
 		nodes.add(btnMeasure);
 
-		nodes.add(ActionTools.createButtonWithGraphicOnly(automateActions.SCRIPT_EDITOR));
+		var scriptBtn = ActionTools.createButtonWithGraphicOnly(automateActions.SCRIPT_EDITOR);
+		scriptBtn.getStyleClass().add("qupath-tool-button");
+		nodes.add(scriptBtn);
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_OVERVIEW));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_LOCATION));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_SCALEBAR));
-		nodes.add(ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_GRID));
+		// Add view buttons
+		var overviewBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_OVERVIEW);
+		var locationBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_LOCATION);
+		var scalebarBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_SCALEBAR);
+		var gridBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_GRID);
+
+		for (var btn : Arrays.asList(overviewBtn, locationBtn, scalebarBtn, gridBtn)) {
+			btn.getStyleClass().add("qupath-tool-button");
+			nodes.add(btn);
+		}
 
 		nodes.add(new Separator(Orientation.VERTICAL));
-		nodes.add(ActionTools.createButtonWithGraphicOnly(commonActions.PREFERENCES));
-		nodes.add(ActionTools.createButtonWithGraphicOnly(commonActions.SHOW_LOG));
-		nodes.add(ActionTools.createButtonWithGraphicOnly(commonActions.HELP_VIEWER));
+
+		// Add settings buttons
+		var prefsBtn = ActionTools.createButtonWithGraphicOnly(commonActions.PREFERENCES);
+		var logBtn = ActionTools.createButtonWithGraphicOnly(commonActions.SHOW_LOG);
+		var helpBtn = ActionTools.createButtonWithGraphicOnly(commonActions.HELP_VIEWER);
+
+		for (var btn : Arrays.asList(prefsBtn, logBtn, helpBtn)) {
+			btn.getStyleClass().add("qupath-tool-button");
+			nodes.add(btn);
+		}
 
 		toolbar.getItems().setAll(nodes);
 	}
@@ -233,6 +264,7 @@ class ToolBarComponent {
 					btnTool = ActionTools.createToggleButtonWithGraphicOnly(action);
 				var toggleButton = (ToggleButton)btnTool;
 				toggleButton.setToggleGroup(group);
+				toggleButton.getStyleClass().add("qupath-tool-button");
 				if (tool instanceof ExtendedPathTool extendedTool) {
 					var popup = createContextMenu(extendedTool, toggleButton);
 					btnTool.setOnContextMenuRequested(e -> {
