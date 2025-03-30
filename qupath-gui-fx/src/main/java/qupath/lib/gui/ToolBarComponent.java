@@ -126,8 +126,6 @@ class ToolBarComponent {
 
 		addToolButtons(nodes, availableTools);
 
-		nodes.add(new Separator(Orientation.VERTICAL));
-
 		var selectionBtn = ActionTools.createToggleButtonWithGraphicOnly(toolManager.getSelectionModeAction());
 		selectionBtn.getStyleClass().add("qupath-tool-button");
 		nodes.add(selectionBtn);
@@ -140,11 +138,16 @@ class ToolBarComponent {
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
-		nodes.add(magLabel);
-		var zoomBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.ZOOM_TO_FIT);
-		zoomBtn.getStyleClass().add("qupath-tool-button");
-		nodes.add(zoomBtn);
-
+		// nodes.add(magLabel);
+		// var zoomBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.ZOOM_TO_FIT);
+		// zoomBtn.getStyleClass().add("qupath-tool-button");
+		// nodes.add(zoomBtn);
+		final Slider sliderOpacity = new Slider(0, 1, 1);
+		var overlayOptions = overlayActions.getOverlayOptions();
+		sliderOpacity.valueProperty().bindBidirectional(overlayOptions.opacityProperty());
+		sliderOpacity.setTooltip(new Tooltip(getDescription("overlayOpacity")));
+		nodes.add(sliderOpacity);
+		
 		nodes.add(new Separator(Orientation.VERTICAL));
 
 		// Add overlay buttons
@@ -157,17 +160,13 @@ class ToolBarComponent {
 		var connectionsBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_CONNECTIONS);
 		var pixelBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_PIXEL_CLASSIFICATION);
 
-		for (var btn : Arrays.asList(annotationsBtn, fillAnnotationsBtn, namesBtn, tmaBtn, 
-				detectionsBtn, fillDetectionsBtn, connectionsBtn, pixelBtn)) {
+		for (var btn : Arrays.asList(annotationsBtn, fillAnnotationsBtn, tmaBtn, 
+				detectionsBtn, fillDetectionsBtn, connectionsBtn)) {
 			btn.getStyleClass().add("qupath-tool-button");
 			nodes.add(btn);
 		}
 
-		final Slider sliderOpacity = new Slider(0, 1, 1);
-		var overlayOptions = overlayActions.getOverlayOptions();
-		sliderOpacity.valueProperty().bindBidirectional(overlayOptions.opacityProperty());
-		sliderOpacity.setTooltip(new Tooltip(getDescription("overlayOpacity")));
-		nodes.add(sliderOpacity);
+		
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
@@ -188,18 +187,18 @@ class ToolBarComponent {
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
-		// Add view buttons
-		var overviewBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_OVERVIEW);
-		var locationBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_LOCATION);
-		var scalebarBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_SCALEBAR);
-		var gridBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_GRID);
+		// // Add view buttons
+		// var overviewBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_OVERVIEW);
+		// var locationBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_LOCATION);
+		// var scalebarBtn = ActionTools.createToggleButtonWithGraphicOnly(viewerManagerActions.SHOW_SCALEBAR);
+		// var gridBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_GRID);
 
-		for (var btn : Arrays.asList(overviewBtn, locationBtn, scalebarBtn, gridBtn)) {
-			btn.getStyleClass().add("qupath-tool-button");
-			nodes.add(btn);
-		}
+		// for (var btn : Arrays.asList(overviewBtn, locationBtn, scalebarBtn, gridBtn)) {
+		// 	btn.getStyleClass().add("qupath-tool-button");
+		// 	nodes.add(btn);
+		// }
 
-		nodes.add(new Separator(Orientation.VERTICAL));
+		// nodes.add(new Separator(Orientation.VERTICAL));
 
 		// Add settings buttons
 		var prefsBtn = ActionTools.createButtonWithGraphicOnly(commonActions.PREFERENCES);

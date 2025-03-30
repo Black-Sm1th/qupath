@@ -27,7 +27,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -35,22 +34,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.CubicCurveTo;
-import javafx.scene.shape.QuadCurve;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextBoundsType;
-import javafx.scene.transform.Transform;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -62,22 +45,37 @@ import org.slf4j.LoggerFactory;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableIntegerValue;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.ClosePath;
+import javafx.scene.shape.CubicCurveTo;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.QuadCurve;
 import javafx.scene.shape.QuadCurveTo;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextBoundsType;
+import javafx.scene.transform.Transform;
 import qupath.lib.geom.Point2;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.prefs.PathPrefs;
@@ -86,8 +84,8 @@ import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathObjectTools;
 import qupath.lib.roi.EllipseROI;
 import qupath.lib.roi.LineROI;
-import qupath.lib.roi.RoiTools;
 import qupath.lib.roi.RectangleROI;
+import qupath.lib.roi.RoiTools;
 import qupath.lib.roi.interfaces.ROI;
 
 /**
@@ -223,9 +221,9 @@ public class IconFactory {
 		}
 
 		private static Node createFillDetectionIcon(int size) {
-			var fill = IconSuppliers.icoMoon('\ue907', DETECTION_COLOR).apply(size);
+			var fill = IconSuppliers.icoMoon('\ue92E', DETECTION_COLOR).apply(size);
 			fill.setOpacity(0.75);
-			var outline = IconSuppliers.icoMoon('\ue908', DETECTION_COLOR).apply(size);
+			var outline = IconSuppliers.icoMoon('\ue92D', DETECTION_COLOR).apply(size);
 			var group = new Group(
 					fill, outline
 			);
@@ -295,16 +293,16 @@ public class IconFactory {
 									ARROW_END_TOOL(IconSuppliers.arrowToolIcon(">")),
 									ARROW_DOUBLE_TOOL(IconSuppliers.arrowToolIcon("<>")),
 
-									BRUSH_TOOL(IconSuppliers.brushToolIcon()),
+									BRUSH_TOOL(IconSuppliers.icoMoon('\ue927')),
 									
 									CELL_NUCLEI_BOTH(IconSuppliers.icoMoon('\ue903')),
 									CELL_ONLY(IconSuppliers.icoMoon('\ue904')),
 									CENTROIDS_ONLY(IconSuppliers.icoMoon('\ue913')),
 
 									COG(IconSuppliers.fontAwesome(FontAwesome.Glyph.COG)),
-									CONTRAST(IconSuppliers.icoMoon('\ue906')),
+									CONTRAST(IconSuppliers.icoMoon('\ue92A')),
 
-									DETECTIONS(IconSuppliers.icoMoon('\ue908', DETECTION_COLOR)),
+									DETECTIONS(IconSuppliers.icoMoon('\ue92D', DETECTION_COLOR)),
 									DETECTIONS_FILL(IconSuppliers.fillDetectionsIcon()),
 									DOWNLOAD(IconSuppliers.fontAwesome(FontAwesome.Glyph.DOWNLOAD)),
 
@@ -332,24 +330,24 @@ public class IconFactory {
 									
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									
-									PIXEL_CLASSIFICATION(IconSuppliers.icoMoon('\ue925')),
+									PIXEL_CLASSIFICATION(IconSuppliers.pixelClassifierOverlayIcon()),
 									
 									PLAYBACK_PLAY(IconSuppliers.icoMoon('\ue912')),
-									POINTS_TOOL(IconSuppliers.pointsToolIcon()),
-									POLYGON_TOOL(IconSuppliers.polygonToolIcon()),
+									POINTS_TOOL(IconSuppliers.icoMoon('\ue929')),
+									POLYGON_TOOL(IconSuppliers.icoMoon('\ue925')),
 									
 									POLYLINE_TOOL(IconSuppliers.icoMoon('\ue926')),
 									
 									RECTANGLE_TOOL(IconSuppliers.icoMoon('\ue922')),
 									REFRESH(IconSuppliers.fontAwesome(FontAwesome.Glyph.REFRESH)),
 
-									SELECTION_MODE(IconSuppliers.selectionModeIcon()),
+									SELECTION_MODE(IconSuppliers.icoMoon('\ue921')),
 
 									SCRIPT_EDITOR(IconSuppliers.fontAwesome(FontAwesome.Glyph.CODE)),
 
 									SHOW_NAMES(IconSuppliers.showNamesIcon()),
 									SHOW_SCALEBAR(IconSuppliers.icoMoon('\ue917')),
-									SHOW_CONNECTIONS(IconSuppliers.drawConnectionsIcon()),
+									SHOW_CONNECTIONS(IconSuppliers.icoMoon('\ue92F')),
 									SCREENSHOT(IconSuppliers.icoMoon('\ue918')),
 									
 									TRACKING_REWIND(IconSuppliers.fontAwesome(FontAwesome.Glyph.BACKWARD)),
@@ -357,7 +355,7 @@ public class IconFactory {
 									TRACKING_STOP(IconSuppliers.icoMoon('\ue919')),
 
 									TABLE(IconSuppliers.icoMoon('\ue91a')),
-									TMA_GRID(IconSuppliers.icoMoon('\ue91b', PathPrefs.colorTMAProperty())),
+									TMA_GRID(IconSuppliers.icoMoon('\ue92C')),
 
 									VIEWER_GRID_1x1(IconSuppliers.createViewerGridIcon(1, 1)),
 									VIEWER_GRID_1x2(IconSuppliers.createViewerGridIcon(1, 2)),
@@ -365,7 +363,7 @@ public class IconFactory {
 									VIEWER_GRID_2x2(IconSuppliers.createViewerGridIcon(2, 2)),
 									VIEWER_GRID_3x3(IconSuppliers.createViewerGridIcon(3, 3)),
 
-									WAND_TOOL(IconSuppliers.icoMoon('\ue91c', PathPrefs.colorDefaultObjectsProperty())),
+									WAND_TOOL(IconSuppliers.icoMoon('\ue928')),
 									WARNING(IconSuppliers.fontAwesome(FontAwesome.Glyph.WARNING)),
 									
 									ZOOM_IN(IconSuppliers.icoMoon('\ue91d')),

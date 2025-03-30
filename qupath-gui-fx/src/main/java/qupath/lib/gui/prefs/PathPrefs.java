@@ -1277,7 +1277,7 @@ public class PathPrefs {
 	}
 
 	
-	private static IntegerProperty colorDefaultObjects = createPersistentPreference("colorDefaultAnnotations", ColorTools.packRGB(255, 0, 0));
+	private static IntegerProperty colorDefaultObjects = createPersistentPreference("colorDefaultAnnotations", ColorTools.packRGB(0, 0, 0));
 		
 	private static IntegerProperty colorSelectedObject = createPersistentPreference("colorSelectedObject", ColorTools.packRGB(255, 255, 0));
 	private static IntegerProperty colorTMA = createPersistentPreference("colorTMA", ColorTools.packRGB(102, 128, 230));

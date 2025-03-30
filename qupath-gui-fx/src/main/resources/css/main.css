@@ -304,8 +304,8 @@
     -fx-padding: 5;
     -fx-spacing: 5;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 0);
-    -fx-min-width: 800;
-    -fx-pref-width: 1000;
+    -fx-min-width: 1200;
+    -fx-pref-width: 1200;
     -fx-max-width: 1200;
 }
 
@@ -340,14 +340,17 @@
 
 /* 分隔符样式 */
 .qupath-toolbar .separator {
-    -fx-padding: 0 5;
-    -fx-opacity: 0.3;
+    -fx-padding: 8 2;
 }
 
 .qupath-toolbar .separator .line {
     -fx-border-style: solid;
-    -fx-border-width: 0 0 0 1;
-    -fx-border-color: #888;
+    -fx-border-width: 0.5;
+    -fx-border-color: #E0E0E0;
+    -fx-background-color: #E0E0E0;
+    -fx-pref-height: 12;
+    -fx-min-height: 12;
+    -fx-max-height: 12;
 }
 
 /* 滑块样式 */
