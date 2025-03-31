@@ -34,6 +34,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -56,9 +57,10 @@ class QuPathMainPaneManager {
 	private static final Logger logger = LoggerFactory.getLogger(QuPathMainPaneManager.class);
 	
 	private BorderPane pane;
-	
 	private SplitPane splitPane;
 	private Region mainViewerPane;
+	private StackPane mainContent;
+	private StackPane viewerContainer;
 	
 	private ToolBarComponent toolbar;
 	private AnalysisTabPane analysisTabPane;
@@ -122,46 +124,53 @@ class QuPathMainPaneManager {
 		);
 		
 		// Create main content area
-		var mainContent = new HBox();
+		mainContent = new StackPane();
 		mainContent.getStyleClass().add("main-content");
 		
-		// Create project list area
-		var projectPane = new VBox();
-		projectPane.getStyleClass().add("project-pane");
-		projectPane.setPrefWidth(300);
-		projectPane.setMinWidth(200);
-		projectPane.setMaxWidth(400);
-		
-		// Add project browser
-		var projectBrowser = qupath.getProject();
-		if (projectBrowser != null) {
-			var browserPane = new ProjectBrowser(qupath);
-			VBox.setVgrow(browserPane.getPane(), Priority.ALWAYS);
-			projectPane.getChildren().add(browserPane.getPane());
-		}
+		// Get project browser from analysis tab pane
+		var projectBrowserPane = analysisTabPane.getProjectBrowser().getPane();
+		projectBrowserPane.getStyleClass().add("project-pane");
+		projectBrowserPane.setPrefWidth(300);
+		projectBrowserPane.setMinWidth(200);
+		projectBrowserPane.setMaxWidth(400);
+		projectBrowserPane.setStyle("-fx-background-color: rgba(255,255,255,0.95);");
+		VBox.setVgrow(projectBrowserPane, Priority.ALWAYS);
 		
 		// Get viewer pane
 		var viewerManager = qupath.getViewerManager();
 		mainViewerPane = viewerManager.getRegion();
 		mainViewerPane.getStyleClass().add("viewer-pane");
+		VBox.setVgrow(mainViewerPane, Priority.ALWAYS);
+		HBox.setHgrow(mainViewerPane, Priority.ALWAYS);
 		
-		// Create viewer container with padding
-		var viewerContainer = new StackPane();
+		// Create viewer container that fills the entire space
+		viewerContainer = new StackPane();
 		viewerContainer.getStyleClass().add("viewer-container");
 		viewerContainer.getChildren().add(mainViewerPane);
+		viewerContainer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 		
-		// Add components to main content
-		mainContent.getChildren().addAll(projectPane, viewerContainer);
-		HBox.setHgrow(viewerContainer, Priority.ALWAYS);
+		// Add viewer container as the base layer
+		mainContent.getChildren().add(viewerContainer);
 		
-		// Add all components to the main layout
-		pane.setTop(toolbarContainer);
-		pane.setLeft(navBar);
+		// Create overlay container for UI elements
+		var overlayContainer = new BorderPane();
+		overlayContainer.setPickOnBounds(false); // Allow clicks to pass through to viewer
+		
+		// Create left side container with nav bar and project browser
+		var leftContainer = new HBox();
+		leftContainer.setSpacing(10);
+		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
+		leftContainer.setStyle("-fx-background-color: transparent;");
+		
+		// Set up overlay layout
+		overlayContainer.setTop(toolbarContainer);
+		overlayContainer.setLeft(leftContainer);
+		
+		// Add overlay container on top of viewer
+		mainContent.getChildren().add(overlayContainer);
+		
+		// Set the main content as the center of the border pane
 		pane.setCenter(mainContent);
-		
-		// Set up analysis split pane
-		splitPane.getItems().addAll(tabPane, mainViewerPane);
-		SplitPane.setResizableWithParent(mainViewerPane, Boolean.TRUE);
 		
 		// Add CSS styles
 		pane.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
@@ -176,11 +185,11 @@ class QuPathMainPaneManager {
 		
 		// Set icon based on type
 		Node iconNode = switch(icon) {
-			case "folder" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANNOTATIONS);
-			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.BRUSH_TOOL);
-			case "measure" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.MEASURE);
+			case "folder" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.EXTRACT_REGION);
+			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
+			case "measure" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
 			case "analysis" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
-			case "settings" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.COG);
+			case "settings" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
 			default -> null;
 		};
 		
@@ -217,22 +226,11 @@ class QuPathMainPaneManager {
 	}
 	
 	void setAnalysisPaneVisible(boolean visible) {
-		if (visible) {
-			if (analysisPanelVisible())
-				return;
-			splitPane.getItems().setAll(analysisTabPane.getTabPane(), mainViewerPane);
-			splitPane.setDividerPosition(0, lastDividerLocation);
-			pane.setCenter(splitPane);
-		} else {
-			if (!analysisPanelVisible())
-				return;
-			lastDividerLocation = splitPane.getDividers().get(0).getPosition();
-			pane.setCenter(mainViewerPane);				
-		}
+		// Do nothing - analysis pane is always hidden
 	}
 	
 	private boolean analysisPanelVisible() {
-		return pane.getCenter() == splitPane;
+		return false;
 	}
 	
 }

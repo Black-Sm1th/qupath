@@ -312,12 +312,12 @@ public class IconFactory {
 									GRID(IconSuppliers.icoMoon('\ue90b')),
 									GITHUB(IconSuppliers.fontAwesome(FontAwesome.Glyph.GITHUB)),
 
-									HELP(IconSuppliers.fontAwesome(FontAwesome.Glyph.QUESTION_CIRCLE)),
+									HELP(IconSuppliers.icoMoon('\ue935')),
 
 									INFO(IconSuppliers.fontAwesome(FontAwesome.Glyph.INFO)),
 									INACTIVE_SERVER(IconSuppliers.icoMoon('\ue915', ColorToolsFX.getCachedColor(200, 0, 0))),
 
-									LOG_VIEWER(IconSuppliers.fontAwesome(FontAwesome.Glyph.LIST_ALT)), // Shows list in window
+									LOG_VIEWER(IconSuppliers.icoMoon('\ue934')), // Shows list in window
 //									LOG_VIEWER(IconSuppliers.fontAwesome(FontAwesome.Glyph.LIST_UL)), // Alternative
 									LINE_TOOL(IconSuppliers.icoMoon('\ue924')),
 									LOCATION(IconSuppliers.icoMoon('\ue90d')),
@@ -325,7 +325,7 @@ public class IconFactory {
 									MEASURE(IconSuppliers.icoMoon('\ue936')),
 									MINUS(IconSuppliers.fontAwesome(FontAwesome.Glyph.MINUS)),
 									MOVE_TOOL(IconSuppliers.icoMoon('\ue920')),
-									
+									FOLDER_PROJECT(IconSuppliers.icoMoon('\ue920')),
 									NUCLEI_ONLY(IconSuppliers.icoMoon('\ue910')),
 									
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
