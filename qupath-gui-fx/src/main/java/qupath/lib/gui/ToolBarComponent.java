@@ -105,7 +105,6 @@ class ToolBarComponent {
 		
 		toolbar = new ToolBar();
 		toolbar.getStyleClass().add("qupath-toolbar");
-		toolbar.setStyle("-fx-background-color: rgba(255,255,255,0.85); -fx-background-radius: 20; -fx-padding: 5;");
 		
 		var magLabel = new ViewerMagnificationLabel();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
@@ -119,7 +118,7 @@ class ToolBarComponent {
 		var analysisBtn = ActionTools.createToggleButtonWithGraphicOnly(commonActions.SHOW_ANALYSIS_PANE);
 		analysisBtn.getStyleClass().add("qupath-tool-button");
 		nodes.add(analysisBtn);
-		nodes.add(new Separator(Orientation.VERTICAL));
+		// nodes.add(new Separator(Orientation.VERTICAL));
 
 		// Record index where tools start
 		toolIdx = nodes.size();

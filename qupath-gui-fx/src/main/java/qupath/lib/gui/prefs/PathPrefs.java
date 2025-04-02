@@ -1266,7 +1266,7 @@ public class PathPrefs {
 	}
 	
 	
-	private static IntegerProperty viewerBackgroundColor = createPersistentPreference("viewerBackgroundColor", ColorTools.packRGB(0, 0, 0));
+	private static IntegerProperty viewerBackgroundColor = createPersistentPreference("viewerBackgroundColor", ColorTools.packRGB(247,248,250));
 	
 	/**
 	 * Color to paint behind any image.

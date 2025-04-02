@@ -34,7 +34,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -92,21 +91,41 @@ class QuPathMainPaneManager {
 		tabPane.setPrefWidth(400);
 		splitPane.setMinWidth(tabPane.getMinWidth() + 200);
 		splitPane.setPrefWidth(tabPane.getPrefWidth() + 200);
-		SplitPane.setResizableWithParent(tabPane, Boolean.FALSE);
+		SplitPane.setResizableWithParent(tabPane, Boolean.FALSE);		
 		
 		// Create toolbar container
-		var toolbarContainer = new VBox();
+		var toolbarContainer = new HBox();
 		toolbarContainer.getStyleClass().add("toolbar-container");
-		toolbarContainer.setAlignment(Pos.TOP_CENTER);
-		toolbarContainer.setPadding(new Insets(10));
-		toolbarContainer.getChildren().add(toolbar.getToolBar());
+		toolbarContainer.setAlignment(Pos.CENTER_LEFT);
+		
+		// Get the toolbar and extract the first button
+		var mainToolbar = toolbar.getToolBar();
+		var firstButton = (Node)mainToolbar.getItems().remove(0);
+		
+		// Create container for all toolbar buttons
+		var toolbarBox = new HBox();
+		toolbarBox.getStyleClass().add("toolbar-box");
+		toolbarBox.setAlignment(Pos.CENTER_LEFT);
+		
+		// Create container for the first button
+		var leftButtonContainer = new HBox(firstButton);
+		leftButtonContainer.getStyleClass().addAll("toolbar-left-button", "qupath-tool-button");
+		leftButtonContainer.setAlignment(Pos.CENTER);
+		
+		// Add both containers to the toolbar box
+		toolbarBox.getChildren().addAll(leftButtonContainer, mainToolbar);
+		
+		// Add toolbar box to the main container
+		toolbarContainer.getChildren().add(toolbarBox);
 		
 		// Create left navigation bar
 		var navBar = new VBox();
 		navBar.getStyleClass().add("nav-bar");
-		navBar.setPrefWidth(60);
-		navBar.setMinWidth(60);
-		navBar.setMaxWidth(60);
+		navBar.setPrefWidth(48);
+		navBar.setMinWidth(48);
+		navBar.setMaxWidth(48);
+		navBar.setPadding(new Insets(15));
+		navBar.setSpacing(20);
 		
 		// Add navigation buttons
 		var projectBtn = createNavButton("folder", "项目");
@@ -115,11 +134,16 @@ class QuPathMainPaneManager {
 		var analysisBtn = createNavButton("analysis", "分析");
 		var settingsBtn = createNavButton("settings", "设置");
 		
+		// Add spacer to push settings button to bottom
+		var spacer = new Region();
+		VBox.setVgrow(spacer, Priority.ALWAYS);
+		
 		navBar.getChildren().addAll(
 			projectBtn,
 			annotationBtn,
 			measureBtn,
 			analysisBtn,
+			spacer,
 			settingsBtn
 		);
 		
@@ -130,11 +154,17 @@ class QuPathMainPaneManager {
 		// Get project browser from analysis tab pane
 		var projectBrowserPane = analysisTabPane.getProjectBrowser().getPane();
 		projectBrowserPane.getStyleClass().add("project-pane");
-		projectBrowserPane.setPrefWidth(300);
-		projectBrowserPane.setMinWidth(200);
-		projectBrowserPane.setMaxWidth(400);
-		projectBrowserPane.setStyle("-fx-background-color: rgba(255,255,255,0.95);");
+		projectBrowserPane.setPrefWidth(280);
+		projectBrowserPane.setMinWidth(240);
+		projectBrowserPane.setMaxWidth(320);
 		VBox.setVgrow(projectBrowserPane, Priority.ALWAYS);
+		
+		// Create left side container with nav bar and project browser
+		var leftContainer = new HBox();
+		leftContainer.setSpacing(15);
+		leftContainer.setPadding(new Insets(15));
+		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
+		leftContainer.setStyle("-fx-background-color: transparent;");
 		
 		// Get viewer pane
 		var viewerManager = qupath.getViewerManager();
@@ -155,12 +185,6 @@ class QuPathMainPaneManager {
 		// Create overlay container for UI elements
 		var overlayContainer = new BorderPane();
 		overlayContainer.setPickOnBounds(false); // Allow clicks to pass through to viewer
-		
-		// Create left side container with nav bar and project browser
-		var leftContainer = new HBox();
-		leftContainer.setSpacing(10);
-		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
-		leftContainer.setStyle("-fx-background-color: transparent;");
 		
 		// Set up overlay layout
 		overlayContainer.setTop(toolbarContainer);
@@ -186,10 +210,10 @@ class QuPathMainPaneManager {
 		// Set icon based on type
 		Node iconNode = switch(icon) {
 			case "folder" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.EXTRACT_REGION);
-			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
-			case "measure" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
+			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANNOTATIONS);
+			case "measure" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.MEASURE);
 			case "analysis" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
-			case "settings" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
+			case "settings" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.COG);
 			default -> null;
 		};
 		
@@ -199,7 +223,9 @@ class QuPathMainPaneManager {
 		}
 		
 		// Set tooltip
-		button.setTooltip(new Tooltip(tooltip));
+		var tip = new Tooltip(tooltip);
+		tip.getStyleClass().add("nav-tooltip");
+		button.setTooltip(tip);
 		
 		return button;
 	}
