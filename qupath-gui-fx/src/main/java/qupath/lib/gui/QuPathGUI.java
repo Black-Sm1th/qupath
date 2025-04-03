@@ -638,10 +638,10 @@ public class QuPathGUI {
 		Scene scene;
 		try {
 			Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-			scene = new Scene(content, bounds.getWidth()*0.8, bounds.getHeight()*0.8);
+			scene = new Scene(content, bounds.getWidth()*0.9, bounds.getHeight()*0.9);
 		} catch (Exception e) {
 			logger.debug("Unable to set stage size using primary screen {}", Screen.getPrimary());
-			scene = new Scene(content, 1000, 600);
+			scene = new Scene(content, 1440, 800);
 		}
 		addSceneEventFiltersAndHandlers(scene);
 		dragAndDrop.setupTarget(scene);
@@ -1467,7 +1467,7 @@ public class QuPathGUI {
 				viewer.setImageData(imageData2);
 			} catch (IOException e) {
 				Dialogs.showErrorMessage("Read image data", "Error reading image data\n" + e.getLocalizedMessage());
-				logger.error(e.getMessage(), e);
+				logger.error(e.getMessage(), e);	
 			}
 			
 			return true;

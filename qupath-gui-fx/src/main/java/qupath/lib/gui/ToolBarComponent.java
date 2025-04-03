@@ -105,7 +105,6 @@ class ToolBarComponent {
 		
 		toolbar = new ToolBar();
 		toolbar.getStyleClass().add("qupath-toolbar");
-		
 		var magLabel = new ViewerMagnificationLabel();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
 		magLabel.setViewer(viewerProperty.getValue());
@@ -127,7 +126,7 @@ class ToolBarComponent {
 
 		var selectionBtn = ActionTools.createToggleButtonWithGraphicOnly(toolManager.getSelectionModeAction());
 		selectionBtn.getStyleClass().add("qupath-tool-button");
-		nodes.add(selectionBtn);
+		nodes.add(2,selectionBtn);
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
@@ -160,7 +159,7 @@ class ToolBarComponent {
 		var pixelBtn = ActionTools.createToggleButtonWithGraphicOnly(overlayActions.SHOW_PIXEL_CLASSIFICATION);
 
 		for (var btn : Arrays.asList(annotationsBtn, fillAnnotationsBtn, tmaBtn, 
-				detectionsBtn, fillDetectionsBtn, connectionsBtn)) {
+				detectionsBtn, fillDetectionsBtn, pixelBtn)) {
 			btn.getStyleClass().add("qupath-tool-button");
 			nodes.add(btn);
 		}
@@ -208,7 +207,7 @@ class ToolBarComponent {
 			btn.getStyleClass().add("qupath-tool-button");
 			nodes.add(btn);
 		}
-
+		
 		toolbar.getItems().setAll(nodes);
 	}
 	

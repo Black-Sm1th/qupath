@@ -65,7 +65,7 @@ import javafx.stage.Stage;
 import org.controlsfx.control.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import javafx.scene.Node;
 import qupath.fx.dialogs.FileChoosers;
 import qupath.fx.prefs.controlsfx.PropertyItemBuilder;
 import qupath.imagej.detect.cells.PositiveCellDetection;
@@ -93,6 +93,7 @@ import qupath.lib.gui.localization.QuPathResources;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.gui.prefs.SystemMenuBar;
 import qupath.lib.gui.tools.ColorToolsFX;
+import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.MenuTools;
 import qupath.lib.gui.viewer.OverlayOptions;
@@ -704,39 +705,41 @@ public class IJExtension implements QuPathExtension {
 		var commands = new IJExtensionCommands(qupath);
 		qupath.installActions(ActionTools.getAnnotatedActions(commands));
 		
-		// // Add buttons to toolbar
-		// var toolbar = qupath.getToolBar();
+		// Add buttons to toolbar
+		var toolbar = qupath.getToolBar();
 		// toolbar.getItems().add(new Separator(Orientation.VERTICAL));
 		
-		// try {
-		// 	ImageView imageView = new ImageView(getImageJIcon(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE));
-		// 	MenuButton btnImageJ = new MenuButton();
-		// 	btnImageJ.setGraphic(imageView);
-		// 	btnImageJ.setTooltip(new Tooltip("ImageJ commands"));
-		// 	MenuTools.addMenuItems(
-		// 			btnImageJ.getItems(),
-		// 			commands.actionShowImageJ,
-		// 			commands.actionExtractRegion,
-		// 			commands.actionSnapshot,
-		// 			null,
-		// 			commands.actionImageJDirectory,
-		// 			null,
-		// 			commands.actionScriptRunner
-		// 	);
-		// 	toolbar.getItems().add(btnImageJ);
-		// } catch (Exception e) {
-		// 	logger.error("Error adding toolbar buttons", e);
-		// }
+		try {
+			// 使用 IconFactory 创建图标 - 使用 PIXEL_CLASSIFICATION 图标
+			Node icon = IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.IJEXTENSION_TOOL);
+			MenuButton btnImageJ = new MenuButton();
+			btnImageJ.setGraphic(icon);
+			btnImageJ.setTooltip(new Tooltip("ImageJ commands"));
+			btnImageJ.getStyleClass().add("qupath-tool-button");
+			MenuTools.addMenuItems(
+					btnImageJ.getItems(),
+					commands.actionShowImageJ,
+					commands.actionExtractRegion,
+					commands.actionSnapshot,
+					null,
+					commands.actionImageJDirectory,
+					null,
+					commands.actionScriptRunner
+			);
+			toolbar.getItems().add(23, btnImageJ);
+		} catch (Exception e) {
+			logger.error("Error adding toolbar buttons", e);
+		}
 				
-		// // It's awkward, but we handle TMA dearraying separately so we can ensure it falls at the top of the list
-		// Menu menuTMA = qupath.getMenu("TMA", true);
+		// It's awkward, but we handle TMA dearraying separately so we can ensure it falls at the top of the list
+		Menu menuTMA = qupath.getMenu("TMA", true);
 		
-		// // TODO: Switch to use @ActionConfig
-		// var actionTMADearray = qupath.createPluginAction(QuPathResources.getString("Action.ImageJ.tmaDearrayer"), TMADearrayerPluginIJ.class, null);
-		// actionTMADearray.setLongText(QuPathResources.getString("Action.ImageJ.tmaDearrayer.description"));
-		// menuTMA.getItems().addFirst(ActionTools.createMenuItem(actionTMADearray));
+		// TODO: Switch to use @ActionConfig
+		var actionTMADearray = qupath.createPluginAction(QuPathResources.getString("Action.ImageJ.tmaDearrayer"), TMADearrayerPluginIJ.class, null);
+		actionTMADearray.setLongText(QuPathResources.getString("Action.ImageJ.tmaDearrayer.description"));
+		menuTMA.getItems().addFirst(ActionTools.createMenuItem(actionTMADearray));
 		
-		// qupath.getDefaultDragDropListener().addFileDropHandler(new ImageJDropHandler(qupath, commands));
+		qupath.getDefaultDragDropListener().addFileDropHandler(new ImageJDropHandler(qupath, commands));
 		
 	}
 

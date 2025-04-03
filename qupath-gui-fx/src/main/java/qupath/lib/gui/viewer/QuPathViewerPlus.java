@@ -99,8 +99,8 @@ public class QuPathViewerPlus extends QuPathViewer {
 		// Add the overview (preview image for navigation)
 		Node overviewNode = overview.getNode();
 		basePane.getChildren().add(overviewNode);
-		AnchorPane.setTopAnchor(overviewNode, (double)padding);
-		AnchorPane.setRightAnchor(overviewNode, (double)padding);
+		AnchorPane.setTopAnchor(overviewNode, (double)88);
+		AnchorPane.setRightAnchor(overviewNode, (double)16);
 
 		// Add the location label
 		labelLocation.setTextAlignment(TextAlignment.CENTER);

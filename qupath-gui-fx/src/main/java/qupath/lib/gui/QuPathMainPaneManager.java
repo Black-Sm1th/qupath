@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
@@ -94,29 +93,38 @@ class QuPathMainPaneManager {
 		SplitPane.setResizableWithParent(tabPane, Boolean.FALSE);		
 		
 		// Create toolbar container
-		var toolbarContainer = new HBox();
+		var toolbarContainer = new VBox();
 		toolbarContainer.getStyleClass().add("toolbar-container");
-		toolbarContainer.setAlignment(Pos.CENTER_LEFT);
 		
-		// Get the toolbar and extract the first button
-		var mainToolbar = toolbar.getToolBar();
-		var firstButton = (Node)mainToolbar.getItems().remove(0);
+		// Get toolbar
+		var toolBar = toolbar.getToolBar();
 		
-		// Create container for all toolbar buttons
-		var toolbarBox = new HBox();
-		toolbarBox.getStyleClass().add("toolbar-box");
-		toolbarBox.setAlignment(Pos.CENTER_LEFT);
+		// Extract first button (selection tool)
+		var items = toolBar.getItems();
+		var firstButton = (Node)items.remove(0);
 		
-		// Create container for the first button
-		var leftButtonContainer = new HBox(firstButton);
-		leftButtonContainer.getStyleClass().addAll("toolbar-left-button", "qupath-tool-button");
-		leftButtonContainer.setAlignment(Pos.CENTER);
+		// Create main toolbar container
+		var mainToolbarContainer = new HBox();
+		mainToolbarContainer.getStyleClass().add("toolbar-main-container");
 		
-		// Add both containers to the toolbar box
-		toolbarBox.getChildren().addAll(leftButtonContainer, mainToolbar);
+		// Create left button container
+		var leftButtonContainer = new VBox();
+		leftButtonContainer.getStyleClass().add("toolbar-left-button");
+		leftButtonContainer.getChildren().add(firstButton);
+
+		var rightButtonContainer = new VBox();
+		rightButtonContainer.getStyleClass().add("toolbar-right-button");
+
+		Region leftSpacer = new Region();
+        Region rightSpacer = new Region();
+		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 		
-		// Add toolbar box to the main container
-		toolbarContainer.getChildren().add(toolbarBox);
+		// Add components to main container
+		mainToolbarContainer.getChildren().addAll(leftButtonContainer,leftSpacer, toolBar,rightSpacer,rightButtonContainer);
+		
+		// Add main container to toolbar container
+		toolbarContainer.getChildren().add(mainToolbarContainer);
 		
 		// Create left navigation bar
 		var navBar = new VBox();

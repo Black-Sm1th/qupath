@@ -299,7 +299,7 @@ public class IconFactory {
 									CELL_ONLY(IconSuppliers.icoMoon('\ue904')),
 									CENTROIDS_ONLY(IconSuppliers.icoMoon('\ue913')),
 
-									COG(IconSuppliers.fontAwesome(FontAwesome.Glyph.COG)),
+									COG(IconSuppliers.icoMoon('\ue933')),
 									CONTRAST(IconSuppliers.icoMoon('\ue92A')),
 
 									DETECTIONS(IconSuppliers.icoMoon('\ue92D', DETECTION_COLOR)),
@@ -330,8 +330,8 @@ public class IconFactory {
 									
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									
-									PIXEL_CLASSIFICATION(IconSuppliers.pixelClassifierOverlayIcon()),
-									
+									PIXEL_CLASSIFICATION(IconSuppliers.icoMoon('\ue92F')),
+									IJEXTENSION_TOOL(IconSuppliers.icoMoon('\ue932')),
 									PLAYBACK_PLAY(IconSuppliers.icoMoon('\ue912')),
 									POINTS_TOOL(IconSuppliers.icoMoon('\ue929')),
 									POLYGON_TOOL(IconSuppliers.icoMoon('\ue925')),
