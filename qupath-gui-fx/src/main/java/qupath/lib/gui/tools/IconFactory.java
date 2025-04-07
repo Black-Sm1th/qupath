@@ -311,7 +311,7 @@ public class IconFactory {
 
 									GRID(IconSuppliers.icoMoon('\ue90b')),
 									GITHUB(IconSuppliers.fontAwesome(FontAwesome.Glyph.GITHUB)),
-
+									FOLDER_PROJECT(IconSuppliers.icoMoon('\ue920')),
 									HELP(IconSuppliers.icoMoon('\ue935')),
 
 									INFO(IconSuppliers.fontAwesome(FontAwesome.Glyph.INFO)),
@@ -325,8 +325,17 @@ public class IconFactory {
 									MEASURE(IconSuppliers.icoMoon('\ue936')),
 									MINUS(IconSuppliers.fontAwesome(FontAwesome.Glyph.MINUS)),
 									MOVE_TOOL(IconSuppliers.icoMoon('\ue920')),
-									FOLDER_PROJECT(IconSuppliers.icoMoon('\ue920')),
 									NUCLEI_ONLY(IconSuppliers.icoMoon('\ue910')),
+
+									PROJECT_BTN(IconSuppliers.icoMoon('\ue937')),
+									IMAGE_BTN(IconSuppliers.icoMoon('\ue938')),
+									ANNOTATION_BTN(IconSuppliers.icoMoon('\ue939')),
+									WORKFLOW_BTN(IconSuppliers.icoMoon('\ue93A')),
+									ANALYSIS_BTN(IconSuppliers.icoMoon('\ue93B')),
+									CLASSIFY_BTN(IconSuppliers.icoMoon('\ue93C')),
+									EYE_BTN(IconSuppliers.icoMoon('\ue93D')),
+									GPS_BTN(IconSuppliers.icoMoon('\ue93E')),
+
 									
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									

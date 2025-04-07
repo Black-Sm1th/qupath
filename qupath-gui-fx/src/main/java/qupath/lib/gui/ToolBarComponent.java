@@ -52,6 +52,8 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -72,6 +74,7 @@ import qupath.lib.gui.viewer.QuPathViewerListener;
 import qupath.lib.gui.viewer.tools.ExtendedPathTool;
 import qupath.lib.gui.viewer.tools.PathTool;
 import qupath.lib.images.ImageData;
+import javafx.scene.layout.Priority;
 import qupath.lib.objects.PathObject;
 
 class ToolBarComponent {
@@ -141,10 +144,36 @@ class ToolBarComponent {
 		// zoomBtn.getStyleClass().add("qupath-tool-button");
 		// nodes.add(zoomBtn);
 		final Slider sliderOpacity = new Slider(0, 1, 1);
+		HBox sliderContainer = new HBox();
+		sliderContainer.getStyleClass().add("slider-container");
+
+		Region Spacer = new Region();
+		HBox.setHgrow(Spacer, Priority.ALWAYS);
+
+		Label percentageLabel = new Label("100%");
+		percentageLabel.getStyleClass().add("slider-percentage");
+
+		sliderOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
+			double percent = newVal.doubleValue() / sliderOpacity.getMax() * 100;
+			percentageLabel.setText(String.format("%.0f%%", percent));
+
+			String style = String.format(
+				"-fx-background-color: linear-gradient(to right, #2196f3 0%%, #2196f3 %.1f%%, #ccc %.1f%%, #ccc 100%%);",
+				percent, percent
+			);
+		
+			// 获取 .track 并设置 style
+			Node track = sliderOpacity.lookup(".track");
+			if (track != null) {
+				track.setStyle(style);
+			}
+		});
 		var overlayOptions = overlayActions.getOverlayOptions();
 		sliderOpacity.valueProperty().bindBidirectional(overlayOptions.opacityProperty());
 		sliderOpacity.setTooltip(new Tooltip(getDescription("overlayOpacity")));
-		nodes.add(sliderOpacity);
+
+		sliderContainer.getChildren().addAll(sliderOpacity, Spacer,percentageLabel);
+		nodes.add(sliderContainer);
 		
 		nodes.add(new Separator(Orientation.VERTICAL));
 

@@ -125,34 +125,29 @@ class QuPathMainPaneManager {
 		
 		// Add main container to toolbar container
 		toolbarContainer.getChildren().add(mainToolbarContainer);
+
 		
 		// Create left navigation bar
 		var navBar = new VBox();
 		navBar.getStyleClass().add("nav-bar");
-		navBar.setPrefWidth(48);
-		navBar.setMinWidth(48);
-		navBar.setMaxWidth(48);
-		navBar.setPadding(new Insets(15));
-		navBar.setSpacing(20);
 		
 		// Add navigation buttons
-		var projectBtn = createNavButton("folder", "项目");
+		var projectBtn = createNavButton("project", "项目");
+		var imageBtn = createNavButton("image", "图像");
 		var annotationBtn = createNavButton("annotation", "标注");
-		var measureBtn = createNavButton("measure", "测量");
+		var workflowBtn = createNavButton("workflow", "工作流");
 		var analysisBtn = createNavButton("analysis", "分析");
-		var settingsBtn = createNavButton("settings", "设置");
+		var classifyBtn = createNavButton("classify", "分类");
 		
 		// Add spacer to push settings button to bottom
-		var spacer = new Region();
-		VBox.setVgrow(spacer, Priority.ALWAYS);
 		
 		navBar.getChildren().addAll(
 			projectBtn,
+			imageBtn,
 			annotationBtn,
-			measureBtn,
+			workflowBtn,
 			analysisBtn,
-			spacer,
-			settingsBtn
+			classifyBtn
 		);
 		
 		// Create main content area
@@ -171,8 +166,8 @@ class QuPathMainPaneManager {
 		var leftContainer = new HBox();
 		leftContainer.setSpacing(15);
 		leftContainer.setPadding(new Insets(15));
+		// leftContainer.setStyleClass.add("")
 		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
-		leftContainer.setStyle("-fx-background-color: transparent;");
 		
 		// Get viewer pane
 		var viewerManager = qupath.getViewerManager();
@@ -197,7 +192,7 @@ class QuPathMainPaneManager {
 		// Set up overlay layout
 		overlayContainer.setTop(toolbarContainer);
 		overlayContainer.setLeft(leftContainer);
-		
+		overlayContainer.setBottom(createBottomToolbar());
 		// Add overlay container on top of viewer
 		mainContent.getChildren().add(overlayContainer);
 		
@@ -217,11 +212,14 @@ class QuPathMainPaneManager {
 		
 		// Set icon based on type
 		Node iconNode = switch(icon) {
-			case "folder" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.EXTRACT_REGION);
-			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANNOTATIONS);
-			case "measure" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.MEASURE);
-			case "analysis" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PIXEL_CLASSIFICATION);
-			case "settings" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.COG);
+			case "project" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PROJECT_BTN);
+			case "image" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.IMAGE_BTN);
+			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANNOTATION_BTN);
+			case "workflow" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.WORKFLOW_BTN);
+			case "analysis" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANALYSIS_BTN);
+			case "classify" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.CLASSIFY_BTN);
+			case "eye" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.EYE_BTN);
+			case "gps" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.GPS_BTN);
 			default -> null;
 		};
 		
@@ -267,4 +265,42 @@ class QuPathMainPaneManager {
 		return false;
 	}
 	
+	private VBox createBottomToolbar() {
+		// Create bottom toolbar container
+		var bottomToolbarContainer = new VBox();
+		bottomToolbarContainer.getStyleClass().add("toolbar-container");
+		bottomToolbarContainer.getStyleClass().add("bottom-toolbar-container");
+
+		// Create main toolbar container
+		var mainToolbarContainer = new HBox();
+		mainToolbarContainer.getStyleClass().add("toolbar-main-container");
+		var eyeBtn = createNavButton("eye", "项目");
+		var gpsBtn = createNavButton("gps", "项目");
+		eyeBtn.getStyleClass().add("qupath-tool-button");
+		// Create left button container
+		var leftButtonContainer = new VBox();
+		leftButtonContainer.getStyleClass().add("toolbar-left-button");
+		leftButtonContainer.getChildren().add(eyeBtn);
+// 
+		var rightButtonContainer = new VBox();
+		rightButtonContainer.getStyleClass().add("toolbar-left-button");
+		gpsBtn.getStyleClass().add("qupath-tool-button");
+		rightButtonContainer.getChildren().add(gpsBtn);
+		Region leftSpacer = new Region();
+		Region rightSpacer = new Region();
+		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+
+		// // Create toolbar
+		// var bottomToolBar = new ToolBar();
+		// bottomToolBar.getStyleClass().add("qupath-toolbar");
+
+		// Add components to main container
+		mainToolbarContainer.getChildren().addAll(leftButtonContainer, rightSpacer, rightButtonContainer);
+
+		// Add main container to toolbar container
+		bottomToolbarContainer.getChildren().add(mainToolbarContainer);
+
+		return bottomToolbarContainer;
+	}
 }
