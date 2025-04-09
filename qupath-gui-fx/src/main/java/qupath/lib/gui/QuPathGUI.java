@@ -60,6 +60,7 @@ import javax.swing.SwingUtilities;
 import ij.IJ;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
+import javafx.scene.layout.HBox;
 import javafx.scene.control.*;
 import javafx.stage.Window;
 import org.controlsfx.control.action.Action;
@@ -638,7 +639,7 @@ public class QuPathGUI {
 		Scene scene;
 		try {
 			Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-			scene = new Scene(content, bounds.getWidth()*0.9, bounds.getHeight()*0.9);
+			scene = new Scene(content, 1440, 800);
 		} catch (Exception e) {
 			logger.debug("Unable to set stage size using primary screen {}", Screen.getPrimary());
 			scene = new Scene(content, 1440, 800);
@@ -2322,7 +2323,7 @@ public class QuPathGUI {
 	 * Get the main toolbar.
 	 * @return
 	 */
-	public ToolBar getToolBar() {
+	public HBox getToolBar() {
 		return mainPaneManager == null ? null : mainPaneManager.getToolBar();
 	}
 	

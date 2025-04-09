@@ -404,18 +404,13 @@
     -fx-background-color: #2196F3;
 }
 
-.qupath-tool-button:selected .ikonli-font-icon,
-.qupath-tool-button:selected .glyph-icon,
-.qupath-tool-button:selected .qupath-icon,
-.qupath-tool-button:selected .qupath-icon * {
-    -fx-fill: white;
-    -fx-text-fill: white;
-    -fx-opacity: 1;
+.qupath-tool-button:selected .qupath-icon {
+  -fx-text-fill: white;
 }
 
 /* 分隔符样式 */
 .qupath-toolbar .separator {
-    -fx-padding: 8 8;
+    -fx-padding: 12 9;
 }
 
 .qupath-toolbar .separator .line {

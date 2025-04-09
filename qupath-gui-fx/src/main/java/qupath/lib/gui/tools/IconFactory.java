@@ -99,6 +99,7 @@ public class IconFactory {
 	private static final Logger logger = LoggerFactory.getLogger(IconFactory.class);
 
 	private final static Color DETECTION_COLOR = javafx.scene.paint.Color.rgb(20, 180, 120, 0.9);
+	private final static Color FILLED_COLOR = javafx.scene.paint.Color.rgb(0, 0, 0, 1);
 	
 	static class IconSuppliers {
 
@@ -207,9 +208,9 @@ public class IconFactory {
 		}
 
 		private static Node createFillAnnotationsIcon(int size) {
-			var fill = IconSuppliers.icoMoon('\ue900', PathPrefs.colorDefaultObjectsProperty()).apply(size);
-			fill.setOpacity(0.5);
-			var outline = IconSuppliers.icoMoon('\ue901', PathPrefs.colorDefaultObjectsProperty()).apply(size);
+			var fill = IconSuppliers.icoMoon('\ue900', FILLED_COLOR).apply(size);
+			fill.setOpacity(0.12);
+			var outline = IconSuppliers.icoMoon('\ue901', FILLED_COLOR).apply(size);
 			var group = new Group(
 					fill, outline
 			);
@@ -221,9 +222,9 @@ public class IconFactory {
 		}
 
 		private static Node createFillDetectionIcon(int size) {
-			var fill = IconSuppliers.icoMoon('\ue92E', DETECTION_COLOR).apply(size);
-			fill.setOpacity(0.75);
-			var outline = IconSuppliers.icoMoon('\ue92D', DETECTION_COLOR).apply(size);
+			var fill = IconSuppliers.icoMoon('\ue92E', FILLED_COLOR).apply(size);
+			fill.setOpacity(0.12);
+			var outline = IconSuppliers.icoMoon('\ue92D', FILLED_COLOR).apply(size);
 			var group = new Group(
 					fill, outline
 			);
@@ -286,7 +287,7 @@ public class IconFactory {
 	 */
 	@SuppressWarnings("javadoc")
 	public enum PathIcons {	ACTIVE_SERVER(IconSuppliers.icoMoon('\ue915', ColorToolsFX.getCachedColor(0, 200, 0))),
-									ANNOTATIONS(IconSuppliers.icoMoon('\ue901', PathPrefs.colorDefaultObjectsProperty())),
+									ANNOTATIONS(IconSuppliers.icoMoon('\ue901')),
 									ANNOTATIONS_FILL(IconSuppliers.fillAnnotationsIcon()),
 									
 									ARROW_START_TOOL(IconSuppliers.arrowToolIcon("<")),
@@ -302,7 +303,7 @@ public class IconFactory {
 									COG(IconSuppliers.icoMoon('\ue933')),
 									CONTRAST(IconSuppliers.icoMoon('\ue92A')),
 
-									DETECTIONS(IconSuppliers.icoMoon('\ue92D', DETECTION_COLOR)),
+									DETECTIONS(IconSuppliers.icoMoon('\ue92D')),
 									DETECTIONS_FILL(IconSuppliers.fillDetectionsIcon()),
 									DOWNLOAD(IconSuppliers.fontAwesome(FontAwesome.Glyph.DOWNLOAD)),
 
@@ -363,7 +364,7 @@ public class IconFactory {
 									TRACKING_RECORD(IconSuppliers.icoMoon('\ue915', ColorToolsFX.getCachedColor(200, 0, 0))),
 									TRACKING_STOP(IconSuppliers.icoMoon('\ue919')),
 
-									TABLE(IconSuppliers.icoMoon('\ue91a')),
+									TABLE(IconSuppliers.icoMoon('\ue930')),
 									TMA_GRID(IconSuppliers.icoMoon('\ue92C')),
 
 									VIEWER_GRID_1x1(IconSuppliers.createViewerGridIcon(1, 1)),

@@ -99,9 +99,7 @@ class QuPathMainPaneManager {
 		// Get toolbar
 		var toolBar = toolbar.getToolBar();
 		
-		// Extract first button (selection tool)
-		var items = toolBar.getItems();
-		var firstButton = (Node)items.remove(0);
+
 		
 		// Create main toolbar container
 		var mainToolbarContainer = new HBox();
@@ -110,7 +108,9 @@ class QuPathMainPaneManager {
 		// Create left button container
 		var leftButtonContainer = new VBox();
 		leftButtonContainer.getStyleClass().add("toolbar-left-button");
-		leftButtonContainer.getChildren().add(firstButton);
+		var menuBtn = createNavButton("menu", "菜单");
+		leftButtonContainer.getChildren().add(menuBtn);
+		menuBtn.getStyleClass().add("qupath-tool-button");
 
 		var rightButtonContainer = new VBox();
 		rightButtonContainer.getStyleClass().add("toolbar-right-button");
@@ -212,6 +212,7 @@ class QuPathMainPaneManager {
 		
 		// Set icon based on type
 		Node iconNode = switch(icon) {
+			case "menu" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.MEASURE);
 			case "project" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PROJECT_BTN);
 			case "image" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.IMAGE_BTN);
 			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANNOTATION_BTN);
@@ -244,7 +245,7 @@ class QuPathMainPaneManager {
 		return analysisTabPane == null ? null : analysisTabPane.getProjectBrowser();
 	}
 	
-	ToolBar getToolBar() {
+	HBox getToolBar() {
 		return toolbar.getToolBar();
 	}
 

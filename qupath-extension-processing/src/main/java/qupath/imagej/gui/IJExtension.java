@@ -726,7 +726,7 @@ public class IJExtension implements QuPathExtension {
 					null,
 					commands.actionScriptRunner
 			);
-			toolbar.getItems().add(23, btnImageJ);
+			toolbar.getChildren().add(24, btnImageJ);
 		} catch (Exception e) {
 			logger.error("Error adding toolbar buttons", e);
 		}

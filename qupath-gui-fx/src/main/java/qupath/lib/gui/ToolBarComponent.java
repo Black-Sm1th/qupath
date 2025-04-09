@@ -50,9 +50,9 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
@@ -74,7 +74,6 @@ import qupath.lib.gui.viewer.QuPathViewerListener;
 import qupath.lib.gui.viewer.tools.ExtendedPathTool;
 import qupath.lib.gui.viewer.tools.PathTool;
 import qupath.lib.images.ImageData;
-import javafx.scene.layout.Priority;
 import qupath.lib.objects.PathObject;
 
 class ToolBarComponent {
@@ -94,7 +93,7 @@ class ToolBarComponent {
 	@SuppressWarnings("unused")
 	private ObservableValue<? extends QuPathViewer> viewerProperty; // Keep to prevent garbage collection
 
-	private ToolBar toolbar;
+	private HBox toolbar;
 
 	ToolBarComponent(ToolManager toolManager,
 					 ViewerActions viewerManagerActions,
@@ -106,7 +105,7 @@ class ToolBarComponent {
 
 		logger.trace("Initializing toolbar");
 		
-		toolbar = new ToolBar();
+		toolbar = new HBox();
 		toolbar.getStyleClass().add("qupath-toolbar");
 		var magLabel = new ViewerMagnificationLabel();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
@@ -117,10 +116,6 @@ class ToolBarComponent {
 
 		// Show analysis panel
 		List<Node> nodes = new ArrayList<>();
-		var analysisBtn = ActionTools.createToggleButtonWithGraphicOnly(commonActions.SHOW_ANALYSIS_PANE);
-		analysisBtn.getStyleClass().add("qupath-tool-button");
-		nodes.add(analysisBtn);
-		// nodes.add(new Separator(Orientation.VERTICAL));
 
 		// Record index where tools start
 		toolIdx = nodes.size();
@@ -129,7 +124,8 @@ class ToolBarComponent {
 
 		var selectionBtn = ActionTools.createToggleButtonWithGraphicOnly(toolManager.getSelectionModeAction());
 		selectionBtn.getStyleClass().add("qupath-tool-button");
-		nodes.add(2,selectionBtn);
+		nodes.add(1,selectionBtn);
+		nodes.add(2,new Separator(Orientation.VERTICAL));
 
 		nodes.add(new Separator(Orientation.VERTICAL));
 
@@ -237,7 +233,7 @@ class ToolBarComponent {
 			nodes.add(btn);
 		}
 		
-		toolbar.getItems().setAll(nodes);
+		toolbar.getChildren().setAll(nodes);
 	}
 	
 	
@@ -254,14 +250,14 @@ class ToolBarComponent {
 	}
 	
 	void updateToolbar() {
-		// Snapshot all existing nodes
-		var nodes = new ArrayList<>(toolbar.getItems());
-		// Remove all the tools
-		nodes.removeAll(toolMap.values());
-		// Add all the tools as they currently are
-		addToolButtons(nodes, availableTools);
-		// Update the items
-		toolbar.getItems().setAll(nodes);
+		// // Snapshot all existing nodes
+		// var nodes = new ArrayList<>(toolbar.getItems());
+		// // Remove all the tools
+		// nodes.removeAll(toolMap.values());
+		// // Add all the tools as they currently are
+		// addToolButtons(nodes, availableTools);
+		// // Update the items
+		// toolbar.getItems().setAll(nodes);
 	}
 
 	private ToggleGroup toolGroup;
@@ -362,7 +358,7 @@ class ToolBarComponent {
 	}
 
 	
-	ToolBar getToolBar() {
+	HBox getToolBar() {
 		return toolbar;
 	}
 
