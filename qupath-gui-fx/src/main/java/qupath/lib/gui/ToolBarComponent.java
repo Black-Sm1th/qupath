@@ -106,7 +106,7 @@ class ToolBarComponent {
 		logger.trace("Initializing toolbar");
 		
 		toolbar = new HBox();
-		toolbar.getStyleClass().add("qupath-toolbar");
+		toolbar.getStyleClass().add("toolbar-center-container");
 		var magLabel = new ViewerMagnificationLabel();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
 		magLabel.setViewer(viewerProperty.getValue());

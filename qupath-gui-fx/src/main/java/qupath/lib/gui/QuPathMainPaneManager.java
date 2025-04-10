@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -54,156 +52,41 @@ class QuPathMainPaneManager {
 	
 	private static final Logger logger = LoggerFactory.getLogger(QuPathMainPaneManager.class);
 	
-	private BorderPane pane;
-	private SplitPane splitPane;
+	private StackPane pane;
 	private Region mainViewerPane;
-	private StackPane mainContent;
-	private StackPane viewerContainer;
-	
 	private ToolBarComponent toolbar;
 	private AnalysisTabPane analysisTabPane;
-	
-	private double lastDividerLocation;
-	
 	private QuPathGUI qupath;
-	
 	
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
-		
 		// Create main components
 		toolbar = new ToolBarComponent(qupath.getToolManager(),
 				qupath.getViewerActions(),
 				qupath.getCommonActions(),
 				qupath.getAutomateActions(),
 				qupath.getOverlayActions());
-		
 		// Create the main pane
-		pane = new BorderPane();
-		pane.getStyleClass().add("main-pane");
-		
-		// Initialize split pane and analysis tab pane
-		splitPane = new SplitPane();
-		this.analysisTabPane = new AnalysisTabPane(qupath);
-		var tabPane = analysisTabPane.getTabPane();
-		tabPane.setMinWidth(300);
-		tabPane.setPrefWidth(400);
-		splitPane.setMinWidth(tabPane.getMinWidth() + 200);
-		splitPane.setPrefWidth(tabPane.getPrefWidth() + 200);
-		SplitPane.setResizableWithParent(tabPane, Boolean.FALSE);		
-		
-		// Create toolbar container
-		var toolbarContainer = new VBox();
-		toolbarContainer.getStyleClass().add("toolbar-container");
-		
-		// Get toolbar
-		var toolBar = toolbar.getToolBar();
-		
-
-		
-		// Create main toolbar container
-		var mainToolbarContainer = new HBox();
-		mainToolbarContainer.getStyleClass().add("toolbar-main-container");
-		
-		// Create left button container
-		var leftButtonContainer = new VBox();
-		leftButtonContainer.getStyleClass().add("toolbar-left-button");
-		var menuBtn = createNavButton("menu", "菜单");
-		leftButtonContainer.getChildren().add(menuBtn);
-		menuBtn.getStyleClass().add("qupath-tool-button");
-
-		var rightButtonContainer = new VBox();
-		rightButtonContainer.getStyleClass().add("toolbar-right-button");
-
-		Region leftSpacer = new Region();
-        Region rightSpacer = new Region();
-		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-		
-		// Add components to main container
-		mainToolbarContainer.getChildren().addAll(leftButtonContainer,leftSpacer, toolBar,rightSpacer,rightButtonContainer);
-		
-		// Add main container to toolbar container
-		toolbarContainer.getChildren().add(mainToolbarContainer);
-
-		
-		// Create left navigation bar
-		var navBar = new VBox();
-		navBar.getStyleClass().add("nav-bar");
-		
-		// Add navigation buttons
-		var projectBtn = createNavButton("project", "项目");
-		var imageBtn = createNavButton("image", "图像");
-		var annotationBtn = createNavButton("annotation", "标注");
-		var workflowBtn = createNavButton("workflow", "工作流");
-		var analysisBtn = createNavButton("analysis", "分析");
-		var classifyBtn = createNavButton("classify", "分类");
-		
-		// Add spacer to push settings button to bottom
-		
-		navBar.getChildren().addAll(
-			projectBtn,
-			imageBtn,
-			annotationBtn,
-			workflowBtn,
-			analysisBtn,
-			classifyBtn
-		);
-		
-		// Create main content area
-		mainContent = new StackPane();
-		mainContent.getStyleClass().add("main-content");
-		
-		// Get project browser from analysis tab pane
-		var projectBrowserPane = analysisTabPane.getProjectBrowser().getPane();
-		projectBrowserPane.getStyleClass().add("project-pane");
-		projectBrowserPane.setPrefWidth(280);
-		projectBrowserPane.setMinWidth(240);
-		projectBrowserPane.setMaxWidth(320);
-		VBox.setVgrow(projectBrowserPane, Priority.ALWAYS);
-		
-		// Create left side container with nav bar and project browser
-		var leftContainer = new HBox();
-		leftContainer.setSpacing(15);
-		leftContainer.setPadding(new Insets(15));
-		// leftContainer.setStyleClass.add("")
-		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
+		pane = new StackPane();	
 		
 		// Get viewer pane
-		var viewerManager = qupath.getViewerManager();
-		mainViewerPane = viewerManager.getRegion();
-		mainViewerPane.getStyleClass().add("viewer-pane");
-		VBox.setVgrow(mainViewerPane, Priority.ALWAYS);
-		HBox.setHgrow(mainViewerPane, Priority.ALWAYS);
-		
-		// Create viewer container that fills the entire space
-		viewerContainer = new StackPane();
-		viewerContainer.getStyleClass().add("viewer-container");
-		viewerContainer.getChildren().add(mainViewerPane);
-		viewerContainer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		
-		// Add viewer container as the base layer
-		mainContent.getChildren().add(viewerContainer);
-		
+		mainViewerPane = qupath.getViewerManager().getRegion();
+		pane.getChildren().add(mainViewerPane);
+
 		// Create overlay container for UI elements
 		var overlayContainer = new BorderPane();
-		overlayContainer.setPickOnBounds(false); // Allow clicks to pass through to viewer
-		
-		// Set up overlay layout
-		overlayContainer.setTop(toolbarContainer);
-		overlayContainer.setLeft(leftContainer);
-		overlayContainer.setBottom(createBottomToolbar());
-		// Add overlay container on top of viewer
-		mainContent.getChildren().add(overlayContainer);
-		
-		// Set the main content as the center of the border pane
-		pane.setCenter(mainContent);
-		
+		overlayContainer.setPickOnBounds(false);
+		pane.getChildren().add(overlayContainer);
+
+		// Add topbar to overlayContainer
+		overlayContainer.setTop(createTopBarContainer());
+		// Add left to overlayContainer
+		overlayContainer.setLeft(createLeftContainer());
+		// Add bottom to overlayContainer
+		overlayContainer.setBottom(createBottomBarContainer());
+
 		// Add CSS styles
 		pane.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
-		
-		// Set analysis pane visibility (now safe to call since splitPane is initialized)
-		setAnalysisPaneVisible(false);  // Start with analysis pane hidden
 	}
 	
 	private Node createNavButton(String icon, String tooltip) {
@@ -231,9 +114,7 @@ class QuPathMainPaneManager {
 		
 		// Set tooltip
 		var tip = new Tooltip(tooltip);
-		tip.getStyleClass().add("nav-tooltip");
 		button.setTooltip(tip);
-		
 		return button;
 	}
 
@@ -255,7 +136,7 @@ class QuPathMainPaneManager {
 	}
 	
 	void setDividerPosition(double pos) {
-		splitPane.setDividerPosition(0, pos);
+		// splitPane.setDividerPosition(0, pos);
 	}
 	
 	void setAnalysisPaneVisible(boolean visible) {
@@ -266,42 +147,90 @@ class QuPathMainPaneManager {
 		return false;
 	}
 	
-	private VBox createBottomToolbar() {
-		// Create bottom toolbar container
-		var bottomToolbarContainer = new VBox();
-		bottomToolbarContainer.getStyleClass().add("toolbar-container");
-		bottomToolbarContainer.getStyleClass().add("bottom-toolbar-container");
-
-		// Create main toolbar container
-		var mainToolbarContainer = new HBox();
-		mainToolbarContainer.getStyleClass().add("toolbar-main-container");
+	private HBox createBottomBarContainer() {
+		// Create bottombar container
+		var bottomBarContainer = new HBox();
+		BorderPane.setMargin(bottomBarContainer,new Insets(0,16,16,16));
+		bottomBarContainer.getStyleClass().add("toolbar-main-container");
+		// Create button	
 		var eyeBtn = createNavButton("eye", "项目");
 		var gpsBtn = createNavButton("gps", "项目");
 		eyeBtn.getStyleClass().add("qupath-tool-button");
+		gpsBtn.getStyleClass().add("qupath-tool-button");
+		// Create left&right button container
+		var leftButtonContainer = new VBox();
+		leftButtonContainer.getStyleClass().add("toolbar-left-container");
+		leftButtonContainer.getChildren().add(eyeBtn);
+		var rightButtonContainer = new VBox();
+		rightButtonContainer.getStyleClass().add("toolbar-left-container");
+		rightButtonContainer.getChildren().add(gpsBtn);
+		// Create Spacer
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		bottomBarContainer.getChildren().addAll(leftButtonContainer, spacer, rightButtonContainer);
+
+		return bottomBarContainer;
+	}
+
+	private HBox createTopBarContainer() {
+		// Create topbar container
+		var topBarContainer = new HBox();
+		BorderPane.setMargin(topBarContainer,new Insets(16,16,0,16));
+		topBarContainer.getStyleClass().add("toolbar-main-container");
+	
 		// Create left button container
 		var leftButtonContainer = new VBox();
-		leftButtonContainer.getStyleClass().add("toolbar-left-button");
-		leftButtonContainer.getChildren().add(eyeBtn);
-// 
-		var rightButtonContainer = new VBox();
-		rightButtonContainer.getStyleClass().add("toolbar-left-button");
-		gpsBtn.getStyleClass().add("qupath-tool-button");
-		rightButtonContainer.getChildren().add(gpsBtn);
-		Region leftSpacer = new Region();
-		Region rightSpacer = new Region();
-		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+		leftButtonContainer.getStyleClass().add("toolbar-left-container");
+		var menuBtn = createNavButton("menu", "菜单");
+		menuBtn.getStyleClass().add("qupath-tool-button");
+		leftButtonContainer.getChildren().add(menuBtn);
 
-		// // Create toolbar
-		// var bottomToolBar = new ToolBar();
-		// bottomToolBar.getStyleClass().add("qupath-toolbar");
+		// Create right button container
+		var rightButtonContainer = new VBox();
+		rightButtonContainer.getStyleClass().add("toolbar-right-container");
+		
+		// Create Spacer
+		Region leftSpacer = new Region();
+        Region rightSpacer = new Region();
+		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+		var toolBar = toolbar.getToolBar();
 
 		// Add components to main container
-		mainToolbarContainer.getChildren().addAll(leftButtonContainer, rightSpacer, rightButtonContainer);
+		topBarContainer.getChildren().addAll(leftButtonContainer, leftSpacer, toolBar, rightSpacer, rightButtonContainer);
 
-		// Add main container to toolbar container
-		bottomToolbarContainer.getChildren().add(mainToolbarContainer);
+		return topBarContainer;
+	}
 
-		return bottomToolbarContainer;
+	private HBox createLeftContainer() {
+		var leftContainer = new HBox();
+		BorderPane.setMargin(leftContainer,new Insets(16,0,16,16));
+		leftContainer.getStyleClass().add("left-container");
+
+		// Create left navigation bar
+		var navBar = new VBox();
+		navBar.getStyleClass().add("nav-bar");
+		// Add navigation buttons
+		var projectBtn = createNavButton("project", "项目");
+		var imageBtn = createNavButton("image", "图像");
+		var annotationBtn = createNavButton("annotation", "标注");
+		var workflowBtn = createNavButton("workflow", "工作流");
+		var analysisBtn = createNavButton("analysis", "分析");
+		var classifyBtn = createNavButton("classify", "分类");
+		navBar.getChildren().addAll(
+			projectBtn,
+			imageBtn,
+			annotationBtn,
+			workflowBtn,
+			analysisBtn,
+			classifyBtn
+		);
+		// Get project browser from analysis tab pane
+		this.analysisTabPane = new AnalysisTabPane(qupath);
+		var projectBrowserPane = analysisTabPane.getProjectBrowser().getPane();
+		projectBrowserPane.getStyleClass().add("project-pane");
+		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
+		return leftContainer;
+		
 	}
 }
