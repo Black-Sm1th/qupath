@@ -199,6 +199,7 @@ public class QuPathGUI {
 	 * Icon size to use in the main QuPath toolbar
 	 */
 	public static final int TOOLBAR_ICON_SIZE = 16;
+	public static final int NAVBAR_ICON_SIZE = 18;
 
 	private Stage stage;
 	private HostServices hostServices;

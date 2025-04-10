@@ -210,7 +210,6 @@
     -fx-background-radius: 100px;
     -fx-border-radius: 100px;
     -fx-padding: 4;
-    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 1), 50, 0, 0, 0);
 }
 
 /* 工具栏左侧按钮容器 */
@@ -220,7 +219,6 @@
     -fx-background-radius: 100px;
     -fx-border-radius: 100px;
     -fx-padding: 4;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 50, 0, 0, 0);
 }
 
 /* 工具栏右侧按钮容器 */
@@ -229,7 +227,6 @@
     -fx-background-radius: 100px;
     -fx-pref-width: 50;
     -fx-pref-height: 50;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 50, 0, 0, 0);
 }
 
 /* 工具栏内层容器样式 */
@@ -241,7 +238,6 @@
     -fx-padding: 4;
     -fx-spacing: 0;
     -fx-pref-height: 48px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 50, 0, 0, 0);
     -fx-alignment: center;
 }
 
@@ -314,7 +310,6 @@
     -fx-border-radius: 28px;
     -fx-padding: 4;
     -fx-spacing: 4;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 50, 0, 0, 0);
 }
 
 /* 左侧菜单栏样式 */
@@ -328,7 +323,6 @@
     -fx-pref-height: 296px;
     -fx-width-height: 296px;
     -fx-max-height: 296px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 50, 0, 0, 0);
     -fx-alignment: top-center;
 }
 
@@ -340,7 +334,6 @@
     -fx-min-height: 48;
     -fx-max-width: 48;
     -fx-max-height: 48;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 40, 0, 0, 0);
     -fx-cursor: hand;
 }
 
@@ -352,7 +345,6 @@
 .project-pane {
     -fx-background-color: rgba(255, 255, 255, 1);
     -fx-background-radius: 28px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 0);
     -fx-padding: 12;
     -fx-pref-width: 300px;
     -fx-width-width: 300px;

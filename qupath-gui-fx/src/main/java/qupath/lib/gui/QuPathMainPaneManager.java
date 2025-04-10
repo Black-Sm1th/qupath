@@ -26,7 +26,8 @@ package qupath.lib.gui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -91,19 +92,17 @@ class QuPathMainPaneManager {
 	
 	private Node createNavButton(String icon, String tooltip) {
 		var button = new Button();
-		button.getStyleClass().add("nav-button");
-		
 		// Set icon based on type
 		Node iconNode = switch(icon) {
 			case "menu" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.MEASURE);
-			case "project" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.PROJECT_BTN);
-			case "image" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.IMAGE_BTN);
-			case "annotation" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANNOTATION_BTN);
-			case "workflow" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.WORKFLOW_BTN);
-			case "analysis" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.ANALYSIS_BTN);
-			case "classify" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.CLASSIFY_BTN);
-			case "eye" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.EYE_BTN);
-			case "gps" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.GPS_BTN);
+			case "project" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.PROJECT_BTN);
+			case "image" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.IMAGE_BTN);
+			case "annotation" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.ANNOTATION_BTN);
+			case "workflow" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.WORKFLOW_BTN);
+			case "analysis" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.ANALYSIS_BTN);
+			case "classify" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.CLASSIFY_BTN);
+			case "eye" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.EYE_BTN);
+			case "gps" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.GPS_BTN);
 			default -> null;
 		};
 		
@@ -217,20 +216,17 @@ class QuPathMainPaneManager {
 		var workflowBtn = createNavButton("workflow", "工作流");
 		var analysisBtn = createNavButton("analysis", "分析");
 		var classifyBtn = createNavButton("classify", "分类");
-		navBar.getChildren().addAll(
-			projectBtn,
-			imageBtn,
-			annotationBtn,
-			workflowBtn,
-			analysisBtn,
-			classifyBtn
-		);
+
+		for (var btn : Arrays.asList(projectBtn, imageBtn, annotationBtn, workflowBtn, analysisBtn, classifyBtn)) {
+			btn.getStyleClass().add("nav-button");
+			navBar.getChildren().add(btn);
+		}
+
 		// Get project browser from analysis tab pane
 		this.analysisTabPane = new AnalysisTabPane(qupath);
 		var projectBrowserPane = analysisTabPane.getProjectBrowser().getPane();
 		projectBrowserPane.getStyleClass().add("project-pane");
 		leftContainer.getChildren().addAll(navBar, projectBrowserPane);
 		return leftContainer;
-		
 	}
 }
