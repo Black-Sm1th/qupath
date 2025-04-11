@@ -240,7 +240,6 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 			}
 		});
 		
-//		TextArea textDescription = new TextArea();
 		TextArea textDescription = new TextArea();
 		textDescription.textProperty().bind(descriptionText);
 		textDescription.setWrapText(true);
@@ -255,10 +254,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 				descriptionText.set(null);
 		});
 
-		TitledPane titledTree = new TitledPane("Image list", mdTree);
-		titledTree.setCollapsible(false);
-		titledTree.setMaxHeight(Double.MAX_VALUE);
-		
+		mdTree.setMaxHeight(Double.MAX_VALUE);
 		
 		var tfFilter = new PredicateTextField<String>();
 		tfFilter.setPromptText("Search entry in project");
@@ -271,7 +267,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		var paneUserFilter = GridPaneUtils.createRowGrid(tfFilter);
 		
 		BorderPane panelTree = new BorderPane();
-		panelTree.setCenter(titledTree);
+		panelTree.setCenter(mdTree);
 
 		// panel.setBottom(paneUserFilter);
 		panel.setCenter(panelTree);

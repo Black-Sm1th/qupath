@@ -66,16 +66,6 @@
     -fx-opacity: 0.8;
 }
 
-/* Soften the main toolbar icons */
-.tool-bar .qupath-icon * {
-    -fx-opacity: 0.8;
-}
-
-/* Adapt menu icon colors */
-.qupath-icon {
-    -fx-text-fill: -fx-text-base-color;
-}
-
 /* Used in command finder for help text */
 .popover * {
     -fx-background-color: -fx-base;
@@ -170,32 +160,6 @@
 .training-chart .chart-title {
     -fx-font-size: 1em;
     -fx-font-weight: bold;
-}
-
-.project-browser .tree-cell {
-    -fx-font-family: arial;
-}
-
-.project-browser .tree-cell.current-image {
-    -fx-font-weight: bold;
-}
-
-.project-browser .tree-cell.no-saved-data {
-    -fx-font-style: italic;
-}
-
-.project-browser .tree-cell.missing-uri {
-    -fx-text-fill: -qp-script-warn-color;
-}
-
-.project-browser .project-thumbnail {
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 4, 0, 1, 1);
-}
-
-.project-browser .missing-uri {
-    -fx-text-fill: -qp-script-warn-color;
-    -fx-fill: -qp-script-warn-color;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.25), 2, 0, 1, 1);
 }
 
 .titled-pane > .title .titled-button-pane .button {
@@ -388,4 +352,30 @@
 
 .project-browser .project-topbar .button:pressed .qupath-icon{
     -fx-text-fill: rgba(0, 0, 0, 0.2);
+}
+
+.project-browser .tree-cell {
+    -fx-font-family: arial;
+}
+
+.project-browser .tree-cell .current-image {
+    -fx-font-weight: bold;
+}
+
+.project-browser .tree-cell .no-saved-data {
+    -fx-font-style: italic;
+}
+
+.project-browser .tree-cell .missing-uri {
+    -fx-text-fill: -qp-script-warn-color;
+}
+
+.project-browser .project-thumbnail {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 4, 0, 1, 1);
+}
+
+.project-browser .missing-uri {
+    -fx-text-fill: -qp-script-warn-color;
+    -fx-fill: -qp-script-warn-color;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.25), 2, 0, 1, 1);
 }
