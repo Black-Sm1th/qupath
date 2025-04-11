@@ -52,14 +52,18 @@ public class CommonActions {
 
 	private static final Logger logger = LoggerFactory.getLogger(CommonActions.class);
 	
+	@ActionIcon(PathIcons.CREATE_PROJECT)
 	@ActionConfig("Action.File.Project.createProject")
 	public final Action PROJECT_NEW;
 	
+	@ActionIcon(PathIcons.OPEN_PROJECT)
 	@ActionConfig("Action.File.Project.openProject")
 	public final Action PROJECT_OPEN;
 	
+	@ActionIcon(PathIcons.ADD_IMAGES)
 	@ActionConfig("Action.File.Project.openProject")
 	public final Action PROJECT_ADD_IMAGES;
+
 	
 	
 	@ActionIcon(PathIcons.CONTRAST)

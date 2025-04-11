@@ -83,6 +83,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
@@ -97,6 +99,8 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -107,6 +111,8 @@ import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.actions.ActionTools;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.Priority;
 import qupath.lib.gui.commands.ProjectCommands;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.panes.ProjectTreeRow.ImageRow;
@@ -119,6 +125,7 @@ import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.MenuTools;
 import qupath.fx.utils.GridPaneUtils;
 import qupath.lib.images.ImageData;
+import qupath.lib.gui.actions.ActionTools;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.io.UriUpdater;
@@ -266,16 +273,22 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		BorderPane panelTree = new BorderPane();
 		panelTree.setCenter(titledTree);
 
-		panel.setBottom(paneUserFilter);
+		// panel.setBottom(paneUserFilter);
 		panel.setCenter(panelTree);
-
-		Button btnOpen = ActionTools.createButton(qupath.getCommonActions().PROJECT_OPEN);
-		Button btnCreate = ActionTools.createButton(qupath.getCommonActions().PROJECT_NEW);
-		Button btnAdd = ActionTools.createButton(qupath.getCommonActions().PROJECT_ADD_IMAGES);
-		GridPane paneButtons = GridPaneUtils.createColumnGridControls(btnCreate, btnOpen, btnAdd);
-		paneButtons.prefWidthProperty().bind(panel.widthProperty());
-		paneButtons.setPadding(new Insets(5, 5, 5, 5));
-		panel.setTop(paneButtons);
+		Button btnSearch = new Button();
+		btnSearch.setGraphic(IconFactory.createNode(16, 16, PathIcons.PROJECT_SEARCH));
+		Button btnOpen = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_OPEN);
+		Button btnCreate = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_NEW);
+		Button btnAdd = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_ADD_IMAGES);
+		Button btnMore = new Button();
+		btnMore.setGraphic(IconFactory.createNode(16, 16, PathIcons.PROJECT_MORE));
+		Region region = new Region();
+		HBox.setHgrow(region, Priority.ALWAYS);
+		HBox topBar = new HBox();
+		topBar.getStyleClass().add("project-topbar");
+		Label label = new Label("图像列表");
+		topBar.getChildren().addAll(label, region, btnSearch, btnOpen, btnCreate, btnAdd, btnMore);
+		panel.setTop(topBar);
 
 		qupath.getPreferencePane().getPropertySheet().getItems().add(
 				new PropertyItemBuilder<>(thumbnailSize, ProjectThumbnailSize.class)

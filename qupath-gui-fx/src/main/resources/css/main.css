@@ -313,7 +313,7 @@
 }
 
 /* 左侧菜单栏样式 */
-.nav-bar {
+.left-container .nav-bar {
     -fx-background-color: rgba(255, 255, 255, 0.5);
     -fx-border-color: rgba(255, 255, 255, 0.8);
     -fx-background-radius: 100px;
@@ -327,7 +327,7 @@
 }
 
 /* 左侧菜单栏按钮样式 */
-.nav-bar .nav-button {
+.left-container .nav-bar .nav-button {
     -fx-background-color: transparent;
     -fx-background-radius: 80px;
     -fx-min-width: 48;
@@ -337,24 +337,55 @@
     -fx-cursor: hand;
 }
 
-.nav-bar .nav-button:hover {
+.left-container .nav-bar .nav-button:hover {
     -fx-background-color: rgba(0, 0, 0, 0.05);
 }
 
-.nav-bar .nav-button:selected {
+.left-container .nav-bar .nav-button:selected {
     -fx-background-color: rgba(255, 255, 255, 1);
 }
 
-.nav-bar .nav-button:selected .qupath-icon{
+.left-container .nav-bar .nav-button:selected .qupath-icon{
     -fx-text-fill: #1692ff;
 }
 
 /* 左侧工作栏样式 */
-.work-pane {
+.left-container .work-pane {
     -fx-background-color: rgba(255, 255, 255, 1);
     -fx-background-radius: 28px;
-    -fx-padding: 12;
+    -fx-padding: 12 0 12 0;
     -fx-pref-width: 300px;
     -fx-width-width: 300px;
     -fx-max-width: 300px;
+}
+
+.project-browser .project-topbar {
+    -fx-alignment: center-left;
+    -fx-border-color: transparent transparent rgba(0, 0, 0, 0.04) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-font-family: "Alibaba PuHuiTi";
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+    -fx-padding: 4 12 4 12;
+    -fx-spacing: 8;
+}
+
+.project-browser .project-topbar .button{
+    -fx-background-color: transparent;
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+    -fx-max-width: 24;
+    -fx-max-height: 24;
+    -fx-cursor: hand;
+}
+
+.project-browser .project-topbar .button:hover .qupath-icon{
+    -fx-text-fill: rgba(0, 0, 0, 0.4);
+}
+
+.project-browser .project-topbar .button:pressed .qupath-icon{
+    -fx-text-fill: rgba(0, 0, 0, 0.2);
 }
