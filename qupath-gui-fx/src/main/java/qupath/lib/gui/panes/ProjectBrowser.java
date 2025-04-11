@@ -43,18 +43,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.Node;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.ToggleGroup;
 import org.controlsfx.control.MasterDetailPane;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
@@ -68,6 +64,7 @@ import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -75,23 +72,22 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Insets;
 import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -99,22 +95,22 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import qupath.fx.controls.PredicateTextField;
+import qupath.fx.dialogs.Dialogs;
 import qupath.fx.prefs.controlsfx.PropertyItemBuilder;
+import qupath.fx.utils.GridPaneUtils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.actions.ActionTools;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.Priority;
 import qupath.lib.gui.commands.ProjectCommands;
-import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.panes.ProjectTreeRow.ImageRow;
 import qupath.lib.gui.panes.ProjectTreeRow.MetadataRow;
 import qupath.lib.gui.panes.ProjectTreeRow.Type;
@@ -123,9 +119,7 @@ import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.MenuTools;
-import qupath.fx.utils.GridPaneUtils;
 import qupath.lib.images.ImageData;
-import qupath.lib.gui.actions.ActionTools;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.io.UriUpdater;
@@ -240,11 +234,11 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 			}
 		});
 		
-//		TextArea textDescription = new TextArea();
 		TextArea textDescription = new TextArea();
 		textDescription.textProperty().bind(descriptionText);
 		textDescription.setWrapText(true);
 		MasterDetailPane mdTree = new MasterDetailPane(Side.BOTTOM, tree, textDescription, false);
+		mdTree.getStyleClass().add("tree-pane");
 		mdTree.showDetailNodeProperty().bind(descriptionText.isNotNull());
 		
 		tree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -254,12 +248,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 			else
 				descriptionText.set(null);
 		});
-
-		TitledPane titledTree = new TitledPane("Image list", mdTree);
-		titledTree.setCollapsible(false);
-		titledTree.setMaxHeight(Double.MAX_VALUE);
-		
-		
+			
 		var tfFilter = new PredicateTextField<String>();
 		tfFilter.setPromptText("Search entry in project");
 		tfFilter.setSpacing(0.0);
@@ -271,7 +260,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		var paneUserFilter = GridPaneUtils.createRowGrid(tfFilter);
 		
 		BorderPane panelTree = new BorderPane();
-		panelTree.setCenter(titledTree);
+		panelTree.setCenter(mdTree);
 
 		// panel.setBottom(paneUserFilter);
 		panel.setCenter(panelTree);
