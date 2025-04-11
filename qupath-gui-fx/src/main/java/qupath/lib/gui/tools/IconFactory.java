@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableIntegerValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -459,14 +460,24 @@ public class IconFactory {
 		return wrapInGroup(size, shape);
 	}
 
-	private static void bindStrokeToSelectionMode(ObservableList<Double> dashList) {
-		PathPrefs.selectionModeStatus().addListener((obs, oldVal, newVal) -> {
-			if (newVal) {
-				dashList.setAll(3.0, 3.0);
-			} else {
-				dashList.clear();
-			}
-		});
+	// A dash array that depends upon the selection mode property
+	private static ObservableList<Double> strokeDashArray;
+
+	private static void bindStrokeToSelectionMode(ObservableList<Double> dashArray) {
+		Bindings.bindContent(dashArray, getStrokeDashArray());
+	}
+
+	private static ObservableList<Double> getStrokeDashArray() {
+		if (strokeDashArray == null) {
+			strokeDashArray = FXCollections.observableArrayList();
+			PathPrefs.selectionModeStatus().addListener((v, o, n) -> {
+				if (n)
+					strokeDashArray.setAll(3.0, 3.0);
+				else
+					strokeDashArray.clear();
+			});
+		}
+		return strokeDashArray;
 	}
 
 	/**
