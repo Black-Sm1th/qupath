@@ -25,7 +25,6 @@ package qupath.lib.gui.viewer;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 
 import org.slf4j.Logger;
@@ -163,26 +162,34 @@ class ImageOverview implements QuPathViewerListener {
 		
 		// 创建遮罩路径
 		g.beginPath();
-		g.moveTo(0, 0);
-		g.lineTo(w, 0);
-		g.lineTo(w, h);
-		g.lineTo(0, h);
+		g.moveTo(12, 0);
+		g.lineTo(w-12, 0);
+		g.quadraticCurveTo(w, 0, w, 12);
+		g.lineTo(w, h-12);
+		g.quadraticCurveTo(w, h, w-12, h);
+		g.lineTo(12, h);
+		g.quadraticCurveTo(0, h, 0, h-12);
+		g.lineTo(0, 12);
+		g.quadraticCurveTo(0, 0, 12, 0);
 		g.closePath();
 		
 		if (shapeVisible != null) {
-			// 添加可见区域的路径（使用EVEN_ODD填充规则）
-			PathIterator iterator = shapeVisible.getPathIterator(null);
-			double[] coords = new double[6];
-			while (!iterator.isDone()) {
-				int type = iterator.currentSegment(coords);
-				if (type == PathIterator.SEG_MOVETO)
-					g.moveTo(coords[0], coords[1]);
-				else if (type == PathIterator.SEG_LINETO)
-					g.lineTo(coords[0], coords[1]);
-				else if (type == PathIterator.SEG_CLOSE)
-					g.closePath();
-				iterator.next();
-			}
+			// 获取可见区域的边界
+			java.awt.Rectangle bounds = shapeVisible.getBounds();
+			g.moveTo(bounds.getX() + 12, bounds.getY());
+			g.lineTo(bounds.getX() + bounds.getWidth() - 12, bounds.getY());
+			g.quadraticCurveTo(bounds.getX() + bounds.getWidth(), bounds.getY(), 
+				bounds.getX() + bounds.getWidth(), bounds.getY() + 12);
+			g.lineTo(bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight() - 12);
+			g.quadraticCurveTo(bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight(),
+				bounds.getX() + bounds.getWidth() - 12, bounds.getY() + bounds.getHeight());
+			g.lineTo(bounds.getX() + 12, bounds.getY() + bounds.getHeight());
+			g.quadraticCurveTo(bounds.getX(), bounds.getY() + bounds.getHeight(),
+				bounds.getX(), bounds.getY() + bounds.getHeight() - 12);
+			g.lineTo(bounds.getX(), bounds.getY() + 12);
+			g.quadraticCurveTo(bounds.getX(), bounds.getY(),
+				bounds.getX() + 12, bounds.getY());
+			g.closePath();
 		}
 		
 		// 使用EVEN_ODD规则填充遮罩
@@ -194,27 +201,40 @@ class ImageOverview implements QuPathViewerListener {
 		if (shapeVisible != null) {
 			g.setStroke(color);
 			g.setLineWidth(1);
-			PathIterator iterator = shapeVisible.getPathIterator(null);
-			double[] coords = new double[6];
+			
+			// 获取可见区域的边界
+			java.awt.Rectangle bounds = shapeVisible.getBounds();
 			g.beginPath();
-			while (!iterator.isDone()) {
-				int type = iterator.currentSegment(coords);
-				if (type == PathIterator.SEG_MOVETO)
-					g.moveTo(coords[0], coords[1]);
-				else if (type == PathIterator.SEG_LINETO)
-					g.lineTo(coords[0], coords[1]);
-				else if (type == PathIterator.SEG_CLOSE) {
-					g.closePath();
-					g.stroke();
-				}
-				iterator.next();
-			}
+			g.moveTo(bounds.getX() + 12, bounds.getY());
+			g.lineTo(bounds.getX() + bounds.getWidth() - 12, bounds.getY());
+			g.quadraticCurveTo(bounds.getX() + bounds.getWidth(), bounds.getY(), 
+				bounds.getX() + bounds.getWidth(), bounds.getY() + 12);
+			g.lineTo(bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight() - 12);
+			g.quadraticCurveTo(bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight(),
+				bounds.getX() + bounds.getWidth() - 12, bounds.getY() + bounds.getHeight());
+			g.lineTo(bounds.getX() + 12, bounds.getY() + bounds.getHeight());
+			g.quadraticCurveTo(bounds.getX(), bounds.getY() + bounds.getHeight(),
+				bounds.getX(), bounds.getY() + bounds.getHeight() - 12);
+			g.lineTo(bounds.getX(), bounds.getY() + 12);
+			g.quadraticCurveTo(bounds.getX(), bounds.getY(),
+				bounds.getX() + 12, bounds.getY());
+			g.stroke();
 		}
 		
-		// 绘制边框
+		// 绘制外边框
 		g.setLineWidth(2);
 		g.setStroke(colorBorder);
-		g.strokeRoundRect(0, 0, w, h, 12, 12);
+		g.beginPath();
+		g.moveTo(12, 0);
+		g.lineTo(w-12, 0);
+		g.quadraticCurveTo(w, 0, w, 12);
+		g.lineTo(w, h-12);
+		g.quadraticCurveTo(w, h, w-12, h);
+		g.lineTo(12, h);
+		g.quadraticCurveTo(0, h, 0, h-12);
+		g.lineTo(0, 12);
+		g.quadraticCurveTo(0, 0, 12, 0);
+		g.stroke();
 		
 		// 重置裁剪区域
 		g.restore();
