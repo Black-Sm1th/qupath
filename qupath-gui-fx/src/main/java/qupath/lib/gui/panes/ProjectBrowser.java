@@ -245,6 +245,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		textDescription.setWrapText(true);
 		MasterDetailPane mdTree = new MasterDetailPane(Side.BOTTOM, tree, textDescription, false);
 		mdTree.showDetailNodeProperty().bind(descriptionText.isNotNull());
+		mdTree.getStyleClass().add("master-detail-pane");
 		
 		tree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tree.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
