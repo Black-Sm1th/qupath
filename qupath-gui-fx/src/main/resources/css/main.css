@@ -341,8 +341,16 @@
     -fx-background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* 左侧项目栏样式 */
-.project-pane {
+.nav-bar .nav-button:selected {
+    -fx-background-color: rgba(255, 255, 255, 1);
+}
+
+.nav-bar .nav-button:selected .qupath-icon{
+    -fx-text-fill: #1692ff;
+}
+
+/* 左侧工作栏样式 */
+.work-pane {
     -fx-background-color: rgba(255, 255, 255, 1);
     -fx-background-radius: 28px;
     -fx-padding: 12;

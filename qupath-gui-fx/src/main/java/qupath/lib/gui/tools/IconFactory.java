@@ -329,11 +329,17 @@ public class IconFactory {
 									NUCLEI_ONLY(IconSuppliers.icoMoon('\ue910')),
 
 									PROJECT_BTN(IconSuppliers.icoMoon('\ue937')),
+									PROJECT_BTN_FILL(IconSuppliers.icoMoon('\ue93F')),
 									IMAGE_BTN(IconSuppliers.icoMoon('\ue938')),
+									IMAGE_BTN_FILL(IconSuppliers.icoMoon('\ue940')),
 									ANNOTATION_BTN(IconSuppliers.icoMoon('\ue939')),
+									ANNOTATION_BTN_FILL(IconSuppliers.icoMoon('\ue941')),
 									WORKFLOW_BTN(IconSuppliers.icoMoon('\ue93A')),
+									WORKFLOW_BTN_FILL(IconSuppliers.icoMoon('\ue942')),
 									ANALYSIS_BTN(IconSuppliers.icoMoon('\ue93B')),
+									ANALYSIS_BTN_FILL(IconSuppliers.icoMoon('\ue943')),
 									CLASSIFY_BTN(IconSuppliers.icoMoon('\ue93C')),
+									CLASSIFY_BTN_FILL(IconSuppliers.icoMoon('\ue944')),
 									EYE_BTN(IconSuppliers.icoMoon('\ue93D')),
 									GPS_BTN(IconSuppliers.icoMoon('\ue93E')),
 

@@ -37,6 +37,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.FillRule;
 import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
@@ -78,8 +79,8 @@ class ImageOverview implements QuPathViewerListener {
 	private Shape shapeVisible = null; // The visible shape (transformed already)
 	private AffineTransform transform;
 	
-	private static Color color = Color.rgb(200, 0, 0, .8);
-	private static Color colorBorder = Color.rgb(64, 64, 64);
+	private static Color color = Color.rgb(0, 0, 0, 0.08);
+	private static Color colorBorder = Color.rgb(255, 255, 255, 0.2);
 
 	protected void mouseViewerToLocation(double x, double y) {
 		ImageServer<BufferedImage> server = viewer.getServer();
@@ -130,28 +131,69 @@ class ImageOverview implements QuPathViewerListener {
 	}
 
 	void paintCanvas() {
-		
 		GraphicsContext g = canvas.getGraphicsContext2D();
 		double w = getWidth();
 		double h = getHeight();
+		
+		// 清除整个画布
 		g.clearRect(0, 0, w, h);
 		
 		if (viewer == null || !viewer.hasServer()) {
 			return;
 		}
 		
-		// Ensure the image has been set
+		// 设置圆角裁剪区域
+		g.save();
+		g.beginPath();
+		g.moveTo(12, 0);
+		g.lineTo(w-12, 0);
+		g.quadraticCurveTo(w, 0, w, 12);
+		g.lineTo(w, h-12);
+		g.quadraticCurveTo(w, h, w-12, h);
+		g.lineTo(12, h);
+		g.quadraticCurveTo(0, h, 0, h-12);
+		g.lineTo(0, 12);
+		g.quadraticCurveTo(0, 0, 12, 0);
+		g.closePath();
+		g.clip();
+		
+		// 确保图像已设置
 		setImage(viewer.getRGBThumbnail());
-
 		g.drawImage(imgPreview, 0, 0);
 		
+		// 创建遮罩路径
+		g.beginPath();
+		g.moveTo(0, 0);
+		g.lineTo(w, 0);
+		g.lineTo(w, h);
+		g.lineTo(0, h);
+		g.closePath();
 		
-		// Draw the currently-visible region, if we have a viewer and it isn't 'zoom to fit' (in which case everything is visible)
+		if (shapeVisible != null) {
+			// 添加可见区域的路径（使用EVEN_ODD填充规则）
+			PathIterator iterator = shapeVisible.getPathIterator(null);
+			double[] coords = new double[6];
+			while (!iterator.isDone()) {
+				int type = iterator.currentSegment(coords);
+				if (type == PathIterator.SEG_MOVETO)
+					g.moveTo(coords[0], coords[1]);
+				else if (type == PathIterator.SEG_LINETO)
+					g.lineTo(coords[0], coords[1]);
+				else if (type == PathIterator.SEG_CLOSE)
+					g.closePath();
+				iterator.next();
+			}
+		}
+		
+		// 使用EVEN_ODD规则填充遮罩
+		g.setFillRule(FillRule.EVEN_ODD);
+		g.setFill(Color.rgb(50, 50, 50, 0.2));
+		g.fill();
+		
+		// 绘制可见区域边框
 		if (shapeVisible != null) {
 			g.setStroke(color);
 			g.setLineWidth(1);
-			
-			// TODO: Try to avoid PathIterator, and do something more JavaFX-like
 			PathIterator iterator = shapeVisible.getPathIterator(null);
 			double[] coords = new double[6];
 			g.beginPath();
@@ -165,18 +207,17 @@ class ImageOverview implements QuPathViewerListener {
 					g.closePath();
 					g.stroke();
 				}
-				else
-					logger.debug("Unknown PathIterator type: {}", type);
 				iterator.next();
 			}
-			
-//			g2d.draw(shapeVisible);
 		}
 		
-		// Draw border
+		// 绘制边框
 		g.setLineWidth(2);
 		g.setStroke(colorBorder);
-		g.strokeRect(0, 0, w, h);
+		g.strokeRoundRect(0, 0, w, h, 12, 12);
+		
+		// 重置裁剪区域
+		g.restore();
 		
 		repaintRequested = false;
 	}
@@ -230,8 +271,9 @@ class ImageOverview implements QuPathViewerListener {
 		if (shape != null) {
 			if (transform == null)
 				updateTransform();
-			if (transform != null)
+			if (transform != null){
 				shapeVisible = transform.createTransformedShape(shape);
+			}
 			else
 				shapeVisible = shape;
 		} else
