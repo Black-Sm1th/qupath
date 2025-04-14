@@ -31,6 +31,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -38,6 +39,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -48,6 +50,7 @@ import javafx.scene.layout.VBox;
 import qupath.lib.gui.panes.ProjectBrowser;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
+import qupath.lib.gui.tools.LLMClient;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -65,7 +68,8 @@ class QuPathMainPaneManager {
 	private QuPathGUI qupath;
 	private ToggleGroup navToggleGroup;
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
-	
+	private LLMClient client;
+
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
@@ -77,7 +81,7 @@ class QuPathMainPaneManager {
 				qupath.getOverlayActions());
 		// Create the main pane
 		pane = new StackPane();	
-		
+		client = new LLMClient("sk-0cd1d137904448bf8d41b2b2c5d4988e");
 		// Get viewer pane
 		mainViewerPane = qupath.getViewerManager().getRegion();
 		pane.getChildren().add(mainViewerPane);
@@ -235,8 +239,35 @@ class QuPathMainPaneManager {
 		sendBtn.getStyleClass().add("toolbar-message-button");
 
 		sendBtn.setOnMouseClicked(value -> {
-			System.out.println("发送按钮被点击");
+			client.getCompletionAsync(input.getText(), 
+				response -> {
+					// 更新UI
+					Platform.runLater(() -> logger.info(response));
+				},
+				error -> {
+					Platform.runLater(() -> logger.error(error.getMessage()));
+				}
+			);
+			input.setText("");
 		});
+
+		// 添加回车键事件监听
+		input.setOnKeyPressed(e -> {
+			if (e.getCode() == KeyCode.ENTER) {
+				client.getCompletionAsync(input.getText(), 
+					response -> {
+						// 更新UI
+						Platform.runLater(() -> logger.info(response));
+					},
+					error -> {
+						Platform.runLater(() -> logger.error(error.getMessage()));
+					}
+				);
+				input.setText("");
+				e.consume();
+			}
+		});
+
 		HBox.setHgrow(input, Priority.ALWAYS);
 		// Add components to input container in specific order
 		inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
