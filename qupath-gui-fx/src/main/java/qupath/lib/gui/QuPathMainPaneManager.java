@@ -24,15 +24,19 @@
 
 package qupath.lib.gui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -44,9 +48,6 @@ import javafx.scene.layout.VBox;
 import qupath.lib.gui.panes.ProjectBrowser;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -104,6 +105,7 @@ class QuPathMainPaneManager {
 			case "menu" -> IconFactory.createNode(QuPathGUI.TOOLBAR_ICON_SIZE, QuPathGUI.TOOLBAR_ICON_SIZE, PathIcons.MEASURE);
 			case "eye" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.EYE_BTN);
 			case "gps" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.GPS_BTN);
+			case "send" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.SEND_BTN);
 			default -> null;
 		};
 		if (iconNode != null) {
@@ -199,22 +201,53 @@ class QuPathMainPaneManager {
 		var bottomBarContainer = new HBox();
 		BorderPane.setMargin(bottomBarContainer,new Insets(0,16,16,16));
 		bottomBarContainer.getStyleClass().add("toolbar-main-container");
+		
 		// Create button	
-		var eyeBtn = createNormalButton("eye", "项目");
-		var gpsBtn = createNormalButton("gps", "项目");
+		var eyeBtn = createNormalButton("eye", "显示/隐藏");
+		var gpsBtn = createNormalButton("gps", "定位");
 		eyeBtn.getStyleClass().add("qupath-tool-button");
 		gpsBtn.getStyleClass().add("qupath-tool-button");
+		
 		// Create left&right button container
 		var leftButtonContainer = new VBox();
 		leftButtonContainer.getStyleClass().add("toolbar-left-container");
 		leftButtonContainer.getChildren().add(eyeBtn);
+		
 		var rightButtonContainer = new VBox();
 		rightButtonContainer.getStyleClass().add("toolbar-left-container");
 		rightButtonContainer.getChildren().add(gpsBtn);
+		
+		// Create input container
+		var inputContainer = new HBox();
+		inputContainer.getStyleClass().add("toolbar-input-container");
+		
+		// Create input field
+		var input = new TextField();
+		input.getStyleClass().add("toolbar-input");
+		input.setPromptText("请输入您的问题");
+		
+		// Create left icon
+		var leftIcon = new Region();
+		leftIcon.getStyleClass().addAll("toolbar-input-icon", "left");
+		
+		// Create right icon
+		var sendBtn = createNormalButton("send", "发送");
+		sendBtn.getStyleClass().add("toolbar-message-button");
+
+		sendBtn.setOnMouseClicked(value -> {
+			System.out.println("发送按钮被点击");
+		});
+		HBox.setHgrow(input, Priority.ALWAYS);
+		// Add components to input container in specific order
+		inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
+		
 		// Create Spacer
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-		bottomBarContainer.getChildren().addAll(leftButtonContainer, spacer, rightButtonContainer);
+		Region leftSpacer = new Region();
+		Region rightSpacer = new Region();
+		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+		
+		bottomBarContainer.getChildren().addAll(leftButtonContainer, leftSpacer, inputContainer, rightSpacer, rightButtonContainer);
 
 		return bottomBarContainer;
 	}

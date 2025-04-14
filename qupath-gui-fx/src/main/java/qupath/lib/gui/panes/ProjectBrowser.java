@@ -1287,6 +1287,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 				var children = getTreeItem().getChildren();
 				setText(item.getDisplayableString() + (!children.isEmpty() ? " (" + children.size() + ")" : ""));
 				setGraphic(null);
+				getStyleClass().add("tree-cell-root");
 				return;
 			} else if (item.getType() == ProjectTreeRow.Type.METADATA) {
 				var children = getTreeItem().getChildren();

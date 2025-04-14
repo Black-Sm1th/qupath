@@ -379,3 +379,70 @@
 .project-browser .tree-pane .split-pane{
     -fx-background-color: transparent;
 }
+
+/* .project-browser .tree-cell-root {
+    -fx-font-family: arial;
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+} */
+
+/* 底部工具栏输入框容器样式 */
+.toolbar-main-container .toolbar-input-container {
+    -fx-alignment: center-left;
+    -fx-padding: 4 4 4 16; 
+    -fx-pref-width: 480px;
+    -fx-min-width: 480px;
+    -fx-max-width: 480px;
+    -fx-background-color: rgba(255, 255, 255, 1);
+    -fx-background-radius: 120px;
+    -fx-border-radius: 120px;
+}
+
+/* 底部工具栏输入框样式 */
+.toolbar-main-container .toolbar-input-container .toolbar-input {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8 0 8;
+    -fx-font-size: 14px;
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-input-icon.left {
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+    -fx-background-image: url("/images/magic.png");
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button{
+    -fx-background-radius: 111px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #B8DEFF 8.47%, #33A0FF 97.78%);
+    -fx-cursor: hand;
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button:hover {
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #CCE7FF 8.47%, #47AAFF 97.78%);
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button:pressed {
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #A4D1FF 8.47%, #1F96FF 97.78%);
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
+    -fx-translate-y: 1px;
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button .qupath-icon{
+    -fx-text-fill: white;
+}
+
+/* 输入框占位符文本样式 */
+.toolbar-main-container .toolbar-input-container .toolbar-input .text-field {
+    -fx-prompt-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-font-size: 14px;
+}
+
+

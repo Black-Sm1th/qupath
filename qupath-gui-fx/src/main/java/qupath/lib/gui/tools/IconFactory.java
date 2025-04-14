@@ -343,7 +343,7 @@ public class IconFactory {
 									CLASSIFY_BTN_FILL(IconSuppliers.icoMoon('\ue944')),
 									EYE_BTN(IconSuppliers.icoMoon('\ue93D')),
 									GPS_BTN(IconSuppliers.icoMoon('\ue93E')),
-
+									SEND_BTN(IconSuppliers.icoMoon('\ue94A')),
 									PROJECT_SEARCH(IconSuppliers.icoMoon('\ue945')),
 									CREATE_PROJECT(IconSuppliers.icoMoon('\ue946')),
 									OPEN_PROJECT(IconSuppliers.icoMoon('\ue947')),
