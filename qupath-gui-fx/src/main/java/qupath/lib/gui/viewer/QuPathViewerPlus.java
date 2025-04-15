@@ -109,20 +109,13 @@ public class QuPathViewerPlus extends QuPathViewer {
 				return temp == null ? null : "-fx-font-size: " + temp.getFontSize();
 		}, PathPrefs.locationFontSizeProperty());
 		labelLocation.styleProperty().bind(fontBinding);
-		panelLocation.getStyleClass().add("viewer-overlay");
-		panelLocation.setMinSize(140, 40);
 		panelLocation.setCenter(labelLocation);
-		panelLocation.setPadding(new Insets(5));
 		basePane.getChildren().add(panelLocation);
-		AnchorPane.setBottomAnchor(panelLocation, (double)padding);
-		AnchorPane.setRightAnchor(panelLocation, (double)padding);
 		
 		// Add the scalebar label
 //		Node scalebarNode = PanelToolsFX.createSwingNode(scalebar);
 		Node scalebarNode = scalebar.getNode();
 		basePane.getChildren().add(scalebarNode);
-		AnchorPane.setBottomAnchor(scalebarNode, (double)padding);
-		AnchorPane.setLeftAnchor(scalebarNode, (double)padding);
 
 		
 		// Set spinners' position so they make space for command bar (only if needed!)
@@ -283,6 +276,22 @@ public class QuPathViewerPlus extends QuPathViewer {
 		super.repaintEntireImage();
 		if (overview != null)
 			overview.repaint();
+	}
+
+	/**
+	 * Get the panel location node.
+	 * @return
+	 */
+	public BorderPane getPanelLocation() {
+		return panelLocation;
+	}
+
+	/**
+	 * Get the scalebar node.
+	 * @return
+	 */
+	public Node getScalebarNode() {
+		return scalebar.getNode();
 	}
 
 }

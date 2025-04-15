@@ -51,6 +51,7 @@ import qupath.lib.gui.panes.ProjectBrowser;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.LLMClient;
+import qupath.lib.gui.viewer.QuPathViewerPlus;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -278,7 +279,25 @@ class QuPathMainPaneManager {
 		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
 		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 		
-		bottomBarContainer.getChildren().addAll(leftButtonContainer, leftSpacer, inputContainer, rightSpacer, rightButtonContainer);
+		// 获取viewer中的panelLocation和scalebarNode
+		var viewer = qupath.getViewerManager().getActiveViewer();
+		if (viewer instanceof QuPathViewerPlus) {
+
+			var viewerPlus = (QuPathViewerPlus)viewer;
+
+			var scalebarNode = viewerPlus.getScalebarNode();
+			scalebarNode.getStyleClass().add("scale-container");
+			HBox.setMargin(scalebarNode, new Insets(0,0,0,33));
+			var panelLocation = viewerPlus.getPanelLocation();
+			panelLocation.getStyleClass().add("location-container");
+			HBox.setMargin(panelLocation, new Insets(0,0,0,20));
+
+			
+			// 将位置和比例尺容器添加到bottomBarContainer
+			bottomBarContainer.getChildren().addAll(leftButtonContainer,scalebarNode,panelLocation, leftSpacer, inputContainer, rightSpacer, rightButtonContainer);
+		} else {
+			bottomBarContainer.getChildren().addAll(leftButtonContainer, leftSpacer, inputContainer, rightSpacer, rightButtonContainer);
+		}
 
 		return bottomBarContainer;
 	}
