@@ -43,12 +43,18 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.*;
-import javafx.beans.value.ObservableBooleanValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -1508,7 +1514,7 @@ public class PathPrefs {
 	
 	
 	private static DoubleProperty scalebarLineWidth = PathPrefs.createPersistentPreference(
-			"scalebarLineWidth", 3.0);
+			"scalebarLineWidth", 5.0);
 
 	/**
 	 * Preferred line width for the scalebar.

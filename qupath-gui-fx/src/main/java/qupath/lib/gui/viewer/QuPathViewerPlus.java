@@ -31,7 +31,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -262,10 +261,10 @@ public class QuPathViewerPlus extends QuPathViewer {
 		Rectangle2D bounds = new Rectangle2D.Double(boundsFX.getMinX(), boundsFX.getMinY(), boundsFX.getMaxX(), boundsFX.getMaxY());
 		if (imageWasUpdated) {
 			if (getDisplayedClipShape(bounds).intersects(0, 0, getServerWidth(), getServerHeight())) {
-				scalebar.setTextColor(getSuggestedOverlayColorFX());
+				scalebar.setTextColor(ColorToolsFX.TRANSLUCENT_BLACK_FX);
 			}
 			else {
-				scalebar.setTextColor(ColorToolsFX.TRANSLUCENT_WHITE_FX);
+				scalebar.setTextColor(ColorToolsFX.TRANSLUCENT_BLACK_FX);
 			}
 		}
 	}

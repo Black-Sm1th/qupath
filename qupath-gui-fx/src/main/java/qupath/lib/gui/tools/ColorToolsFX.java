@@ -54,7 +54,7 @@ public class ColorToolsFX {
 	/**
 	 * Black with opacity at 50%.
 	 */
-	public static final Color TRANSLUCENT_BLACK_FX = Color.rgb(0, 0, 0, 0.5);
+	public static final Color TRANSLUCENT_BLACK_FX = Color.rgb(0, 0, 0, 0.45);
 	
 	/**
 	 * White with opacity at 50%.

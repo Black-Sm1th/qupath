@@ -167,7 +167,7 @@ class Scalebar implements QuPathViewerListener {
 			double width = scaledLengthPixels;
 			lastLineThickness = lineThickness;
 			if (lineThickness > 0) {
-				double totalThickness = lineThickness;
+				double totalThickness = lineThickness; // 设置竖线高度为5px
 				canvas.setWidth(width+2);
 				canvas.setHeight(totalThickness);
 				GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -175,10 +175,15 @@ class Scalebar implements QuPathViewerListener {
 				gc.save();
 				int x = 1;
 				gc.setStroke(color);
-				gc.setLineWidth(lineThickness);
-	//			gc.strokeLine(x, 0, x, totalThickness);
-				gc.strokeLine(x, totalThickness/2, x+width, totalThickness/2);
-	//			gc.strokeLine(x+width, 0, x+width, totalThickness);
+				gc.setLineWidth(1); // 设置线条宽度为1px
+				
+				// 绘制左侧竖线
+				gc.strokeLine(x, 0, x, totalThickness);
+				// 绘制水平线
+				gc.strokeLine(x+1, totalThickness/2, x+width-1, totalThickness/2);
+				// 绘制右侧竖线
+				gc.strokeLine(x+width, 0, x+width, totalThickness);
+				
 				gc.restore();
 			} else {
 				GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -193,6 +198,7 @@ class Scalebar implements QuPathViewerListener {
 			
 			
 			label.setText(labelText);
+			label.setTextFill(color);
 			lastDownsample = currentDownsample;
 		} catch (NullPointerException e) {
 			label.setText("");
@@ -225,7 +231,7 @@ class Scalebar implements QuPathViewerListener {
 	public Node getNode() {
 		label.setGraphic(canvas);
 		label.setTextAlignment(TextAlignment.CENTER);
-		label.setContentDisplay(ContentDisplay.TOP);
+		label.setContentDisplay(ContentDisplay.BOTTOM);
 		return label;
 	}
 	
