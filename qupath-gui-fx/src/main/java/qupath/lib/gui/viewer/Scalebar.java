@@ -86,7 +86,7 @@ class Scalebar implements QuPathViewerListener {
 				var fontSize = PathPrefs.scalebarFontSizeProperty().get();
 				if (fontSize == null)
 					return null;
-				var style = "-fx-font-size: " + fontSize.getFontSize();
+				var style = "-fx-font-size: 12px";
 				var fontWeight = PathPrefs.scalebarFontWeightProperty().get();
 				if (fontWeight == null)
 					return style;

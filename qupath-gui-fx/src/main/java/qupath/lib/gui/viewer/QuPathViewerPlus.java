@@ -26,7 +26,7 @@ package qupath.lib.gui.viewer;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-
+import javafx.scene.paint.Color;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -103,9 +103,10 @@ public class QuPathViewerPlus extends QuPathViewer {
 
 		// Add the location label
 		labelLocation.setTextAlignment(TextAlignment.CENTER);
+		labelLocation.setTextFill(Color.rgb(0, 0, 0, 0.45));
 		var fontBinding = Bindings.createStringBinding(() -> {
 				var temp = PathPrefs.locationFontSizeProperty().get();
-				return temp == null ? null : "-fx-font-size: " + temp.getFontSize();
+				return temp == null ? null : "-fx-font-size: 12px;";
 		}, PathPrefs.locationFontSizeProperty());
 		labelLocation.styleProperty().bind(fontBinding);
 		panelLocation.setCenter(labelLocation);

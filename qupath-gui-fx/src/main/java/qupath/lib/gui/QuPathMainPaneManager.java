@@ -26,11 +26,9 @@ package qupath.lib.gui;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-
+import java.util.Map;	
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -201,9 +199,9 @@ class QuPathMainPaneManager {
 		return false;
 	}
 	
-	private HBox createBottomBarContainer() {
+	private BorderPane createBottomBarContainer() {
 		// Create bottombar container
-		var bottomBarContainer = new HBox();
+		var bottomBarContainer = new BorderPane();
 		BorderPane.setMargin(bottomBarContainer,new Insets(0,16,16,16));
 		bottomBarContainer.getStyleClass().add("toolbar-main-container");
 		
@@ -221,6 +219,9 @@ class QuPathMainPaneManager {
 		var rightButtonContainer = new VBox();
 		rightButtonContainer.getStyleClass().add("toolbar-left-container");
 		rightButtonContainer.getChildren().add(gpsBtn);
+
+		var rightScaleContainer = new VBox();
+		rightScaleContainer.getStyleClass().add("toolbar-rightScale-container");
 		
 		// Create input container
 		var inputContainer = new HBox();
@@ -272,32 +273,36 @@ class QuPathMainPaneManager {
 		HBox.setHgrow(input, Priority.ALWAYS);
 		// Add components to input container in specific order
 		inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
-		
-		// Create Spacer
-		Region leftSpacer = new Region();
-		Region rightSpacer = new Region();
-		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-		
+
+		var leftContainer = new HBox();
+		leftContainer.setPrefWidth(400);
+		leftContainer.setMinWidth(400);
+		leftContainer.setPrefWidth(400);
+		leftContainer.getChildren().add(leftButtonContainer);
+
+		var rightContainer = new HBox();
+		rightContainer.setPrefWidth(400);
+		rightContainer.setMinWidth(400);
+		rightContainer.setPrefWidth(400);
+		rightContainer.setSpacing(4);
+		var spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		rightContainer.getChildren().addAll(spacer,rightScaleContainer, rightButtonContainer);
 		// 获取viewer中的panelLocation和scalebarNode
 		var viewer = qupath.getViewerManager().getActiveViewer();
 		if (viewer instanceof QuPathViewerPlus) {
-
 			var viewerPlus = (QuPathViewerPlus)viewer;
-
 			var scalebarNode = viewerPlus.getScalebarNode();
 			scalebarNode.getStyleClass().add("scale-container");
 			HBox.setMargin(scalebarNode, new Insets(0,0,0,33));
 			var panelLocation = viewerPlus.getPanelLocation();
 			panelLocation.getStyleClass().add("location-container");
 			HBox.setMargin(panelLocation, new Insets(0,0,0,20));
-
-			
-			// 将位置和比例尺容器添加到bottomBarContainer
-			bottomBarContainer.getChildren().addAll(leftButtonContainer,scalebarNode,panelLocation, leftSpacer, inputContainer, rightSpacer, rightButtonContainer);
-		} else {
-			bottomBarContainer.getChildren().addAll(leftButtonContainer, leftSpacer, inputContainer, rightSpacer, rightButtonContainer);
+			leftContainer.getChildren().addAll(scalebarNode,panelLocation);
 		}
+		bottomBarContainer.setLeft(leftContainer);
+		bottomBarContainer.setCenter(inputContainer);
+		bottomBarContainer.setRight(rightContainer);
 
 		return bottomBarContainer;
 	}
