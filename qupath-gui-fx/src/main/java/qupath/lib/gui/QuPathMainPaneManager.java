@@ -50,6 +50,7 @@ import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.LLMClient;
 import qupath.lib.gui.viewer.QuPathViewerPlus;
+import qupath.lib.gui.ToolBarComponent.ViewerMagnificationLabel;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -222,6 +223,13 @@ class QuPathMainPaneManager {
 
 		var rightScaleContainer = new VBox();
 		rightScaleContainer.getStyleClass().add("toolbar-rightScale-container");
+
+
+		var magLabel = new ViewerMagnificationLabel();
+		var viewerProperty = qupath.getViewerActions().getViewerManager().activeViewerProperty();
+		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
+		magLabel.setViewer(viewerProperty.getValue());
+		rightScaleContainer.getChildren().add(magLabel);
 		
 		// Create input container
 		var inputContainer = new HBox();

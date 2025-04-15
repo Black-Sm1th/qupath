@@ -363,7 +363,7 @@ class ToolBarComponent {
 	}
 
 	
-	private static class ViewerMagnificationLabel extends Label implements QuPathViewerListener {
+	public static class ViewerMagnificationLabel extends Label implements QuPathViewerListener {
 		
 		private QuPathViewer viewer;
 		
@@ -371,7 +371,7 @@ class ToolBarComponent {
 		
 		private Tooltip tooltipMag = new Tooltip(getDescription("magnification"));
 		
-		private ViewerMagnificationLabel() {
+		public ViewerMagnificationLabel() {
 			setTooltip(tooltipMag);
 			setPrefWidth(60);
 			setMinWidth(60);
@@ -384,7 +384,7 @@ class ToolBarComponent {
 			});
 		}
 		
-		private void setViewer(QuPathViewer viewer) {
+		public void setViewer(QuPathViewer viewer) {
 			if (this.viewer == viewer)
 				return;
 			if (this.viewer != null)
@@ -395,7 +395,7 @@ class ToolBarComponent {
 			updateMagnificationString();
 		}
 		
-		private void updateMagnificationString() {
+		public void updateMagnificationString() {
 			if (!Platform.isFxApplicationThread()) {
 				Platform.runLater(() -> updateMagnificationString());
 				return;
@@ -409,7 +409,7 @@ class ToolBarComponent {
 		}
 		
 		
-		private void refreshMagnificationTooltip() {
+		public void refreshMagnificationTooltip() {
 			// Ensure we have the right tooltip for magnification
 			if (tooltipMag == null || viewer == null)
 				return;
@@ -424,7 +424,7 @@ class ToolBarComponent {
 		}
 
 		
-		private void promptToUpdateMagnification() {
+		public void promptToUpdateMagnification() {
 			if (viewer == null || !viewer.hasServer())
 				return;
 			double fullMagnification = viewer.getServer().getMetadata().getMagnification();
