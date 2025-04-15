@@ -165,15 +165,6 @@
     -fx-padding: 4;
 }
 
-/* 工具栏左侧按钮容器 */
-.toolbar-left-container {
-    -fx-background-color: rgba(255, 255, 255, 0.5);
-    -fx-border-color: rgba(255, 255, 255, 0.8);
-    -fx-background-radius: 100px;
-    -fx-border-radius: 100px;
-    -fx-padding: 4;
-}
-
 /* 工具栏右侧按钮容器 */
 .toolbar-right-container {
     -fx-background-image: url("/images/head.png");
@@ -182,48 +173,13 @@
     -fx-pref-height: 50;
 }
 
-.toolbar-rightScale-container {
+/* 工具栏左侧按钮容器 */
+.toolbar-left-container {
     -fx-background-color: rgba(255, 255, 255, 0.5);
     -fx-border-color: rgba(255, 255, 255, 0.8);
     -fx-background-radius: 100px;
     -fx-border-radius: 100px;
     -fx-padding: 4;
-    -fx-pref-width: 156px;
-}
-
-
-/* 放大倍数控制按钮样式 */
-.toolbar-rightScale-container .mag-button {
-    -fx-min-width: 24px;
-    -fx-min-height: 24px;
-    -fx-max-width: 24px;
-    -fx-max-height: 24px;
-    -fx-background-color: transparent;
-    -fx-font-weight: bold;
-    -fx-padding: 0;
-    -fx-cursor: hand;
-}
-
-.toolbar-rightScale-container .mag-button .qupath-icon{
-    -fx-text-fill: rgba(0, 0, 0, 0.45);
-}
-
-.toolbar-rightScale-container .mag-button:hover .qupath-icon{
-    -fx-text-fill: rgba(0, 0, 0, 0.3);
-}
-
-.toolbar-rightScale-container .mag-button:pressed .qupath-icon{
-    -fx-text-fill: rgba(0, 0, 0, 0.2);
-}
-.toolbar-rightScale-container .mag-label{
-    -fx-font-size: 12px;
-    -fx-text-fill: rgba(0, 0, 0, 0.85);
-    -fx-alignment: center;
-    -fx-padding: 0 0 1 0;
-}
-
-.toolbar-main-container .scale-container{
-    -fx-padding: 24 0 0 0;
 }
 
 /* 工具栏内层容器样式 */
@@ -262,48 +218,150 @@
 
 /* 滑块样式 */
 .toolbar-center-container .slider {
-  -fx-pref-width: 116px;
-  -fx-pref-height: 4px;
+    -fx-pref-width: 116px;
+    -fx-pref-height: 4px;
 }
 
 .toolbar-center-container .slider-container {
-  -fx-alignment: center;
-  -fx-pref-width: 178px;
-  -fx-pref-height: 18px;
+    -fx-alignment: center;
+    -fx-pref-width: 178px;
+    -fx-pref-height: 18px;
 }
 
 .toolbar-center-container .slider-percentage {
-  -fx-pref-width: 40px;
-  -fx-pref-height: 18px;
+    -fx-pref-width: 40px;
+    -fx-pref-height: 18px;
 }
 
 /* 工具按钮样式 */
 .qupath-tool-button {
-  -fx-background-radius: 100px;
-  -fx-min-width: 40px;
-  -fx-min-height: 40px;
-  -fx-max-width: 40px;
-  -fx-max-height: 40px;
-  -fx-background-color: transparent;
-  -fx-cursor: hand;
+    -fx-background-radius: 100px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
 }
 
 .qupath-tool-button:hover {
-  -fx-background-color: rgba(0, 0, 0, 0.05);
+    -fx-background-color: rgba(0, 0, 0, 0.05);
 }
 
 .qupath-tool-button:selected {
-  -fx-background-color: #2196F3;
+    -fx-background-color: #2196F3;
 }
 
 .qupath-tool-button:selected .qupath-icon {
-  -fx-text-fill: white;
+    -fx-text-fill: white;
 }
 
 /* 隐藏工具按钮的箭头 */
 .qupath-tool-button .arrow {
-  -fx-padding: 0;
-  -fx-shape: "";
+    -fx-padding: 0;
+    -fx-shape: "";
+}
+
+/* 底部工具栏输入框容器样式 */
+.toolbar-main-container .toolbar-input-container {
+    -fx-alignment: center-left;
+    -fx-padding: 4 4 4 16;
+    -fx-pref-width: 480px;
+    -fx-min-width: 480px;
+    -fx-max-width: 480px;
+    -fx-background-color: rgba(255, 255, 255, 1);
+    -fx-background-radius: 120px;
+    -fx-border-radius: 120px;
+}
+
+/* 底部工具栏输入框样式 */
+.toolbar-main-container .toolbar-input-container .toolbar-input {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8 0 8;
+    -fx-font-size: 14px;
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-input-icon.left {
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+    -fx-background-image: url("/images/magic.png");
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button {
+    -fx-background-radius: 111px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #B8DEFF 8.47%, #33A0FF 97.78%);
+    -fx-cursor: hand;
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button:hover {
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #CCE7FF 8.47%, #47AAFF 97.78%);
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button:pressed {
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #A4D1FF 8.47%, #1F96FF 97.78%);
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
+    -fx-translate-y: 1px;
+}
+
+.toolbar-main-container .toolbar-input-container .toolbar-message-button .qupath-icon {
+    -fx-text-fill: white;
+}
+
+/* 输入框占位符文本样式 */
+.toolbar-main-container .toolbar-input-container .toolbar-input .text-field {
+    -fx-prompt-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-font-size: 14px;
+}
+
+.toolbar-main-container .scale-container {
+    -fx-padding: 24 0 0 0;
+}
+
+.toolbar-main-container .toolbar-rightScale-container {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-background-radius: 100px;
+    -fx-border-radius: 100px;
+    -fx-padding: 4;
+    -fx-pref-width: 156px;
+}
+
+/* 放大倍数控制按钮样式 */
+.toolbar-main-container .toolbar-rightScale-container .mag-button {
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-max-width: 24px;
+    -fx-max-height: 24px;
+    -fx-background-color: transparent;
+    -fx-font-weight: bold;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.toolbar-main-container .toolbar-rightScale-container .mag-button .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+}
+
+.toolbar-main-container .toolbar-rightScale-container .mag-button:hover .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.3);
+}
+
+.toolbar-main-container .toolbar-rightScale-container .mag-button:pressed .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-main-container .toolbar-rightScale-container .mag-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-alignment: center;
+    -fx-padding: 0 0 1 0;
 }
 
 /* 左侧容器样式 */
@@ -349,7 +407,7 @@
     -fx-background-color: rgba(255, 255, 255, 1);
 }
 
-.left-container .nav-bar .nav-button:selected .qupath-icon{
+.left-container .nav-bar .nav-button:selected .qupath-icon {
     -fx-text-fill: #1692ff;
 }
 
@@ -377,7 +435,7 @@
     -fx-spacing: 8;
 }
 
-.project-browser .project-topbar .button{
+.project-browser .project-topbar .button {
     -fx-background-color: transparent;
     -fx-min-width: 24;
     -fx-min-height: 24;
@@ -386,11 +444,11 @@
     -fx-cursor: hand;
 }
 
-.project-browser .project-topbar .button:hover .qupath-icon{
+.project-browser .project-topbar .button:hover .qupath-icon {
     -fx-text-fill: rgba(0, 0, 0, 0.4);
 }
 
-.project-browser .project-topbar .button:pressed .qupath-icon{
+.project-browser .project-topbar .button:pressed .qupath-icon {
     -fx-text-fill: rgba(0, 0, 0, 0.2);
 }
 
@@ -420,9 +478,16 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.25), 2, 0, 1, 1);
 }
 
-.project-browser .tree-pane .split-pane{
+.project-browser .tree-pane .split-pane {
     -fx-background-color: transparent;
+    -fx-padding: 0;
 }
+
+.project-browser .tree-pane .tree-view {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12;
+}
+
 /* .project-browser .tree-cell-root {
     -fx-font-family: arial;
     -fx-pref-height: 36px;
@@ -430,61 +495,5 @@
     -fx-max-height: 36px;
 } */
 
-/* 底部工具栏输入框容器样式 */
-.toolbar-main-container .toolbar-input-container {
-    -fx-alignment: center-left;
-    -fx-padding: 4 4 4 16; 
-    -fx-pref-width: 480px;
-    -fx-min-width: 480px;
-    -fx-max-width: 480px;
-    -fx-background-color: rgba(255, 255, 255, 1);
-    -fx-background-radius: 120px;
-    -fx-border-radius: 120px;
-}
 
-/* 底部工具栏输入框样式 */
-.toolbar-main-container .toolbar-input-container .toolbar-input {
-    -fx-background-color: transparent;
-    -fx-padding: 0 8 0 8;
-    -fx-font-size: 14px;
-}
-
-.toolbar-main-container .toolbar-input-container .toolbar-input-icon.left {
-    -fx-min-width: 20px;
-    -fx-min-height: 20px;
-    -fx-max-width: 20px;
-    -fx-max-height: 20px;
-    -fx-background-image: url("/images/magic.png");
-}
-
-.toolbar-main-container .toolbar-input-container .toolbar-message-button{
-    -fx-background-radius: 111px;
-    -fx-min-width: 40px;
-    -fx-min-height: 40px;
-    -fx-max-width: 40px;
-    -fx-max-height: 40px;
-    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #B8DEFF 8.47%, #33A0FF 97.78%);
-    -fx-cursor: hand;
-}
-
-.toolbar-main-container .toolbar-input-container .toolbar-message-button:hover {
-    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #CCE7FF 8.47%, #47AAFF 97.78%);
-    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
-}
-
-.toolbar-main-container .toolbar-input-container .toolbar-message-button:pressed {
-    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #A4D1FF 8.47%, #1F96FF 97.78%);
-    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
-    -fx-translate-y: 1px;
-}
-
-.toolbar-main-container .toolbar-input-container .toolbar-message-button .qupath-icon{
-    -fx-text-fill: white;
-}
-
-/* 输入框占位符文本样式 */
-.toolbar-main-container .toolbar-input-container .toolbar-input .text-field {
-    -fx-prompt-text-fill: rgba(0, 0, 0, 0.45);
-    -fx-font-size: 14px;
-}
 
