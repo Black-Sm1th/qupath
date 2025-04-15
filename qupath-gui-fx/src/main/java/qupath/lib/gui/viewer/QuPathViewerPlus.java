@@ -26,6 +26,10 @@ package qupath.lib.gui.viewer;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.scene.paint.Color;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -49,7 +53,7 @@ import qupath.lib.images.servers.ImageServer;
  * @author Pete Bankhead
  */
 public class QuPathViewerPlus extends QuPathViewer {
-
+	private static final Logger logger = LoggerFactory.getLogger(QuPathViewerPlus.class);
 	private final ViewerDimensionControls dimensionControls;
 	private final ViewerPlusDisplayOptions viewerDisplayOptions;
 	
@@ -229,8 +233,10 @@ public class QuPathViewerPlus extends QuPathViewer {
 		if (labelLocation != null && hasServer())
 			s = getFullLocationString(useCalibratedLocationString());
 		if (s != null && !s.isEmpty()) {
+			if (s.startsWith("\n")) {
+				s = s.substring(1);
+			}
 			labelLocation.setText(s);
-//			labelLocation.setTextAlignment(TextAlignment.CENTER);
 			panelLocation.setOpacity(1);
 		} else {
 			panelLocation.setOpacity(0);

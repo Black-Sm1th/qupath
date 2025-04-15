@@ -296,7 +296,6 @@ class QuPathMainPaneManager {
 			scalebarNode.getStyleClass().add("scale-container");
 			HBox.setMargin(scalebarNode, new Insets(0,0,0,33));
 			var panelLocation = viewerPlus.getPanelLocation();
-			panelLocation.getStyleClass().add("location-container");
 			HBox.setMargin(panelLocation, new Insets(0,0,0,20));
 			leftContainer.getChildren().addAll(scalebarNode,panelLocation);
 		}
