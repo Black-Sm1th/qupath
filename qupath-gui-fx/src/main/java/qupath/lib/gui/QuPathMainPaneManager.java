@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -110,6 +111,8 @@ class QuPathMainPaneManager {
 			case "eye" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.EYE_BTN);
 			case "gps" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.GPS_BTN);
 			case "send" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.SEND_BTN);
+			case "plus" -> IconFactory.createNode(24, 24, PathIcons.PLUS_BTN);
+			case "minus" -> IconFactory.createNode(24, 24, PathIcons.MINUS_BTN);
 			default -> null;
 		};
 		if (iconNode != null) {
@@ -221,15 +224,42 @@ class QuPathMainPaneManager {
 		rightButtonContainer.getStyleClass().add("toolbar-left-container");
 		rightButtonContainer.getChildren().add(gpsBtn);
 
-		var rightScaleContainer = new VBox();
+		var rightScaleContainer = new BorderPane();
 		rightScaleContainer.getStyleClass().add("toolbar-rightScale-container");
 
+		// 创建放大倍数控制容器
+		var magContainer = new HBox();
+		magContainer.setSpacing(8);
+		magContainer.setAlignment(Pos.CENTER);
+		
+		// 创建减号按钮
+		var minusBtn = createNormalButton("minus", "减少");
+		minusBtn.getStyleClass().addAll("mag-button");
+		minusBtn.setOnMouseClicked(e -> {
+			var viewer = qupath.getViewerManager().getActiveViewer();
+			if (viewer != null) {
+				double currentDownsample = viewer.getDownsampleFactor();
+				viewer.setDownsampleFactor(currentDownsample * 1.25);
+			}
+		});
 
 		var magLabel = new ViewerMagnificationLabel();
 		var viewerProperty = qupath.getViewerActions().getViewerManager().activeViewerProperty();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
 		magLabel.setViewer(viewerProperty.getValue());
-		rightScaleContainer.getChildren().add(magLabel);
+		// 创建加号按钮
+		var plusBtn = createNormalButton("plus", "增加");
+		plusBtn.getStyleClass().addAll("mag-button");
+		plusBtn.setOnMouseClicked(e -> {
+			var viewer = qupath.getViewerManager().getActiveViewer();
+			if (viewer != null) {
+				double currentDownsample = viewer.getDownsampleFactor();
+				viewer.setDownsampleFactor(currentDownsample / 1.25);
+			}
+		});
+
+		magContainer.getChildren().addAll(minusBtn, magLabel, plusBtn);
+		rightScaleContainer.setCenter(magContainer);
 		
 		// Create input container
 		var inputContainer = new HBox();

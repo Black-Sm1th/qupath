@@ -191,6 +191,37 @@
     -fx-pref-width: 156px;
 }
 
+
+/* 放大倍数控制按钮样式 */
+.toolbar-rightScale-container .mag-button {
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-max-width: 24px;
+    -fx-max-height: 24px;
+    -fx-background-color: transparent;
+    -fx-font-weight: bold;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.toolbar-rightScale-container .mag-button .qupath-icon{
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+}
+
+.toolbar-rightScale-container .mag-button:hover .qupath-icon{
+    -fx-text-fill: rgba(0, 0, 0, 0.3);
+}
+
+.toolbar-rightScale-container .mag-button:pressed .qupath-icon{
+    -fx-text-fill: rgba(0, 0, 0, 0.2);
+}
+.toolbar-rightScale-container .mag-label{
+    -fx-font-size: 12px;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-alignment: center;
+    -fx-padding: 0 0 1 0;
+}
+
 .toolbar-main-container .scale-container{
     -fx-padding: 24 0 0 0;
 }
@@ -392,7 +423,6 @@
 .project-browser .tree-pane .split-pane{
     -fx-background-color: transparent;
 }
-
 /* .project-browser .tree-cell-root {
     -fx-font-family: arial;
     -fx-pref-height: 36px;

@@ -344,6 +344,8 @@ public class IconFactory {
 									EYE_BTN(IconSuppliers.icoMoon('\ue93D')),
 									GPS_BTN(IconSuppliers.icoMoon('\ue93E')),
 									SEND_BTN(IconSuppliers.icoMoon('\ue94A')),
+									PLUS_BTN(IconSuppliers.icoMoon('\ue94B')),
+									MINUS_BTN(IconSuppliers.icoMoon('\ue94C')),
 									PROJECT_SEARCH(IconSuppliers.icoMoon('\ue945')),
 									CREATE_PROJECT(IconSuppliers.icoMoon('\ue946')),
 									OPEN_PROJECT(IconSuppliers.icoMoon('\ue947')),

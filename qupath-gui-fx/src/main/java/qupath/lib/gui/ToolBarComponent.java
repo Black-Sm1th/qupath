@@ -147,6 +147,7 @@ class ToolBarComponent {
 		HBox.setHgrow(Spacer, Priority.ALWAYS);
 
 		Label percentageLabel = new Label("100%");
+		percentageLabel.setStyle("-fx-font-size: 12px;-fx-text-fill: rgba(0, 0, 0, 0.85);");
 		percentageLabel.getStyleClass().add("slider-percentage");
 
 		sliderOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -376,6 +377,7 @@ class ToolBarComponent {
 			setPrefWidth(60);
 			setMinWidth(60);
 			setMaxWidth(60);
+			getStyleClass().add("mag-label");
 			setTextAlignment(TextAlignment.CENTER);
 			setOnMouseEntered(e -> refreshMagnificationTooltip());
 			setOnMouseClicked(e -> {
