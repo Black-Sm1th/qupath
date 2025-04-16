@@ -163,16 +163,16 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		imageDataProperty.addListener(this);
 
 		// Create the table
-		table.setPlaceholder(GuiTools.createPlaceholderText("No image selected"));
+		table.setPlaceholder(GuiTools.createPlaceholderText("未选择图像"));
 		table.setMinHeight(200);
 		table.setPrefHeight(250);
 		table.setMaxHeight(Double.MAX_VALUE);
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		TableColumn<ImageDetailRow, String> columnName = new TableColumn<>("Name");
+		TableColumn<ImageDetailRow, String> columnName = new TableColumn<>("名称");
 		columnName.setCellValueFactory(v -> new ReadOnlyStringWrapper(getName(v.getValue())));
 		columnName.setEditable(false);
 		columnName.setPrefWidth(150);
-		TableColumn<ImageDetailRow, Object> columnValue = new TableColumn<>("Value");
+		TableColumn<ImageDetailRow, Object> columnValue = new TableColumn<>("值");
 		columnValue.setCellValueFactory(v -> new ReadOnlyObjectWrapper<>(getValue(v.getValue())));
 		columnValue.setEditable(false);
 		columnValue.setPrefWidth(200);
@@ -188,10 +188,10 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 
 		MasterDetailPane mdPane = new MasterDetailPane(Side.BOTTOM);
 		mdPane.setMasterNode(new StackPane(table));
-		var titlePaneAssociated = new TitledPane("Associated images", listAssociatedImages);
+		var titlePaneAssociated = new TitledPane("相关图像", listAssociatedImages);
 		titlePaneAssociated.setCollapsible(false);
 		listAssociatedImages.setTooltip(new Tooltip(
-				"Extra images associated with the current image, e.g. a label or thumbnail"));
+				"当前图像相关的额外图像，例如标签或缩略图"));
 		mdPane.setDetailNode(titlePaneAssociated);
 		mdPane.showDetailNodeProperty().bind(
 				Bindings.createBooleanBinding(() -> !listAssociatedImages.getItems().isEmpty(),
@@ -703,45 +703,45 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	private String getName(ImageDetailRow row) {
 		switch (row) {
 		case NAME:
-			return "Name";
+			return "图像名";
 		case URI:
 			if (imageData != null && imageData.getServer().getURIs().size() == 1)
 				return "URI";
 			return "URIs";
 		case IMAGE_TYPE:
-			return "Image type";
+			return "类型";
 		case METADATA_CHANGED:
-			return "Metadata changed";
+			return "元数据";
 		case PIXEL_TYPE:
-			return "Pixel type";
+			return "类型";
 		case MAGNIFICATION:
-			return "Magnification";
+			return "倍率";
 		case WIDTH:
-			return "Width";
+			return "宽";
 		case HEIGHT:
-			return "Height";
+			return "高";
 		case DIMENSIONS:
-			return "Dimensions (CZT)";
+			return "CZT";
 		case PIXEL_WIDTH:
-			return "Pixel width";
+			return "宽";
 		case PIXEL_HEIGHT:
-			return "Pixel height";
+			return "高";
 		case Z_SPACING:
-			return "Z-spacing";
+			return "Z轴间距";
 		case UNCOMPRESSED_SIZE:
-			return "Uncompressed size";
+			return "未压缩";
 		case SERVER_TYPE:
-			return "Server type";
+			return "服务器";
 		case PYRAMID:
-			return "Pyramid";
+			return "金字塔";
 		case STAIN_1:
-			return "Stain 1";
+			return "染色1";
 		case STAIN_2:
-			return "Stain 2";
+			return "染色2";
 		case STAIN_3:
-			return "Stain 3";
+			return "染色3";
 		case BACKGROUND:
-			return "Background";
+			return "背景";
 		default:
 			return null;
 		}
@@ -868,29 +868,28 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				setGraphic(null);
 				return;
 			}
-			//			             ComboBoxTableCell<TableEntry, Object>
 			String style = null;
 			String text = item == null ? "" : item.toString();
 			String tooltipText = text;
 			if (item instanceof double[]) {
 				text = GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])item, 2);
-				tooltipText = "Double-click to set background values for color deconvolution (either type values or use a small rectangle ROI in the image)";
+				tooltipText = "双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）";
 			} else if (item instanceof StainVector) {
 				StainVector stain = (StainVector)item;
 				Integer color = stain.getColor();
 				style = String.format("-fx-text-fill: rgb(%d, %d, %d);", ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color));
-				tooltipText = "Double-click to set stain color (either type values or use a small rectangle ROI in the image)";
+				tooltipText = "双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）";
 			} else {
 				var type = getTableRow().getItem();
 				if (type != null) {
 					if (type.equals(ImageDetailRow.PIXEL_WIDTH) || type.equals(ImageDetailRow.PIXEL_HEIGHT) || type.equals(ImageDetailRow.Z_SPACING)) {
 						if ("Unknown".equals(item))
 							style = "-fx-text-fill: red;";
-						tooltipText = "Double-click to set pixel calibration (can use a selected line or area ROI in the image)";
+						tooltipText = "双击设置像素校准（可以使用选定的线条或区域ROI）";
 					} else if (type.equals(ImageDetailRow.METADATA_CHANGED))
-						tooltipText = "Double-click to reset original metadata";
+						tooltipText = "双击重置原始元数据";
 					else if (type.equals(ImageDetailRow.UNCOMPRESSED_SIZE))
-						tooltipText = "Approximate memory required to store all pixels in the image uncompressed";
+						tooltipText = "存储所有未压缩像素所需的大致内存";
 				}
 			}
 			setStyle(style);
