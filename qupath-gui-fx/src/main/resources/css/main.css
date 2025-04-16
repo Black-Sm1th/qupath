@@ -2,6 +2,9 @@
  * Some CSS that should be applied in QuPath.
  */
 
+/* Import scrollbar styles */
+@import url("scrollbar.css");
+
 /* Define colors that may be used by script editors and log viewers */
 .root {
 
@@ -203,7 +206,7 @@
 
 /* 分隔符样式 */
 .toolbar-center-container .separator {
-    -fx-padding: 12 9;
+    -fx-padding: 13 9;
 }
 
 .toolbar-center-container .separator .line {
@@ -216,21 +219,57 @@
     -fx-max-height: 14;
 }
 
-/* 滑块样式 */
-.toolbar-center-container .slider {
-    -fx-pref-width: 116px;
-    -fx-pref-height: 4px;
-}
 
 .toolbar-center-container .slider-container {
+    -fx-padding: 0 0 0 8;
     -fx-alignment: center;
-    -fx-pref-width: 178px;
-    -fx-pref-height: 18px;
 }
 
-.toolbar-center-container .slider-percentage {
-    -fx-pref-width: 40px;
+.toolbar-center-container .slider-container .slider .track {
+    -fx-background-color: rgba(0, 0, 0, 0.08);
+    -fx-pref-height: 4px;
+    -fx-min-height: 4px;
+    -fx-max-height: 4px;
+    -fx-pref-width: 116px;
+    -fx-min-width: 116px;
+    -fx-max-width: 116px;
+}
+
+.toolbar-center-container .slider-container .slider .thumb {
+    -fx-background-color: 
+        rgba(255, 255, 255, 1),
+        rgba(0, 0, 0, 0.25);
+    -fx-background-insets: 0, 4 4 4 4;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px, 6px;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+    -fx-cursor: hand;
+}
+
+.toolbar-center-container .slider-container .slider .thumb:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 6, 0.0, 0, 2);
+}
+
+.toolbar-center-container .slider-container .slider .thumb:pressed {
+    -fx-background-color: 
+        rgba(222, 222, 222, 1),
+        rgba(11, 11,11, 0.25);
+}
+
+.toolbar-center-container .slider-container .slider-percentage {
+    -fx-font-size: 12px;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-pref-width: 42px;
+    -fx-min-width: 42px;
+    -fx-max-width: 42px;
     -fx-pref-height: 18px;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
 }
 
 /* 工具按钮样式 */

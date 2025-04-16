@@ -38,6 +38,7 @@ import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -52,8 +53,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -143,33 +142,38 @@ class ToolBarComponent {
 		HBox sliderContainer = new HBox();
 		sliderContainer.getStyleClass().add("slider-container");
 
-		Region Spacer = new Region();
-		HBox.setHgrow(Spacer, Priority.ALWAYS);
-
 		Label percentageLabel = new Label("100%");
-		percentageLabel.setStyle("-fx-font-size: 12px;-fx-text-fill: rgba(0, 0, 0, 0.85);");
+		percentageLabel.setAlignment(Pos.CENTER_RIGHT);
 		percentageLabel.getStyleClass().add("slider-percentage");
+		HBox.setMargin(percentageLabel, new Insets(0, 0, 0, 4));
+		// 设置初始背景色
+		Platform.runLater(() -> {
+			Node track = sliderOpacity.lookup(".track");
+			if (track != null) {
+				track.setStyle("-fx-background-color: rgba(0, 0, 0, 0.25);");
+			}
+		});
 
 		sliderOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
-			double percent = newVal.doubleValue() / sliderOpacity.getMax() * 100;
+			double percent = newVal.doubleValue() * 100;
 			percentageLabel.setText(String.format("%.0f%%", percent));
 
 			String style = String.format(
-				"-fx-background-color: linear-gradient(to right, #2196f3 0%%, #2196f3 %.1f%%, #ccc %.1f%%, #ccc 100%%);",
+				"-fx-background-color: linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%%, rgba(0, 0, 0, 0.25) %.1f%%, rgba(0, 0, 0, 0.08) %.1f%%, rgba(0, 0, 0, 0.08) 100%%);",
 				percent, percent
 			);
-		
-			// 获取 .track 并设置 style
+			
 			Node track = sliderOpacity.lookup(".track");
 			if (track != null) {
 				track.setStyle(style);
 			}
 		});
+
 		var overlayOptions = overlayActions.getOverlayOptions();
 		sliderOpacity.valueProperty().bindBidirectional(overlayOptions.opacityProperty());
 		sliderOpacity.setTooltip(new Tooltip(getDescription("overlayOpacity")));
 
-		sliderContainer.getChildren().addAll(sliderOpacity, Spacer,percentageLabel);
+		sliderContainer.getChildren().addAll(sliderOpacity, percentageLabel);
 		nodes.add(sliderContainer);
 		
 		nodes.add(new Separator(Orientation.VERTICAL));
