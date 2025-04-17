@@ -172,7 +172,6 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		pane.getStyleClass().add("image-details-pane");
 		
 		// Create details container with scroll pane
-		detailsContainer.setSpacing(8);
 		detailsContainer.getStyleClass().add("image-details-container");
 		
 		ScrollPane scrollPane = new ScrollPane(detailsContainer);

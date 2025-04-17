@@ -535,7 +535,6 @@
 } */
 
 .image-details-pane {
-    -fx-padding: 0 12 0 12;
     -fx-spacing: 8;
 }
 
@@ -545,6 +544,7 @@
     -fx-max-height: 36px;
     -fx-border-color: transparent transparent rgba(0, 0, 0, 0.04) transparent;
     -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 12 0 12;
 }
 
 .image-details-pane .topbar-tab-container .tab-button {
@@ -564,7 +564,10 @@
     -fx-font-weight: bold;
 }
 
-/* Image Details Groups */
+.image-details-pane .image-details-container {
+    -fx-padding: 0 12 0 12;
+    -fx-spacing: 8;
+}
 
 .image-details-pane .detail-group-header {
     -fx-pref-height: 36px;
