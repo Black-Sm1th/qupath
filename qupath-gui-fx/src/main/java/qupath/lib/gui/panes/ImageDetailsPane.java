@@ -163,11 +163,14 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		otherRows.remove(ImageDetailRow.BACKGROUND);
 	}
 
+	private static ImageDetailsPane instance;
+
 	/**
 	 * Constructor.
 	 * @param imageDataProperty 
 	 */
 	public ImageDetailsPane(final ObservableValue<ImageData<BufferedImage>> imageDataProperty) {
+		instance = this;
 		imageDataProperty.addListener(this);
 		pane.getStyleClass().add("image-details-pane");
 		
@@ -732,6 +735,12 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			var selectedType = (ImageType)group.getSelectedToggle().getUserData();
 			if (selectedType != imageData.getImageType()) {
 				imageData.setImageType(selectedType);
+				// 触发更新
+				Platform.runLater(() -> {
+					if (instance != null) {
+						instance.updateDetailsView();
+					}
+				});
 				return true;
 			}
 		}
