@@ -88,6 +88,8 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.TextAlignment;
 import qupath.fx.utils.FXUtils;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import qupath.lib.awt.common.BufferedImageTools;
 import qupath.lib.color.ColorDeconvolutionHelper;
 import qupath.lib.color.ColorDeconvolutionStains;
@@ -129,7 +131,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 
 	private ImageData<BufferedImage> imageData;
 
-	private StackPane pane = new StackPane();
+	private VBox pane = new VBox();
 
 	private TableView<ImageDetailRow> table = new TableView<>();
 	private ListView<String> listAssociatedImages = new ListView<>();
@@ -161,7 +163,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	 */
 	public ImageDetailsPane(final ObservableValue<ImageData<BufferedImage>> imageDataProperty) {
 		imageDataProperty.addListener(this);
-
+		pane.getStyleClass().add("image-details-pane");
 		// Create the table
 		table.setPlaceholder(GuiTools.createPlaceholderText("未选择图像"));
 		table.setMinHeight(200);
@@ -181,7 +183,31 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		table.getColumns().add(columnValue);
 
 		setImageData(imageDataProperty.getValue());
-
+		HBox topTabBar = new HBox();
+		topTabBar.getStyleClass().add("topbar-tab-container");
+		topTabBar.setAlignment(Pos.CENTER_LEFT);
+		ToggleGroup group = new ToggleGroup();
+        // 创建两个 ToggleButton
+        ToggleButton button1 = new ToggleButton("图像");
+        ToggleButton button2 = new ToggleButton("相关图像");
+		button1.getStyleClass().add("tab-button");
+		button2.getStyleClass().add("tab-button");
+		button1.setToggleGroup(group);
+        button2.setToggleGroup(group);
+		button1.setSelected(true); 
+		button1.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
+			if (button1.isSelected()) {
+				event.consume();
+			}
+		});
+		button2.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
+			if (button2.isSelected()) {
+				event.consume();
+			}
+		});
+		topTabBar.getChildren().addAll(button1, button2);
+		pane.getChildren().add(topTabBar);
+		
 		listAssociatedImages.setOnMouseClicked(this::handleAssociatedImagesMouseClick);
 
 		PathPrefs.maskImageNamesProperty().addListener((v, o, n) -> table.refresh());
