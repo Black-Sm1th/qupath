@@ -42,6 +42,7 @@ import java.util.Locale.Category;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javafx.scene.control.TitledPane;
@@ -66,6 +67,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -116,6 +118,9 @@ import qupath.lib.regions.RegionRequest;
 import qupath.lib.roi.RectangleROI;
 import qupath.lib.roi.interfaces.ROI;
 import qupath.lib.scripting.QP;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.css.PseudoClass;
 
 /**
  * A panel used for displaying basic info about an image, e.g. its path, width, height, pixel size etc.
@@ -132,9 +137,10 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	private ImageData<BufferedImage> imageData;
 
 	private VBox pane = new VBox();
-
-	private TableView<ImageDetailRow> table = new TableView<>();
+	private VBox detailsContainer = new VBox();
 	private ListView<String> listAssociatedImages = new ListView<>();
+	private BorderPane mdPane = new BorderPane();
+	private TitledPane titlePaneAssociated;
 
 	private Map<String, SimpleImageViewer> associatedImageViewers = new HashMap<>();
 
@@ -164,37 +170,45 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	public ImageDetailsPane(final ObservableValue<ImageData<BufferedImage>> imageDataProperty) {
 		imageDataProperty.addListener(this);
 		pane.getStyleClass().add("image-details-pane");
-		// Create the table
-		table.setPlaceholder(GuiTools.createPlaceholderText("未选择图像"));
-		table.setMinHeight(200);
-		table.setPrefHeight(250);
-		table.setMaxHeight(Double.MAX_VALUE);
-		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		TableColumn<ImageDetailRow, String> columnName = new TableColumn<>("名称");
-		columnName.setCellValueFactory(v -> new ReadOnlyStringWrapper(getName(v.getValue())));
-		columnName.setEditable(false);
-		columnName.setPrefWidth(150);
-		TableColumn<ImageDetailRow, Object> columnValue = new TableColumn<>("值");
-		columnValue.setCellValueFactory(v -> new ReadOnlyObjectWrapper<>(getValue(v.getValue())));
-		columnValue.setEditable(false);
-		columnValue.setPrefWidth(200);
-		columnValue.setCellFactory(c -> new ImageDetailTableCell(imageDataProperty));
-		table.getColumns().add(columnName);
-		table.getColumns().add(columnValue);
-
+		
+		// Create details container with scroll pane
+		detailsContainer.setSpacing(8);
+		detailsContainer.getStyleClass().add("image-details-container");
+		
+		ScrollPane scrollPane = new ScrollPane(detailsContainer);
+		scrollPane.setFitToWidth(true);
+		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		scrollPane.setFitToHeight(true);
+		
+		// Create placeholder for no image
+		Label placeholder = new Label("未选择图像");
+		placeholder.setWrapText(true);
+		placeholder.setTextAlignment(TextAlignment.CENTER);
+		detailsContainer.getChildren().add(placeholder);
+		
+		// 设置VBox的填充属性
+		VBox.setVgrow(mdPane, Priority.ALWAYS);
+		pane.setFillWidth(true);
+		detailsContainer.setFillWidth(true);
+		
 		setImageData(imageDataProperty.getValue());
+		
+		// Create top tab bar
 		HBox topTabBar = new HBox();
 		topTabBar.getStyleClass().add("topbar-tab-container");
 		topTabBar.setAlignment(Pos.CENTER_LEFT);
 		ToggleGroup group = new ToggleGroup();
-        // 创建两个 ToggleButton
-        ToggleButton button1 = new ToggleButton("图像");
-        ToggleButton button2 = new ToggleButton("相关图像");
+		
+		// Create toggle buttons
+		ToggleButton button1 = new ToggleButton("图像");
+		ToggleButton button2 = new ToggleButton("相关图像");
 		button1.getStyleClass().add("tab-button");
 		button2.getStyleClass().add("tab-button");
 		button1.setToggleGroup(group);
-        button2.setToggleGroup(group);
-		button1.setSelected(true); 
+		button2.setToggleGroup(group);
+		button1.setSelected(true);
+		
 		button1.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
 			if (button1.isSelected()) {
 				event.consume();
@@ -205,28 +219,161 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				event.consume();
 			}
 		});
+		
+		// Create master detail pane and titled pane
+		titlePaneAssociated = new TitledPane("相关图像", listAssociatedImages);
+		titlePaneAssociated.setCollapsible(false);
+		listAssociatedImages.setTooltip(new Tooltip("当前图像相关的额外图像，例如标签或缩略图"));
+		
+		mdPane.setCenter(scrollPane);
+		
+		// Handle tab changes
+		button1.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				mdPane.setCenter(scrollPane);
+			}
+		});
+		button2.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				mdPane.setCenter(titlePaneAssociated);
+			}
+		});
+		
 		topTabBar.getChildren().addAll(button1, button2);
 		pane.getChildren().add(topTabBar);
 		
 		listAssociatedImages.setOnMouseClicked(this::handleAssociatedImagesMouseClick);
-
-		PathPrefs.maskImageNamesProperty().addListener((v, o, n) -> table.refresh());
-
-		MasterDetailPane mdPane = new MasterDetailPane(Side.BOTTOM);
-		mdPane.setMasterNode(new StackPane(table));
-		var titlePaneAssociated = new TitledPane("相关图像", listAssociatedImages);
-		titlePaneAssociated.setCollapsible(false);
-		listAssociatedImages.setTooltip(new Tooltip(
-				"当前图像相关的额外图像，例如标签或缩略图"));
-		mdPane.setDetailNode(titlePaneAssociated);
-		mdPane.showDetailNodeProperty().bind(
-				Bindings.createBooleanBinding(() -> !listAssociatedImages.getItems().isEmpty(),
-						listAssociatedImages.getItems()));
+		PathPrefs.maskImageNamesProperty().addListener((v, o, n) -> updateDetailsView());
+		
 		pane.getChildren().add(mdPane);
 	}
-	
-	
-	
+
+	private void updateDetailsView() {
+		if (imageData == null || imageData.getServer() == null) {
+			detailsContainer.getChildren().clear();
+			Label placeholder = new Label("未选择图像");
+			placeholder.setWrapText(true);
+			placeholder.setTextAlignment(TextAlignment.CENTER);
+			detailsContainer.getChildren().add(placeholder);
+			return;
+		}
+
+		detailsContainer.getChildren().clear();
+		List<ImageDetailRow> rows = getRows();
+		
+		// 创建分组
+		Map<String, List<ImageDetailRow>> groups = new LinkedHashMap<>();
+		groups.put("属性", Arrays.asList(ImageDetailRow.NAME, ImageDetailRow.URI, ImageDetailRow.UNCOMPRESSED_SIZE,ImageDetailRow.METADATA_CHANGED,ImageDetailRow.SERVER_TYPE,ImageDetailRow.PYRAMID));
+		groups.put("尺寸", Arrays.asList(ImageDetailRow.MAGNIFICATION, ImageDetailRow.DIMENSIONS, ImageDetailRow.WIDTH, ImageDetailRow.HEIGHT));
+		groups.put("像素", Arrays.asList(ImageDetailRow.PIXEL_TYPE, ImageDetailRow.PIXEL_WIDTH, ImageDetailRow.PIXEL_HEIGHT));
+		groups.put("染色", Arrays.asList(ImageDetailRow.IMAGE_TYPE, ImageDetailRow.STAIN_1, ImageDetailRow.STAIN_2, ImageDetailRow.STAIN_3, ImageDetailRow.BACKGROUND));
+		
+		for (Map.Entry<String, List<ImageDetailRow>> group : groups.entrySet()) {
+			String groupName = group.getKey();
+			List<ImageDetailRow> groupRows = group.getValue();
+			
+			// 过滤掉不在当前行列表中的行
+			groupRows = groupRows.stream()
+				.filter(rows::contains)
+				.collect(Collectors.toList());
+				
+			if (groupRows.isEmpty())
+				continue;
+				
+			// 创建分组容器
+			VBox groupContainer = new VBox();
+			groupContainer.getStyleClass().add("detail-group");
+			groupContainer.setSpacing(8);
+			// 创建分组标题栏
+			HBox titleBar = new HBox();
+			titleBar.setAlignment(Pos.CENTER_LEFT);
+			titleBar.getStyleClass().add("detail-group-header");
+			
+			Label titleLabel = new Label(groupName);
+			titleLabel.getStyleClass().add("detail-group-title");
+			
+			// 创建箭头指示器
+			Region arrow = new Region();
+			arrow.getStyleClass().addAll("arrow", "arrow-down");
+			arrow.setMinWidth(12);
+			arrow.setMinHeight(12);
+			arrow.setMaxWidth(12);
+			arrow.setMaxHeight(12);
+			arrow.setVisible(groupName.equals("属性"));
+			arrow.setManaged(groupName.equals("属性"));
+			
+			HBox.setHgrow(titleLabel, Priority.ALWAYS);
+			titleBar.setAlignment(Pos.CENTER_LEFT);
+			titleBar.getChildren().addAll(titleLabel);
+			
+			if (groupName.equals("属性")) {
+				titleBar.getChildren().add(arrow);
+			}
+			
+			// 创建内容容器
+			VBox contentContainer = new VBox();
+			contentContainer.setSpacing(8);
+			contentContainer.getStyleClass().add("detail-group-content");
+			
+			// 为属性组添加折叠功能
+			if (groupName.equals("属性")) {
+				// 默认只显示图像名
+				String imageName = getName(ImageDetailRow.NAME);
+				Object imageNameValue = getValue(ImageDetailRow.NAME);
+				if (imageName != null && imageNameValue != null) {
+					HBox nameContainer = createDetailItem(imageName, imageNameValue, ImageDetailRow.NAME);
+					contentContainer.getChildren().add(nameContainer);
+				}
+				
+				// 创建其他属性的容器
+				VBox otherProperties = new VBox();
+				otherProperties.setSpacing(8);
+				otherProperties.setVisible(false);
+				otherProperties.setManaged(false);
+				
+				// 添加其他属性
+				for (ImageDetailRow row : groupRows) {
+					if (row != ImageDetailRow.NAME) {
+						String name = getName(row);
+						Object value = getValue(row);
+						if (name != null && value != null) {
+							HBox itemContainer = createDetailItem(name, value, row);
+							otherProperties.getChildren().add(itemContainer);
+						}
+					}
+				}
+				
+				contentContainer.getChildren().add(otherProperties);
+				
+				// 添加点击事件处理
+				titleBar.setOnMouseClicked(e -> {
+					boolean isExpanded = otherProperties.isVisible();
+					otherProperties.setVisible(!isExpanded);
+					otherProperties.setManaged(!isExpanded);
+					arrow.getStyleClass().remove(isExpanded ? "arrow-up" : "arrow-down");
+					arrow.getStyleClass().add(isExpanded ? "arrow-down" : "arrow-up");
+					titleBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("expanded"), !isExpanded);
+				});
+				
+				// 设置初始状态
+				titleBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("expanded"), false);
+			} else {
+				// 其他分组正常显示所有内容
+				for (ImageDetailRow row : groupRows) {
+					String name = getName(row);
+					Object value = getValue(row);
+					if (name != null && value != null) {
+						HBox itemContainer = createDetailItem(name, value, row);
+						contentContainer.getChildren().add(itemContainer);
+					}
+				}
+			}
+			
+			groupContainer.getChildren().addAll(titleBar, contentContainer);
+			detailsContainer.getChildren().add(groupContainer);
+		}
+	}
+
 	private void handleAssociatedImagesMouseClick(MouseEvent event) {
 		if (event.getClickCount() < 2 || listAssociatedImages.getSelectionModel().getSelectedItem() == null)
 			return;
@@ -253,13 +400,11 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		}
 	}
 
-
 	private static boolean hasOriginalMetadata(ImageServer<BufferedImage> server) {
 		var metadata = server.getMetadata();
 		var originalMetadata = server.getOriginalMetadata();
 		return Objects.equals(metadata, originalMetadata);
 	}
-
 
 	private static boolean promptToResetServerMetadata(ImageData<BufferedImage> imageData) {
 		var server = imageData.getServer();
@@ -275,7 +420,6 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		}
 		return false;
 	}
-
 
 	private static boolean promptToSetMagnification(ImageData<BufferedImage> imageData) {
 		var server = imageData.getServer();
@@ -394,7 +538,6 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		} else
 			return false;
 	}
-
 
 	/**
 	 * Prompt the user to set the {@link ImageType} for the image.
@@ -656,9 +799,6 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		return group;
 	}
 
-
-
-
 	/**
 	 * Get the {@link Pane} component for addition to a scene.
 	 * @return
@@ -668,19 +808,10 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	}
 
 	private void setImageData(ImageData<BufferedImage> imageData) {
-		if (this.imageData != null)
-			this.imageData.removePropertyChangeListener(this);
-
 		this.imageData = imageData;
-		ImageServer<BufferedImage> server = null;
-		if (imageData != null) {
-			imageData.addPropertyChangeListener(this);
-			server = imageData.getServer();
-		}
-
-		table.getItems().setAll(getRows());
-		table.refresh();
-
+		updateDetailsView();
+		
+		ImageServer<BufferedImage> server = imageData == null ? null : imageData.getServer();
 		if (listAssociatedImages != null) {
 			if (server == null)
 				listAssociatedImages.getItems().clear();
@@ -694,24 +825,21 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			var simpleViewer = entry.getValue();
 			logger.trace("Updating associated image viewer for {}", name);
 			if (server == null || !server.getAssociatedImageList().contains(name))
-				simpleViewer.updateImage(name, (BufferedImage)null); // Hack to retain the title, without an image
+				simpleViewer.updateImage(name, (BufferedImage)null);
 			else
 				simpleViewer.updateImage(name, server.getAssociatedImage(name));
 		}
 	}
-
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		setImageData(imageData);
 	}
 
-
 	@Override
 	public void changed(ObservableValue<? extends ImageData<BufferedImage>> source, ImageData<BufferedImage> imageDataOld, ImageData<BufferedImage> imageDataNew) {
 		setImageData(imageDataNew);
 	}
-
 
 	private List<ImageDetailRow> getRows() {
 		if (imageData == null || imageData.getServer() == null)
@@ -872,234 +1000,230 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		default:
 			return null;
 		}
-
 	}
 	
-	
-	private static class ImageDetailTableCell extends TableCell<ImageDetailRow, Object> {
+	private static void editStainVector(ImageData<BufferedImage> imageData, Object value) {
+		if (imageData == null || !(value instanceof StainVector || value instanceof double[]))
+			return;
 		
-		private ObservableValue<ImageData<BufferedImage>> imageDataProperty;
-
-		ImageDetailTableCell(ObservableValue<ImageData<BufferedImage>> imageDataProperty) {
-			this.imageDataProperty = imageDataProperty;
-			setOnMouseClicked(this::handleMouseClick);
-		}
-
-
-		@Override
-		protected void updateItem(Object item, boolean empty) {
-			super.updateItem(item, empty);
-			if (empty) {
-				setText(null);
-				setGraphic(null);
+		ColorDeconvolutionStains stains = imageData.getColorDeconvolutionStains();
+		int num = -1; // Default to background values
+		String name = null;
+		String message = null;
+		if (value instanceof StainVector) {
+			StainVector stainVector = (StainVector)value;
+			if (stainVector.isResidual() && imageData.getImageType() != ImageType.BRIGHTFIELD_OTHER) {
+				logger.warn("Cannot set residual stain vector - this is computed from the known vectors");
 				return;
 			}
-			String style = null;
-			String text = item == null ? "" : item.toString();
-			String tooltipText = text;
-			if (item instanceof double[]) {
-				text = GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])item, 2);
-				tooltipText = "双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）";
-			} else if (item instanceof StainVector) {
-				StainVector stain = (StainVector)item;
-				Integer color = stain.getColor();
-				style = String.format("-fx-text-fill: rgb(%d, %d, %d);", ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color));
-				tooltipText = "双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）";
-			} else {
-				var type = getTableRow().getItem();
-				if (type != null) {
-					if (type.equals(ImageDetailRow.PIXEL_WIDTH) || type.equals(ImageDetailRow.PIXEL_HEIGHT) || type.equals(ImageDetailRow.Z_SPACING)) {
-						if ("Unknown".equals(item))
-							style = "-fx-text-fill: red;";
-						tooltipText = "双击设置像素校准（可以使用选定的线条或区域ROI）";
-					} else if (type.equals(ImageDetailRow.METADATA_CHANGED))
-						tooltipText = "双击重置原始元数据";
-					else if (type.equals(ImageDetailRow.UNCOMPRESSED_SIZE))
-						tooltipText = "存储所有未压缩像素所需的大致内存";
-				}
-			}
-			setStyle(style);
-			setText(text);
-			setTooltip(new Tooltip(tooltipText));
-		}
-
-		private void handleMouseClick(MouseEvent event) {
-			var imageData = imageDataProperty.getValue();
-			if (event.getClickCount() < 2 || imageData == null)
+			num = stains.getStainNumber(stainVector);
+			if (num <= 0) {
+				logger.error("Could not identify stain vector {} inside {}", stainVector, stains);
 				return;
-			TableCell<ImageDetailRow, Object> c = (TableCell<ImageDetailRow, Object>)event.getSource();
-			Object value = c.getItem();
-			if (value instanceof StainVector || value instanceof double[])
-				editStainVector(imageData, value);
-			else if (value instanceof ImageType) {
-				promptToSetImageType(imageData, imageData.getImageType());
-			} else {
-				// TODO: Support z-spacing
-				var type = c.getTableRow().getItem();
-				boolean metadataChanged = false;
-				if (type == ImageDetailRow.PIXEL_WIDTH ||
-						type == ImageDetailRow.PIXEL_HEIGHT ||
-						type == ImageDetailRow.Z_SPACING) {
-					metadataChanged = promptToSetPixelSize(imageData, type == ImageDetailRow.Z_SPACING);
-				} else if (type == ImageDetailRow.MAGNIFICATION) {
-					metadataChanged = promptToSetMagnification(imageData);
-				} else if (type == ImageDetailRow.METADATA_CHANGED) {
-					if (!hasOriginalMetadata(imageData.getServer())) {
-						metadataChanged = promptToResetServerMetadata(imageData);
+			}
+			name = stainVector.getName();
+			message = "Set stain vector from ROI?";
+		} else
+			message = "Set color deconvolution background values from ROI?";
+
+		ROI roi = imageData.getHierarchy().getSelectionModel().getSelectedROI();
+		boolean wasChanged = false;
+		String warningMessage = null;
+		boolean editableName = imageData.getImageType() == ImageType.BRIGHTFIELD_OTHER;
+		if (roi != null) {
+			if ((roi instanceof RectangleROI) && 
+					!roi.isEmpty() &&
+					roi.getArea() < 500*500) {
+				if (Dialogs.showYesNoDialog("Color deconvolution stains", message)) {
+					ImageServer<BufferedImage> server = imageData.getServer();
+					BufferedImage img = null;
+					try {
+						img = server.readRegion(RegionRequest.createInstance(server.getPath(), 1, roi));
+					} catch (IOException e) {
+						Dialogs.showErrorMessage("Set stain vector", "Unable to read image region");
+						logger.error("Unable to read region", e);
+						return;
 					}
-				}
-				if (metadataChanged) {
-					c.getTableView().refresh();
-					imageData.getHierarchy().fireHierarchyChangedEvent(this);
-				}
-			}
-		}
-		
-		
-		private static void editStainVector(ImageData<BufferedImage> imageData, Object value) {
-			if (imageData == null || !(value instanceof StainVector || value instanceof double[]))
-				return;
-			
-			ColorDeconvolutionStains stains = imageData.getColorDeconvolutionStains();
-			int num = -1; // Default to background values
-			String name = null;
-			String message = null;
-			if (value instanceof StainVector) {
-
-				StainVector stainVector = (StainVector)value;
-
-				if (stainVector.isResidual() && imageData.getImageType() != ImageType.BRIGHTFIELD_OTHER) {
-					logger.warn("Cannot set residual stain vector - this is computed from the known vectors");
-					return;
-				}
-				num = stains.getStainNumber(stainVector);
-				if (num <= 0) {
-                    logger.error("Could not identify stain vector {} inside {}", stainVector, stains);
-					return;
-				}
-				name = stainVector.getName();
-				message = "Set stain vector from ROI?";
-			} else
-				message = "Set color deconvolution background values from ROI?";
-
-			ROI roi = imageData.getHierarchy().getSelectionModel().getSelectedROI();
-			boolean wasChanged = false;
-			String warningMessage = null;
-			boolean editableName = imageData.getImageType() == ImageType.BRIGHTFIELD_OTHER;
-			if (roi != null) {
-				if ((roi instanceof RectangleROI) && 
-						!roi.isEmpty() &&
-						roi.getArea() < 500*500) {
-					if (Dialogs.showYesNoDialog("Color deconvolution stains", message)) {
-						ImageServer<BufferedImage> server = imageData.getServer();
-						BufferedImage img = null;
-						try {
-							img = server.readRegion(RegionRequest.createInstance(server.getPath(), 1, roi));
-						} catch (IOException e) {
-							Dialogs.showErrorMessage("Set stain vector", "Unable to read image region");
-							logger.error("Unable to read region", e);
+					if (num >= 0) {
+						StainVector vectorValue = ColorDeconvolutionHelper.generateMedianStainVectorFromPixels(name, img, stains.getMaxRed(), stains.getMaxGreen(), stains.getMaxBlue());
+						if (!Double.isFinite(vectorValue.getRed() + vectorValue.getGreen() + vectorValue.getBlue())) {
+							Dialogs.showErrorMessage("Set stain vector",
+									"Cannot set stains for the current ROI!\n"
+											+ "It might be too close to the background color.");
 							return;
 						}
-						if (num >= 0) {
-							StainVector vectorValue = ColorDeconvolutionHelper.generateMedianStainVectorFromPixels(name, img, stains.getMaxRed(), stains.getMaxGreen(), stains.getMaxBlue());
-							if (!Double.isFinite(vectorValue.getRed() + vectorValue.getGreen() + vectorValue.getBlue())) {
-								Dialogs.showErrorMessage("Set stain vector",
-										"Cannot set stains for the current ROI!\n"
-												+ "It might be too close to the background color.");
-								return;
-							}
-							value = vectorValue;
+						value = vectorValue;
+					} else {
+						// Update the background
+						if (BufferedImageTools.is8bitColorType(img.getType())) {
+							int rgb = ColorDeconvolutionHelper.getMedianRGB(img.getRGB(0, 0, img.getWidth(), img.getHeight(), null, 0, img.getWidth()));
+							value = new double[]{ColorTools.red(rgb), ColorTools.green(rgb), ColorTools.blue(rgb)};
 						} else {
-							// Update the background
-							if (BufferedImageTools.is8bitColorType(img.getType())) {
-								int rgb = ColorDeconvolutionHelper.getMedianRGB(img.getRGB(0, 0, img.getWidth(), img.getHeight(), null, 0, img.getWidth()));
-								value = new double[]{ColorTools.red(rgb), ColorTools.green(rgb), ColorTools.blue(rgb)};
-							} else {
-								double r = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 0));
-								double g = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 1));
-								double b = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 2));
-								value = new double[]{r, g, b};
-							}
+							double r = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 0));
+							double g = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 1));
+							double b = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 2));
+							value = new double[]{r, g, b};
 						}
-						wasChanged = true;
 					}
-				} else {
-					warningMessage = "Note: To set stain values from an image region, draw a small, rectangular ROI first";
-				}
-			}
-
-			// Prompt to set the name / verify stains
-			ParameterList params = new ParameterList();
-			String title;
-			String nameBefore = null;
-			String valuesBefore = null;
-			String collectiveNameBefore = stains.getName();
-			String suggestedName;
-			if (collectiveNameBefore.endsWith("default"))
-				suggestedName = collectiveNameBefore.substring(0, collectiveNameBefore.lastIndexOf("default")) + "modified";
-			else
-				suggestedName = collectiveNameBefore;
-			params.addStringParameter("collectiveName", "Collective name", suggestedName, "Enter collective name for all 3 stains (e.g. H-DAB Scanner A, H&E Scanner B)");
-			if (value instanceof StainVector) {
-				nameBefore = ((StainVector)value).getName();
-				valuesBefore = ((StainVector)value).arrayAsString(Locale.getDefault(Category.FORMAT));
-				params.addStringParameter("name", "Name", nameBefore, "Enter stain name")
-				.addStringParameter("values", "Values", valuesBefore, "Enter 3 values (red, green, blue) defining color deconvolution stain vector, separated by spaces");
-				title = "Set stain vector";
-			} else {
-				nameBefore = "Background";
-				valuesBefore = GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value, 2);
-				params.addStringParameter("name", "Stain name", nameBefore);
-				params.addStringParameter("values", "Stain values", valuesBefore, "Enter 3 values (red, green, blue) defining background, separated by spaces");
-				params.setHiddenParameters(true, "name");
-				title = "Set background";
-			}
-
-			if (warningMessage != null)
-				params.addEmptyParameter(warningMessage);
-
-			// Disable editing the name if it should be fixed
-			ParameterPanelFX parameterPanel = new ParameterPanelFX(params);
-			parameterPanel.setParameterEnabled("name", editableName);;
-			if (!Dialogs.showConfirmDialog(title, parameterPanel.getPane()))
-				return;
-
-			// Check if anything changed
-			String collectiveName = params.getStringParameterValue("collectiveName");
-			String nameAfter = params.getStringParameterValue("name");
-			String valuesAfter = params.getStringParameterValue("values");
-			if (collectiveName.equals(collectiveNameBefore) && nameAfter.equals(nameBefore) && valuesAfter.equals(valuesBefore) && !wasChanged)
-				return;
-
-			if (Set.of("Red", "Green", "Blue").contains(nameAfter)) {
-				Dialogs.showErrorMessage("Set stain vector", "Cannot set stain name to 'Red', 'Green', or 'Blue' - please choose a different name");
-				return;
-			}
-
-			double[] valuesParsed = ColorDeconvolutionStains.parseStainValues(Locale.getDefault(Category.FORMAT), valuesAfter);
-			if (valuesParsed == null) {
-				logger.error("Input for setting color deconvolution information invalid! Cannot parse 3 numbers from {}", valuesAfter);
-				return;
-			}
-
-			if (num >= 0) {
-				try {
-					stains = stains.changeStain(StainVector.createStainVector(nameAfter, valuesParsed[0], valuesParsed[1], valuesParsed[2]), num);					
-				} catch (Exception e) {
-					logger.error("Error setting stain vectors", e);
-					Dialogs.showErrorMessage("Set stain vectors", "Requested stain vectors are not valid!\nAre two stains equal?");
+					wasChanged = true;
 				}
 			} else {
-				// Update the background
-				stains = stains.changeMaxValues(valuesParsed[0], valuesParsed[1], valuesParsed[2]);
+				warningMessage = "Note: To set stain values from an image region, draw a small, rectangular ROI first";
 			}
-
-			// Set the collective name
-			stains = stains.changeName(collectiveName);
-			imageData.setColorDeconvolutionStains(stains);
 		}
 
-	};
-	
+		// Prompt to set the name / verify stains
+		ParameterList params = new ParameterList();
+		String title;
+		String nameBefore = null;
+		String valuesBefore = null;
+		String collectiveNameBefore = stains.getName();
+		String suggestedName;
+		if (collectiveNameBefore.endsWith("default"))
+			suggestedName = collectiveNameBefore.substring(0, collectiveNameBefore.lastIndexOf("default")) + "modified";
+		else
+			suggestedName = collectiveNameBefore;
+		params.addStringParameter("collectiveName", "Collective name", suggestedName, "Enter collective name for all 3 stains (e.g. H-DAB Scanner A, H&E Scanner B)");
+		if (value instanceof StainVector) {
+			nameBefore = ((StainVector)value).getName();
+			valuesBefore = ((StainVector)value).arrayAsString(Locale.getDefault(Category.FORMAT));
+			params.addStringParameter("name", "Name", nameBefore, "Enter stain name")
+			.addStringParameter("values", "Values", valuesBefore, "Enter 3 values (red, green, blue) defining color deconvolution stain vector, separated by spaces");
+			title = "Set stain vector";
+		} else {
+			nameBefore = "Background";
+			valuesBefore = GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value, 2);
+			params.addStringParameter("name", "Stain name", nameBefore);
+			params.addStringParameter("values", "Stain values", valuesBefore, "Enter 3 values (red, green, blue) defining background, separated by spaces");
+			params.setHiddenParameters(true, "name");
+			title = "Set background";
+		}
 
+		if (warningMessage != null)
+			params.addEmptyParameter(warningMessage);
+
+		// Disable editing the name if it should be fixed
+		ParameterPanelFX parameterPanel = new ParameterPanelFX(params);
+		parameterPanel.setParameterEnabled("name", editableName);;
+		if (!Dialogs.showConfirmDialog(title, parameterPanel.getPane()))
+			return;
+
+		// Check if anything changed
+		String collectiveName = params.getStringParameterValue("collectiveName");
+		String nameAfter = params.getStringParameterValue("name");
+		String valuesAfter = params.getStringParameterValue("values");
+		if (collectiveName.equals(collectiveNameBefore) && nameAfter.equals(nameBefore) && valuesAfter.equals(valuesBefore) && !wasChanged)
+			return;
+
+		if (Set.of("Red", "Green", "Blue").contains(nameAfter)) {
+			Dialogs.showErrorMessage("Set stain vector", "Cannot set stain name to 'Red', 'Green', or 'Blue' - please choose a different name");
+			return;
+		}
+
+		double[] valuesParsed = ColorDeconvolutionStains.parseStainValues(Locale.getDefault(Category.FORMAT), valuesAfter);
+		if (valuesParsed == null) {
+			logger.error("Input for setting color deconvolution information invalid! Cannot parse 3 numbers from {}", valuesAfter);
+			return;
+		}
+
+		if (num >= 0) {
+			try {
+				stains = stains.changeStain(StainVector.createStainVector(nameAfter, valuesParsed[0], valuesParsed[1], valuesParsed[2]), num);					
+			} catch (Exception e) {
+				logger.error("Error setting stain vectors", e);
+				Dialogs.showErrorMessage("Set stain vectors", "Requested stain vectors are not valid!\nAre two stains equal?");
+			}
+		} else {
+			// Update the background
+			stains = stains.changeMaxValues(valuesParsed[0], valuesParsed[1], valuesParsed[2]);
+		}
+
+		// Set the collective name
+		stains = stains.changeName(collectiveName);
+		imageData.setColorDeconvolutionStains(stains);
+	}
+
+	private HBox createDetailItem(String name, Object value, ImageDetailRow row) {
+		HBox itemContainer = new HBox();
+		itemContainer.setSpacing(16);
+		itemContainer.getStyleClass().add("detail-item");
+		itemContainer.setFillHeight(true);
+		
+		Label nameLabel = new Label(name);
+		nameLabel.getStyleClass().add("detail-name");
+		
+		Label valueLabel = new Label(value.toString());
+		valueLabel.setWrapText(true);
+		valueLabel.getStyleClass().add("detail-value");
+		HBox.setHgrow(valueLabel, Priority.ALWAYS);
+		
+		if (value instanceof StainVector) {
+			StainVector stain = (StainVector)value;
+			Integer color = stain.getColor();
+			valueLabel.setStyle(String.format("-fx-text-fill: rgb(%d, %d, %d);", 
+				ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color)));
+			valueLabel.setTooltip(new Tooltip("双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
+			
+			itemContainer.setOnMouseClicked(e -> {
+				if (e.getClickCount() == 2)
+					editStainVector(imageData, value);
+			});
+		} else if (value instanceof double[]) {
+			valueLabel.setText(GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value, 2));
+			valueLabel.setTooltip(new Tooltip("双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
+			
+			itemContainer.setOnMouseClicked(e -> {
+				if (e.getClickCount() == 2)
+					editStainVector(imageData, value);
+			});
+		} else {
+			if (row == ImageDetailRow.PIXEL_WIDTH || row == ImageDetailRow.PIXEL_HEIGHT || row == ImageDetailRow.Z_SPACING) {
+				if ("Unknown".equals(value))
+					valueLabel.setStyle("-fx-text-fill: red;");
+				valueLabel.setTooltip(new Tooltip("双击设置像素校准（可以使用选定的线条或区域ROI）"));
+				itemContainer.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						promptToSetPixelSize(imageData, row == ImageDetailRow.Z_SPACING);
+				});
+			} else if (row == ImageDetailRow.METADATA_CHANGED) {
+				valueLabel.setTooltip(new Tooltip("双击重置原始元数据"));
+				itemContainer.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (!hasOriginalMetadata(imageData.getServer())) {
+							if (promptToResetServerMetadata(imageData)) {
+								updateDetailsView();
+								imageData.getHierarchy().fireHierarchyChangedEvent(this);
+							}
+						}
+					}
+				});
+			} else if (row == ImageDetailRow.MAGNIFICATION) {
+				valueLabel.setTooltip(new Tooltip("双击设置放大倍数"));
+				itemContainer.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (promptToSetMagnification(imageData)) {
+							updateDetailsView();
+							imageData.getHierarchy().fireHierarchyChangedEvent(this);
+						}
+					}
+				});
+			} else if (row == ImageDetailRow.IMAGE_TYPE) {
+				valueLabel.setTooltip(new Tooltip("双击设置图像类型"));
+				itemContainer.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (promptToSetImageType(imageData, imageData.getImageType())) {
+							updateDetailsView();
+						}
+					}
+				});
+			} else if (row == ImageDetailRow.UNCOMPRESSED_SIZE) {
+				valueLabel.setTooltip(new Tooltip("存储所有未压缩像素所需的大致内存"));
+			}else{
+				valueLabel.setTooltip(new Tooltip(value.toString()));
+			}
+		}
+		
+		itemContainer.getChildren().addAll(nameLabel, valueLabel);
+		return itemContainer;
+	}
 }
