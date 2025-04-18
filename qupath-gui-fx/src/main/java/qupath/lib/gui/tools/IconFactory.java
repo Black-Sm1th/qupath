@@ -351,7 +351,7 @@ public class IconFactory {
 									OPEN_PROJECT(IconSuppliers.icoMoon('\ue947')),
 									ADD_IMAGES(IconSuppliers.icoMoon('\ue948')),
 									PROJECT_MORE(IconSuppliers.icoMoon('\ue949')),
-
+									EDIT_BTN(IconSuppliers.icoMoon('\ue94D')),
 									
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									

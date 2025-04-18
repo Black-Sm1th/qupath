@@ -106,13 +106,15 @@ import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.gui.prefs.PathPrefs.ImageTypeSetting;
 import qupath.fx.utils.GridPaneUtils;
 import qupath.lib.gui.tools.GuiTools;
+import qupath.lib.gui.tools.IconFactory;
+import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.ImageData.ImageType;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.PixelCalibration;
 import qupath.lib.images.servers.ServerTools;
-import qupath.lib.plugins.parameters.ParameterList;	
+import qupath.lib.plugins.parameters.ParameterList;
 import qupath.lib.plugins.workflow.DefaultScriptableWorkflowStep;
 import qupath.lib.plugins.workflow.WorkflowStep;
 import qupath.lib.regions.RegionRequest;
@@ -122,6 +124,7 @@ import qupath.lib.scripting.QP;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.css.PseudoClass;
+import javafx.scene.image.ImageView;
 
 /**
  * A panel used for displaying basic info about an image, e.g. its path, width, height, pixel size etc.
@@ -194,7 +197,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		VBox.setVgrow(mdPane, Priority.ALWAYS);
 		pane.setFillWidth(true);
 		detailsContainer.setFillWidth(true);
-		
+
 		setImageData(imageDataProperty.getValue());
 		
 		// Create top tab bar
@@ -205,13 +208,13 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		ToggleGroup group = new ToggleGroup();
 		
 		// Create toggle buttons
-		ToggleButton button1 = new ToggleButton("图像");
-		ToggleButton button2 = new ToggleButton("相关图像");
+        ToggleButton button1 = new ToggleButton("图像");
+        ToggleButton button2 = new ToggleButton("相关图像");
 		button1.getStyleClass().add("tab-button");
 		button2.getStyleClass().add("tab-button");
 		button1.setToggleGroup(group);
-		button2.setToggleGroup(group);
-		button1.setSelected(true);
+        button2.setToggleGroup(group);
+		button1.setSelected(true); 
 		
 		button1.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
 			if (button1.isSelected()) {
@@ -251,7 +254,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		
 		pane.getChildren().add(mdPane);
 	}
-
+	
 	private void updateDetailsView() {
 		if (imageData == null || imageData.getServer() == null) {
 			detailsContainer.getChildren().clear();
@@ -422,7 +425,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			detailsContainer.getChildren().add(groupContainer);
 		}
 	}
-
+	
 	private void handleAssociatedImagesMouseClick(MouseEvent event) {
 		if (event.getClickCount() < 2 || listAssociatedImages.getSelectionModel().getSelectedItem() == null)
 			return;
@@ -473,7 +476,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	private static boolean promptToSetMagnification(ImageData<BufferedImage> imageData) {
 		var server = imageData.getServer();
 		Double mag = server.getMetadata().getMagnification();
-		Double mag2 = Dialogs.showInputDialog("Set magnification", "Set magnification for full resolution image", mag);
+		Double mag2 = Dialogs.showInputDialog("设置放大倍数", "设置全分辨率图像的放大倍数", mag);
 		if (mag2 == null || Double.isInfinite(mag) || Objects.equals(mag, mag2))
 			return false;
 		var metadata2 = new ImageServerMetadata.Builder(server.getMetadata())
@@ -517,10 +520,10 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			if (roi.isLine()) {
 				setPixelHeight = roi.getBoundsHeight() != 0;
 				setPixelWidth = roi.getBoundsWidth() != 0;
-				message = "Enter selected line length";
+				message = "输入选定线条的长度";
 				defaultValue = roi.getScaledLength(pixelWidth, pixelHeight);
 			} else {
-				message = "Enter selected ROI area";
+				message = "输入选定区域的面积";
 				units = units + "^2";
 				defaultValue = roi.getScaledArea(pixelWidth, pixelHeight);
 			}
@@ -528,10 +531,10 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			if (Double.isNaN(defaultValue))
 				defaultValue = 1.0;
 			var params = new ParameterList()
-					.addDoubleParameter("inputValue", message, defaultValue, units, "Enter calibrated value in " + units + " for the selected ROI to calculate the pixel size")
-					.addBooleanParameter("squarePixels", "Assume square pixels", true, "Set the pixel width to match the pixel height");
+					.addDoubleParameter("inputValue", message, defaultValue, units, "输入选定区域的校准值（" + units + "）以计算像素大小")
+					.addBooleanParameter("squarePixels", "假设方形像素", true, "设置像素宽度与高度相同");
 			params.setHiddenParameters(setPixelHeight && setPixelWidth, "squarePixels");
-			if (!GuiTools.showParameterDialog("Set pixel size", params))
+			if (!GuiTools.showParameterDialog("设置像素大小", params))
 				return false;
 			Double result = params.getDoubleParameterValue("inputValue");
 			setPixelHeight = setPixelHeight || params.getBooleanParameterValue("squarePixels");
@@ -550,11 +553,11 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		} else {
 			// Prompt for all required values
 			ParameterList params = new ParameterList()
-					.addDoubleParameter("pixelWidth", "Pixel width", pixelWidthMicrons, GeneralTools.micrometerSymbol(), "Enter the pixel width")
-					.addDoubleParameter("pixelHeight", "Pixel height", pixelHeightMicrons, GeneralTools.micrometerSymbol(), "Entry the pixel height")
-					.addDoubleParameter("zSpacing", "Z-spacing", zSpacingMicrons, GeneralTools.micrometerSymbol(), "Enter the spacing between slices of a z-stack");
+					.addDoubleParameter("pixelWidth", "像素宽度", pixelWidthMicrons, GeneralTools.micrometerSymbol(), "输入像素宽度")
+					.addDoubleParameter("pixelHeight", "像素高度", pixelHeightMicrons, GeneralTools.micrometerSymbol(), "输入像素高度")
+					.addDoubleParameter("zSpacing", "Z轴间距", zSpacingMicrons, GeneralTools.micrometerSymbol(), "输入Z轴切片之间的间距");
 			params.setHiddenParameters(server.nZSlices() == 1, "zSpacing");
-			if (!GuiTools.showParameterDialog("Set pixel size", params))
+			if (!GuiTools.showParameterDialog("设置像素大小", params))
 				return false;
 			if (server.nZSlices() != 1) {
 				zSpacingMicrons = params.getDoubleParameterValue("zSpacing");
@@ -563,7 +566,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			pixelHeightMicrons = params.getDoubleParameterValue("pixelHeight");
 		}
 		if ((pixelWidthMicrons <= 0 || pixelHeightMicrons <= 0) || (server.nZSlices() > 1 && zSpacingMicrons <= 0)) {
-			if (!Dialogs.showConfirmDialog("Set pixel size", "You entered values <= 0, do you really want to remove this pixel calibration information?")) {
+			if (!Dialogs.showConfirmDialog("设置像素大小", "您输入的值小于等于0，是否确定要删除此像素校准信息？")) {
 				return false;
 			}
 			zSpacingMicrons = server.nZSlices() > 1 && zSpacingMicrons > 0 ? zSpacingMicrons : Double.NaN;
@@ -579,13 +582,13 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				var map = Map.of("pixelWidthMicrons", pixelWidthMicrons,
 						"pixelHeightMicrons", pixelHeightMicrons);
 				String script = String.format("setPixelSizeMicrons(%f, %f)", pixelWidthMicrons, pixelHeightMicrons);
-				step = new DefaultScriptableWorkflowStep("Set pixel size " + GeneralTools.micrometerSymbol(), map, script);
+				step = new DefaultScriptableWorkflowStep("设置像素大小 " + GeneralTools.micrometerSymbol(), map, script);
 			} else {
 				var map = Map.of("pixelWidthMicrons", pixelWidthMicrons,
 						"pixelHeightMicrons", pixelHeightMicrons,
 						"zSpacingMicrons", zSpacingMicrons);
 				String script = String.format("setPixelSizeMicrons(%f, %f, %f)", pixelWidthMicrons, pixelHeightMicrons, zSpacingMicrons);
-				step = new DefaultScriptableWorkflowStep("Set pixel size " + GeneralTools.micrometerSymbol(), map, script);
+				step = new DefaultScriptableWorkflowStep("设置像素大小 " + GeneralTools.micrometerSymbol(), map, script);
 			}
 			imageData.getHistoryWorkflow().addStep(step);
 			
@@ -618,52 +621,51 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		if (isRGB) {
 			buttonMap.put(
 					ImageType.BRIGHTFIELD_H_E,
-					createImageTypeButton(ImageType.BRIGHTFIELD_H_E, "Brightfield\nH&E",
+					createImageTypeButton(ImageType.BRIGHTFIELD_H_E, "明场\nH&E",
 							createImageTypeCell(Color.WHITE, Color.PINK, Color.DARKBLUE, size),
-							"Brightfield image with hematoylin & eosin stains\n(8-bit RGB only)", isRGB)
+							"明场图像，苏木精和伊红染色\n(仅限8位RGB)", isRGB)
 					);
 
 			buttonMap.put(
 					ImageType.BRIGHTFIELD_H_DAB,
-					createImageTypeButton(ImageType.BRIGHTFIELD_H_DAB, "Brightfield\nH-DAB",
+					createImageTypeButton(ImageType.BRIGHTFIELD_H_DAB, "明场\nH-DAB",
 							createImageTypeCell(Color.WHITE, Color.rgb(200, 200, 220), Color.rgb(120, 50, 20), size),
-							"Brightfield image with hematoylin & DAB stains\n(8-bit RGB only)", isRGB)
+							"明场图像，苏木精和DAB染色\n(仅限8位RGB)", isRGB)
 					);
 
 			buttonMap.put(
 					ImageType.BRIGHTFIELD_OTHER,
-					createImageTypeButton(ImageType.BRIGHTFIELD_OTHER, "Brightfield\nOther",
+					createImageTypeButton(ImageType.BRIGHTFIELD_OTHER, "明场\n其他",
 							createImageTypeCell(Color.WHITE, Color.ORANGE, Color.FIREBRICK, size),
-							"Brightfield image with other chromogenic stains\n(8-bit RGB only)", isRGB)
+							"明场图像，其他显色染色\n(仅限8位RGB)", isRGB)
 					);
 		}
 
 		buttonMap.put(
 				ImageType.FLUORESCENCE,
-				createImageTypeButton(ImageType.FLUORESCENCE, "Fluorescence",
+				createImageTypeButton(ImageType.FLUORESCENCE, "荧光",
 						createImageTypeCell(Color.BLACK, Color.LIGHTGREEN, Color.BLUE, size),
-						"Fluorescence or fluorescence-like image with a dark background\n" +
-								"Also suitable for imaging mass cytometry", true)
+						"荧光或类荧光图像，具有深色背景\n也适用于成像质谱", true)
 				);
 
 		buttonMap.put(
 				ImageType.OTHER,
-				createImageTypeButton(ImageType.OTHER, "Other",
+				createImageTypeButton(ImageType.OTHER, "其他",
 						createImageTypeCell(Color.BLACK, Color.WHITE, Color.GRAY, size),
-						"Any other image type", true)
+						"任何其他图像类型", true)
 				);
 
 		buttonMap.put(
 				ImageType.UNSET,
-				createImageTypeButton(ImageType.UNSET, "Unspecified",
+				createImageTypeButton(ImageType.UNSET, "未指定",
 						iconUnspecified,
-						"Do not set the image type (not recommended for analysis)", true)
+						"不设置图像类型（不建议用于分析）", true)
 				);
 
 		var buttons = buttonMap.values().toArray(ToggleButton[]::new);
 		for (var btn: buttons) {
 			if (btn.isDisabled()) {
-				btn.getTooltip().setText("Image type is not supported because image is not RGB");
+				btn.getTooltip().setText("图像类型不受支持，因为图像不是RGB格式");
 			}
 		}
 		var buttonList = Arrays.asList(buttons);
@@ -696,29 +698,25 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		}).toList());
 
 		grid.setVgap(5);
-		//		grid.setHgap(5);
 		grid.setMaxWidth(Double.MAX_VALUE);
 		for (int i = 0; i < buttons.length; i++) {
 			grid.add(buttons[i], i % nHorizontal, i / nHorizontal);
 		}
-		//		grid.getChildren().setAll(buttons);
 
 		var content = new BorderPane(grid);
 		var comboOptions = new ComboBox<ImageTypeSetting>();
 		comboOptions.getItems().setAll(ImageTypeSetting.values());
 
 		var prompts = Map.of(
-				ImageTypeSetting.AUTO_ESTIMATE, "Always auto-estimate type (don't prompt)",
-				ImageTypeSetting.PROMPT, "Always prompt me to set type",
-				ImageTypeSetting.NONE, "Don't set the image type"
+				ImageTypeSetting.AUTO_ESTIMATE, "始终自动估计类型（不提示）",
+				ImageTypeSetting.PROMPT, "始终提示我设置类型",
+				ImageTypeSetting.NONE, "不设置图像类型"
 				);
 		comboOptions.setButtonCell(FXUtils.createCustomListCell(p -> prompts.get(p)));
 		comboOptions.setCellFactory(c -> FXUtils.createCustomListCell(p -> prompts.get(p)));
 		comboOptions.setTooltip(
-				new Tooltip("Choose whether you want to see these prompts " +
-						"when opening an image for the first time"));
+				new Tooltip("选择是否要在首次打开图像时看到这些提示"));
 		comboOptions.setMaxWidth(Double.MAX_VALUE);
-		//		comboOptions.prefWidthProperty().bind(grid.widthProperty().subtract(100));
 		comboOptions.getSelectionModel().select(PathPrefs.imageTypeSettingProperty().get());
 
 		if (nVertical > 1)
@@ -727,10 +725,8 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			BorderPane.setMargin(comboOptions, new Insets(10, 0, 0, 0));
 		content.setBottom(comboOptions);
 
-		var labelDetails = new Label("The image type is used for stain separation "
-				+ "by some commands, e.g. 'Cell detection'.\n"
-				+ "Brightfield types are only available for 8-bit RGB images.");
-		//				+ "For 'Brightfield' images you can set the color stain vectors.");
+		var labelDetails = new Label("图像类型用于某些命令的染色分离，例如'细胞检测'。\n"
+				+ "明场类型仅适用于8位RGB图像。");
 		labelDetails.setWrapText(true);
 		labelDetails.prefWidthProperty().bind(grid.widthProperty().subtract(10));
 		labelDetails.setMaxHeight(Double.MAX_VALUE);
@@ -740,8 +736,8 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		labelDetails.setTextAlignment(TextAlignment.CENTER);
 
 		var dialog = Dialogs.builder()
-				.title("Set image type")
-				.headerText("What type of image is this?")
+				.title("设置图像类型")
+				.headerText("这是什么类型的图像？")
 				.content(content)
 				.buttons(ButtonType.APPLY, ButtonType.CANCEL)
 				.expandableContent(labelDetails)
@@ -1064,146 +1060,146 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			return null;
 		}
 	}
-	
-	private static void editStainVector(ImageData<BufferedImage> imageData, Object value) {
-		if (imageData == null || !(value instanceof StainVector || value instanceof double[]))
-			return;
 		
-		ColorDeconvolutionStains stains = imageData.getColorDeconvolutionStains();
-		int num = -1; // Default to background values
-		String name = null;
-		String message = null;
-		if (value instanceof StainVector) {
-			StainVector stainVector = (StainVector)value;
-			if (stainVector.isResidual() && imageData.getImageType() != ImageType.BRIGHTFIELD_OTHER) {
-				logger.warn("Cannot set residual stain vector - this is computed from the known vectors");
+		private static void editStainVector(ImageData<BufferedImage> imageData, Object value) {
+			if (imageData == null || !(value instanceof StainVector || value instanceof double[]))
 				return;
-			}
-			num = stains.getStainNumber(stainVector);
-			if (num <= 0) {
-				logger.error("Could not identify stain vector {} inside {}", stainVector, stains);
-				return;
-			}
-			name = stainVector.getName();
-			message = "Set stain vector from ROI?";
-		} else
-			message = "Set color deconvolution background values from ROI?";
+			
+			ColorDeconvolutionStains stains = imageData.getColorDeconvolutionStains();
+			int num = -1; // Default to background values
+			String name = null;
+			String message = null;
+			if (value instanceof StainVector) {
+				StainVector stainVector = (StainVector)value;
+				if (stainVector.isResidual() && imageData.getImageType() != ImageType.BRIGHTFIELD_OTHER) {
+					logger.warn("Cannot set residual stain vector - this is computed from the known vectors");
+					return;
+				}
+				num = stains.getStainNumber(stainVector);
+				if (num <= 0) {
+                    logger.error("Could not identify stain vector {} inside {}", stainVector, stains);
+					return;
+				}
+				name = stainVector.getName();
+				message = "从ROI设置染色向量？";
+			} else
+				message = "从ROI设置颜色反卷积背景值？";
 
-		ROI roi = imageData.getHierarchy().getSelectionModel().getSelectedROI();
-		boolean wasChanged = false;
-		String warningMessage = null;
-		boolean editableName = imageData.getImageType() == ImageType.BRIGHTFIELD_OTHER;
-		if (roi != null) {
-			if ((roi instanceof RectangleROI) && 
-					!roi.isEmpty() &&
-					roi.getArea() < 500*500) {
-				if (Dialogs.showYesNoDialog("Color deconvolution stains", message)) {
-					ImageServer<BufferedImage> server = imageData.getServer();
-					BufferedImage img = null;
-					try {
-						img = server.readRegion(RegionRequest.createInstance(server.getPath(), 1, roi));
-					} catch (IOException e) {
-						Dialogs.showErrorMessage("Set stain vector", "Unable to read image region");
-						logger.error("Unable to read region", e);
-						return;
-					}
-					if (num >= 0) {
-						StainVector vectorValue = ColorDeconvolutionHelper.generateMedianStainVectorFromPixels(name, img, stains.getMaxRed(), stains.getMaxGreen(), stains.getMaxBlue());
-						if (!Double.isFinite(vectorValue.getRed() + vectorValue.getGreen() + vectorValue.getBlue())) {
-							Dialogs.showErrorMessage("Set stain vector",
-									"Cannot set stains for the current ROI!\n"
-											+ "It might be too close to the background color.");
+			ROI roi = imageData.getHierarchy().getSelectionModel().getSelectedROI();
+			boolean wasChanged = false;
+			String warningMessage = null;
+			boolean editableName = imageData.getImageType() == ImageType.BRIGHTFIELD_OTHER;
+			if (roi != null) {
+				if ((roi instanceof RectangleROI) && 
+						!roi.isEmpty() &&
+						roi.getArea() < 500*500) {
+					if (Dialogs.showYesNoDialog("颜色反卷积染色", message)) {
+						ImageServer<BufferedImage> server = imageData.getServer();
+						BufferedImage img = null;
+						try {
+							img = server.readRegion(RegionRequest.createInstance(server.getPath(), 1, roi));
+						} catch (IOException e) {
+							Dialogs.showErrorMessage("设置染色向量", "无法读取图像区域");
+							logger.error("Unable to read region", e);
 							return;
 						}
-						value = vectorValue;
-					} else {
-						// Update the background
-						if (BufferedImageTools.is8bitColorType(img.getType())) {
-							int rgb = ColorDeconvolutionHelper.getMedianRGB(img.getRGB(0, 0, img.getWidth(), img.getHeight(), null, 0, img.getWidth()));
-							value = new double[]{ColorTools.red(rgb), ColorTools.green(rgb), ColorTools.blue(rgb)};
+						if (num >= 0) {
+							StainVector vectorValue = ColorDeconvolutionHelper.generateMedianStainVectorFromPixels(name, img, stains.getMaxRed(), stains.getMaxGreen(), stains.getMaxBlue());
+							if (!Double.isFinite(vectorValue.getRed() + vectorValue.getGreen() + vectorValue.getBlue())) {
+								Dialogs.showErrorMessage("设置染色向量",
+										"无法为当前ROI设置染色！\n"
+												+ "它可能太接近背景颜色。");
+								return;
+							}
+							value = vectorValue;
 						} else {
-							double r = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 0));
-							double g = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 1));
-							double b = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 2));
-							value = new double[]{r, g, b};
+							// Update the background
+							if (BufferedImageTools.is8bitColorType(img.getType())) {
+								int rgb = ColorDeconvolutionHelper.getMedianRGB(img.getRGB(0, 0, img.getWidth(), img.getHeight(), null, 0, img.getWidth()));
+								value = new double[]{ColorTools.red(rgb), ColorTools.green(rgb), ColorTools.blue(rgb)};
+							} else {
+								double r = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 0));
+								double g = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 1));
+								double b = ColorDeconvolutionHelper.getMedian(ColorDeconvolutionHelper.getPixels(img.getRaster(), 2));
+								value = new double[]{r, g, b};
+							}
 						}
+						wasChanged = true;
 					}
-					wasChanged = true;
+				} else {
+					warningMessage = "注意：要从图像区域设置染色值，请先绘制一个小的矩形ROI";
+				}
+			}
+
+			// Prompt to set the name / verify stains
+			ParameterList params = new ParameterList();
+			String title;
+			String nameBefore = null;
+			String valuesBefore = null;
+			String collectiveNameBefore = stains.getName();
+			String suggestedName;
+			if (collectiveNameBefore.endsWith("default"))
+				suggestedName = collectiveNameBefore.substring(0, collectiveNameBefore.lastIndexOf("default")) + "modified";
+			else
+				suggestedName = collectiveNameBefore;
+			params.addStringParameter("collectiveName", "集合名称", suggestedName, "输入所有3种染色的集合名称（例如：H-DAB扫描仪A，H&E扫描仪B）");
+			if (value instanceof StainVector) {
+				nameBefore = ((StainVector)value).getName();
+				valuesBefore = ((StainVector)value).arrayAsString(Locale.getDefault(Category.FORMAT));
+				params.addStringParameter("name", "名称", nameBefore, "输入染色名称")
+				.addStringParameter("values", "值", valuesBefore, "输入3个值（红、绿、蓝）定义颜色反卷积染色向量，用空格分隔");
+				title = "设置染色向量";
+			} else {
+				nameBefore = "背景";
+				valuesBefore = GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value, 2);
+				params.addStringParameter("name", "染色名称", nameBefore);
+				params.addStringParameter("values", "染色值", valuesBefore, "输入3个值（红、绿、蓝）定义背景，用空格分隔");
+				params.setHiddenParameters(true, "name");
+				title = "设置背景";
+			}
+
+			if (warningMessage != null)
+				params.addEmptyParameter(warningMessage);
+
+			// Disable editing the name if it should be fixed
+			ParameterPanelFX parameterPanel = new ParameterPanelFX(params);
+			parameterPanel.setParameterEnabled("name", editableName);;
+			if (!Dialogs.showConfirmDialog(title, parameterPanel.getPane()))
+				return;
+
+			// Check if anything changed
+			String collectiveName = params.getStringParameterValue("collectiveName");
+			String nameAfter = params.getStringParameterValue("name");
+			String valuesAfter = params.getStringParameterValue("values");
+			if (collectiveName.equals(collectiveNameBefore) && nameAfter.equals(nameBefore) && valuesAfter.equals(valuesBefore) && !wasChanged)
+				return;
+
+			if (Set.of("Red", "Green", "Blue").contains(nameAfter)) {
+				Dialogs.showErrorMessage("设置染色向量", "不能将染色名称设置为'Red'、'Green'或'Blue' - 请选择其他名称");
+				return;
+			}
+
+			double[] valuesParsed = ColorDeconvolutionStains.parseStainValues(Locale.getDefault(Category.FORMAT), valuesAfter);
+			if (valuesParsed == null) {
+				logger.error("Input for setting color deconvolution information invalid! Cannot parse 3 numbers from {}", valuesAfter);
+				return;
+			}
+
+			if (num >= 0) {
+				try {
+					stains = stains.changeStain(StainVector.createStainVector(nameAfter, valuesParsed[0], valuesParsed[1], valuesParsed[2]), num);					
+				} catch (Exception e) {
+					logger.error("Error setting stain vectors", e);
+					Dialogs.showErrorMessage("设置染色向量", "请求的染色向量无效！\n是否有两个染色相同？");
 				}
 			} else {
-				warningMessage = "Note: To set stain values from an image region, draw a small, rectangular ROI first";
+				// Update the background
+				stains = stains.changeMaxValues(valuesParsed[0], valuesParsed[1], valuesParsed[2]);
 			}
-		}
 
-		// Prompt to set the name / verify stains
-		ParameterList params = new ParameterList();
-		String title;
-		String nameBefore = null;
-		String valuesBefore = null;
-		String collectiveNameBefore = stains.getName();
-		String suggestedName;
-		if (collectiveNameBefore.endsWith("default"))
-			suggestedName = collectiveNameBefore.substring(0, collectiveNameBefore.lastIndexOf("default")) + "modified";
-		else
-			suggestedName = collectiveNameBefore;
-		params.addStringParameter("collectiveName", "Collective name", suggestedName, "Enter collective name for all 3 stains (e.g. H-DAB Scanner A, H&E Scanner B)");
-		if (value instanceof StainVector) {
-			nameBefore = ((StainVector)value).getName();
-			valuesBefore = ((StainVector)value).arrayAsString(Locale.getDefault(Category.FORMAT));
-			params.addStringParameter("name", "Name", nameBefore, "Enter stain name")
-			.addStringParameter("values", "Values", valuesBefore, "Enter 3 values (red, green, blue) defining color deconvolution stain vector, separated by spaces");
-			title = "Set stain vector";
-		} else {
-			nameBefore = "Background";
-			valuesBefore = GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value, 2);
-			params.addStringParameter("name", "Stain name", nameBefore);
-			params.addStringParameter("values", "Stain values", valuesBefore, "Enter 3 values (red, green, blue) defining background, separated by spaces");
-			params.setHiddenParameters(true, "name");
-			title = "Set background";
-		}
-
-		if (warningMessage != null)
-			params.addEmptyParameter(warningMessage);
-
-		// Disable editing the name if it should be fixed
-		ParameterPanelFX parameterPanel = new ParameterPanelFX(params);
-		parameterPanel.setParameterEnabled("name", editableName);;
-		if (!Dialogs.showConfirmDialog(title, parameterPanel.getPane()))
-			return;
-
-		// Check if anything changed
-		String collectiveName = params.getStringParameterValue("collectiveName");
-		String nameAfter = params.getStringParameterValue("name");
-		String valuesAfter = params.getStringParameterValue("values");
-		if (collectiveName.equals(collectiveNameBefore) && nameAfter.equals(nameBefore) && valuesAfter.equals(valuesBefore) && !wasChanged)
-			return;
-
-		if (Set.of("Red", "Green", "Blue").contains(nameAfter)) {
-			Dialogs.showErrorMessage("Set stain vector", "Cannot set stain name to 'Red', 'Green', or 'Blue' - please choose a different name");
-			return;
-		}
-
-		double[] valuesParsed = ColorDeconvolutionStains.parseStainValues(Locale.getDefault(Category.FORMAT), valuesAfter);
-		if (valuesParsed == null) {
-			logger.error("Input for setting color deconvolution information invalid! Cannot parse 3 numbers from {}", valuesAfter);
-			return;
-		}
-
-		if (num >= 0) {
-			try {
-				stains = stains.changeStain(StainVector.createStainVector(nameAfter, valuesParsed[0], valuesParsed[1], valuesParsed[2]), num);					
-			} catch (Exception e) {
-				logger.error("Error setting stain vectors", e);
-				Dialogs.showErrorMessage("Set stain vectors", "Requested stain vectors are not valid!\nAre two stains equal?");
-			}
-		} else {
-			// Update the background
-			stains = stains.changeMaxValues(valuesParsed[0], valuesParsed[1], valuesParsed[2]);
-		}
-
-		// Set the collective name
-		stains = stains.changeName(collectiveName);
-		imageData.setColorDeconvolutionStains(stains);
+			// Set the collective name
+			stains = stains.changeName(collectiveName);
+			imageData.setColorDeconvolutionStains(stains);
 		
 		// 触发更新
 		if (instance != null) {
@@ -1230,63 +1226,65 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		valueLabel.setWrapText(true);
 		valueLabel.getStyleClass().add("detail-value");
 		
+		// 创建编辑图标
+		Label editIcon = new Label();
+		editIcon.setGraphic(IconFactory.createNode(16, 16, PathIcons.EDIT_BTN));
+		editIcon.setVisible(false);
+		
 		if (value instanceof StainVector) {
 			StainVector stain = (StainVector)value;
 			Integer color = stain.getColor();
 			valueLabel.setStyle(String.format("-fx-text-fill: rgb(%d, %d, %d);", 
 				ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color)));
-			valueLabel.setTooltip(new Tooltip("双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
+			valueLabel.setTooltip(new Tooltip("点击编辑按钮设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
 			
-			itemContainer.setOnMouseClicked(e -> {
-				if (e.getClickCount() == 2)
-					editStainVector(imageData, value);
-			});
+			editIcon.setVisible(true);
+			editIcon.setCursor(Cursor.HAND);
+			editIcon.setOnMouseClicked(e -> editStainVector(imageData, value));
 		} else if (value instanceof double[]) {
 			valueLabel.setText(GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value, 2));
-			valueLabel.setTooltip(new Tooltip("双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
+			valueLabel.setTooltip(new Tooltip("点击编辑按钮设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
 			
-			itemContainer.setOnMouseClicked(e -> {
-				if (e.getClickCount() == 2)
-					editStainVector(imageData, value);
-			});
+			editIcon.setVisible(true);
+			editIcon.setCursor(Cursor.HAND);
+			editIcon.setOnMouseClicked(e -> editStainVector(imageData, value));
 		} else {
 			if (row == ImageDetailRow.PIXEL_WIDTH || row == ImageDetailRow.PIXEL_HEIGHT || row == ImageDetailRow.Z_SPACING) {
 				if ("Unknown".equals(value))
 					valueLabel.setStyle("-fx-text-fill: red;");
-				valueLabel.setTooltip(new Tooltip("双击设置像素校准（可以使用选定的线条或区域ROI）"));
-				itemContainer.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						promptToSetPixelSize(imageData, row == ImageDetailRow.Z_SPACING);
-				});
+				valueLabel.setTooltip(new Tooltip("点击编辑按钮设置像素校准（可以使用选定的线条或区域ROI）"));
+				editIcon.setVisible(true);
+				editIcon.setCursor(Cursor.HAND);
+				editIcon.setOnMouseClicked(e -> promptToSetPixelSize(imageData, row == ImageDetailRow.Z_SPACING));
 			} else if (row == ImageDetailRow.METADATA_CHANGED) {
-				valueLabel.setTooltip(new Tooltip("双击重置原始元数据"));
-				itemContainer.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (!hasOriginalMetadata(imageData.getServer())) {
-							if (promptToResetServerMetadata(imageData)) {
-								updateDetailsView();
-								imageData.getHierarchy().fireHierarchyChangedEvent(this);
-							}
-						}
-					}
-				});
-			} else if (row == ImageDetailRow.MAGNIFICATION) {
-				valueLabel.setTooltip(new Tooltip("双击设置放大倍数"));
-				itemContainer.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (promptToSetMagnification(imageData)) {
+				valueLabel.setTooltip(new Tooltip("点击编辑按钮重置原始元数据"));
+				editIcon.setVisible(true);
+				editIcon.setCursor(Cursor.HAND);
+				editIcon.setOnMouseClicked(e -> {
+					if (!hasOriginalMetadata(imageData.getServer())) {
+						if (promptToResetServerMetadata(imageData)) {
 							updateDetailsView();
 							imageData.getHierarchy().fireHierarchyChangedEvent(this);
 						}
 					}
 				});
+			} else if (row == ImageDetailRow.MAGNIFICATION) {
+				valueLabel.setTooltip(new Tooltip("点击编辑按钮设置放大倍数"));
+				editIcon.setVisible(true);
+				editIcon.setCursor(Cursor.HAND);
+				editIcon.setOnMouseClicked(e -> {
+					if (promptToSetMagnification(imageData)) {
+						updateDetailsView();
+						imageData.getHierarchy().fireHierarchyChangedEvent(this);
+					}
+				});
 			} else if (row == ImageDetailRow.IMAGE_TYPE) {
-				valueLabel.setTooltip(new Tooltip("双击设置图像类型"));
-				itemContainer.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (promptToSetImageType(imageData, imageData.getImageType())) {
-							updateDetailsView();
-						}
+				valueLabel.setTooltip(new Tooltip("点击编辑按钮设置图像类型"));
+				editIcon.setVisible(true);
+				editIcon.setCursor(Cursor.HAND);
+				editIcon.setOnMouseClicked(e -> {
+					if (promptToSetImageType(imageData, imageData.getImageType())) {
+						updateDetailsView();
 					}
 				});
 			} else if (row == ImageDetailRow.UNCOMPRESSED_SIZE) {
@@ -1297,6 +1295,15 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		}
 		
 		itemContainer.getChildren().addAll(nameLabel, valueLabel);
+		if (editIcon.isVisible()) {
+			Region spacer = new Region();
+			HBox.setHgrow(spacer, Priority.ALWAYS);
+			itemContainer.getChildren().addAll(spacer, editIcon);
+			editIcon.setVisible(false);
+			
+			itemContainer.setOnMouseEntered(e -> editIcon.setVisible(true));
+			itemContainer.setOnMouseExited(e -> editIcon.setVisible(false));
+		}
 		return itemContainer;
 	}
 
@@ -1346,74 +1353,13 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			Label unitLabel1 = new Label(unit1);
 			unitLabel1.getStyleClass().add("detail-unit");
 			unitLabel1.setAlignment(Pos.CENTER);
-
+			
+			// 创建编辑图标1
+			Label editIcon1 = new Label();
+			editIcon1.setGraphic(IconFactory.createNode(16, 16, PathIcons.EDIT_BTN));
+			editIcon1.setVisible(false);
 			
 			item1.getChildren().addAll(nameLabel1, valueLabel1);
-			
-			// 添加第一个单元格的点击事件和提示
-			if (row1 == ImageDetailRow.PIXEL_WIDTH || row1 == ImageDetailRow.PIXEL_HEIGHT || row1 == ImageDetailRow.Z_SPACING) {
-				if ("Unknown".equals(valueStr1))
-					valueLabel1.setStyle("-fx-text-fill: red;");
-				valueLabel1.setTooltip(new Tooltip("双击设置像素校准（可以使用选定的线条或区域ROI）"));
-				item1.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						promptToSetPixelSize(imageData, row1 == ImageDetailRow.Z_SPACING);
-				});
-			} else if (row1 == ImageDetailRow.MAGNIFICATION) {
-				valueLabel1.setTooltip(new Tooltip("双击设置放大倍数"));
-				item1.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (promptToSetMagnification(imageData)) {
-							updateDetailsView();
-							imageData.getHierarchy().fireHierarchyChangedEvent(this);
-						}
-					}
-				});
-			} else if (row1 == ImageDetailRow.IMAGE_TYPE) {
-				valueLabel1.setTooltip(new Tooltip("双击设置图像类型"));
-				item1.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (promptToSetImageType(imageData, imageData.getImageType())) {
-							updateDetailsView();
-						}
-					}
-				});
-			} else if (row1 == ImageDetailRow.METADATA_CHANGED) {
-				valueLabel1.setTooltip(new Tooltip("双击重置原始元数据"));
-				item1.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (!hasOriginalMetadata(imageData.getServer())) {
-							if (promptToResetServerMetadata(imageData)) {
-								updateDetailsView();
-								imageData.getHierarchy().fireHierarchyChangedEvent(this);
-							}
-						}
-					}
-				});
-			} else if (row1 == ImageDetailRow.UNCOMPRESSED_SIZE) {
-				valueLabel1.setTooltip(new Tooltip("存储所有未压缩像素所需的大致内存"));
-			} else if (value1 instanceof StainVector) {
-				StainVector stain = (StainVector)value1;
-				Integer color = stain.getColor();
-				valueLabel1.setStyle(String.format("-fx-text-fill: rgb(%d, %d, %d);", 
-					ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color)));
-				valueLabel1.setTooltip(new Tooltip("双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
-				
-				item1.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						editStainVector(imageData, value1);
-				});
-			} else if (value1 instanceof double[]) {
-				valueLabel1.setText(GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value1, 2));
-				valueLabel1.setTooltip(new Tooltip("双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
-				
-				item1.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						editStainVector(imageData, value1);
-				});
-			} else {
-				valueLabel1.setTooltip(new Tooltip(value1.toString()));
-			}
 			
 			// 创建第二个单元格
 			HBox item2 = new HBox();
@@ -1428,6 +1374,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			} else {
 				nameLabel2.getStyleClass().add("special-name");
 			}
+			
 			// 分离数值和单位
 			String valueStr2 = value2.toString();
 			String unit2 = "";
@@ -1446,72 +1393,75 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			Label unitLabel2 = new Label(unit2);
 			unitLabel2.getStyleClass().add("detail-unit");
 			
+			// 创建编辑图标2
+			Label editIcon2 = new Label();
+			editIcon2.setGraphic(IconFactory.createNode(16, 16, PathIcons.EDIT_BTN));
+			editIcon2.setVisible(false);
+			
 			item2.getChildren().addAll(nameLabel2, valueLabel2);
 			
-			// 添加第二个单元格的点击事件和提示
+			// 添加点击事件和图标可见性
+			if (row1 == ImageDetailRow.PIXEL_WIDTH || row1 == ImageDetailRow.PIXEL_HEIGHT || row1 == ImageDetailRow.Z_SPACING) {
+				if ("Unknown".equals(valueStr1))
+					valueLabel1.setStyle("-fx-text-fill: red;");
+				valueLabel1.setTooltip(new Tooltip("点击编辑按钮设置像素校准（可以使用选定的线条或区域ROI）"));
+				editIcon1.setVisible(true);
+				editIcon1.setCursor(Cursor.HAND);
+				editIcon1.setOnMouseClicked(e -> promptToSetPixelSize(imageData, row1 == ImageDetailRow.Z_SPACING));
+			} else if (row1 == ImageDetailRow.MAGNIFICATION) {
+				valueLabel1.setTooltip(new Tooltip("点击编辑按钮设置放大倍数"));
+				editIcon1.setVisible(true);
+				editIcon1.setCursor(Cursor.HAND);
+				editIcon1.setOnMouseClicked(e -> {
+					if (promptToSetMagnification(imageData)) {
+						updateDetailsView();
+						imageData.getHierarchy().fireHierarchyChangedEvent(this);
+					}
+				});
+			}
+			
 			if (row2 == ImageDetailRow.PIXEL_WIDTH || row2 == ImageDetailRow.PIXEL_HEIGHT || row2 == ImageDetailRow.Z_SPACING) {
 				if ("Unknown".equals(valueStr2))
 					valueLabel2.setStyle("-fx-text-fill: red;");
-				valueLabel2.setTooltip(new Tooltip("双击设置像素校准（可以使用选定的线条或区域ROI）"));
-				item2.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						promptToSetPixelSize(imageData, row2 == ImageDetailRow.Z_SPACING);
-				});
-			} else if (row2 == ImageDetailRow.MAGNIFICATION) {
-				valueLabel2.setTooltip(new Tooltip("双击设置放大倍数"));
-				item2.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (promptToSetMagnification(imageData)) {
+				valueLabel2.setTooltip(new Tooltip("点击编辑按钮设置像素校准（可以使用选定的线条或区域ROI）"));
+				editIcon2.setVisible(true);
+				editIcon2.setCursor(Cursor.HAND);
+				editIcon2.setOnMouseClicked(e -> promptToSetPixelSize(imageData, row2 == ImageDetailRow.Z_SPACING));
+			} else if (row2 == ImageDetailRow.METADATA_CHANGED) {
+				valueLabel2.setTooltip(new Tooltip("点击编辑按钮重置原始元数据"));
+				editIcon2.setVisible(true);
+				editIcon2.setCursor(Cursor.HAND);
+				editIcon2.setOnMouseClicked(e -> {
+					if (!hasOriginalMetadata(imageData.getServer())) {
+						if (promptToResetServerMetadata(imageData)) {
 							updateDetailsView();
 							imageData.getHierarchy().fireHierarchyChangedEvent(this);
 						}
 					}
 				});
-			} else if (row2 == ImageDetailRow.IMAGE_TYPE) {
-				valueLabel2.setTooltip(new Tooltip("双击设置图像类型"));
-				item2.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (promptToSetImageType(imageData, imageData.getImageType())) {
-							updateDetailsView();
-						}
-					}
-				});
-			} else if (row2 == ImageDetailRow.METADATA_CHANGED) {
-				valueLabel2.setTooltip(new Tooltip("双击重置原始元数据"));
-				item2.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2) {
-						if (!hasOriginalMetadata(imageData.getServer())) {
-							if (promptToResetServerMetadata(imageData)) {
-								updateDetailsView();
-								imageData.getHierarchy().fireHierarchyChangedEvent(this);
-							}
-						}
-					}
-				});
-			} else if (row2 == ImageDetailRow.UNCOMPRESSED_SIZE) {
-				valueLabel2.setTooltip(new Tooltip("存储所有未压缩像素所需的大致内存"));
-			} else if (value2 instanceof StainVector) {
-				StainVector stain = (StainVector)value2;
-				Integer color = stain.getColor();
-				valueLabel2.setStyle(String.format("-fx-text-fill: rgb(%d, %d, %d);", 
-					ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color)));
-				valueLabel2.setTooltip(new Tooltip("双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
-				
-				item2.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						editStainVector(imageData, value2);
-				});
-			} else if (value2 instanceof double[]) {
-				valueLabel2.setText(GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value2, 2));
-				valueLabel2.setTooltip(new Tooltip("双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
-				
-				item2.setOnMouseClicked(e -> {
-					if (e.getClickCount() == 2)
-						editStainVector(imageData, value2);
-				});
-			} else {
-				valueLabel2.setTooltip(new Tooltip(value2.toString()));
 			}
+			
+			// 添加编辑图标（如果可见）
+			if (editIcon1.isVisible()) {
+				Region spacer1 = new Region();
+				HBox.setHgrow(spacer1, Priority.ALWAYS);
+				item1.getChildren().addAll(spacer1, editIcon1);
+				editIcon1.setVisible(false);
+				
+				item1.setOnMouseEntered(e -> editIcon1.setVisible(true));
+				item1.setOnMouseExited(e -> editIcon1.setVisible(false));
+			}
+			
+			if (editIcon2.isVisible()) {
+				Region spacer2 = new Region();
+				HBox.setHgrow(spacer2, Priority.ALWAYS);
+				item2.getChildren().addAll(spacer2, editIcon2);
+				editIcon2.setVisible(false);
+				
+				item2.setOnMouseEntered(e -> editIcon2.setVisible(true));
+				item2.setOnMouseExited(e -> editIcon2.setVisible(false));
+			}
+			
 			if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
 				container.getChildren().addAll(item1, item2);
 			} else if(row1 == ImageDetailRow.WIDTH && row2 == ImageDetailRow.HEIGHT){
