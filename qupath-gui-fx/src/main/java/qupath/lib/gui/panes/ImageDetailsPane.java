@@ -83,6 +83,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.Cursor;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -111,7 +112,7 @@ import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.PixelCalibration;
 import qupath.lib.images.servers.ServerTools;
-import qupath.lib.plugins.parameters.ParameterList;
+import qupath.lib.plugins.parameters.ParameterList;	
 import qupath.lib.plugins.workflow.DefaultScriptableWorkflowStep;
 import qupath.lib.plugins.workflow.WorkflowStep;
 import qupath.lib.regions.RegionRequest;
@@ -292,26 +293,36 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			HBox titleBar = new HBox();
 			titleBar.setAlignment(Pos.CENTER_LEFT);
 			titleBar.getStyleClass().add("detail-group-header");
+			if(groupName.equals("属性")){
+				titleBar.setCursor(Cursor.HAND);
+			}
 			
 			Label titleLabel = new Label(groupName);
 			titleLabel.getStyleClass().add("detail-group-title");
 			
 			// 创建箭头指示器
 			Region arrow = new Region();
-			arrow.getStyleClass().addAll("arrow", "arrow-down");
-			arrow.setMinWidth(12);
-			arrow.setMinHeight(12);
-			arrow.setMaxWidth(12);
-			arrow.setMaxHeight(12);
+			arrow.getStyleClass().addAll("arrow");
+			arrow.setMinWidth(14);
+			arrow.setMinHeight(8);
+			arrow.setMaxWidth(14);
+			arrow.setMaxHeight(8);
 			arrow.setVisible(groupName.equals("属性"));
 			arrow.setManaged(groupName.equals("属性"));
 			
-			HBox.setHgrow(titleLabel, Priority.ALWAYS);
-			titleBar.setAlignment(Pos.CENTER_LEFT);
-			titleBar.getChildren().addAll(titleLabel);
+			// 创建一个占位区域来推动箭头到右边
+			Region spacer = new Region();
+			HBox.setHgrow(spacer, Priority.ALWAYS);
 			
+			titleBar.setAlignment(Pos.CENTER_LEFT);
 			if (groupName.equals("属性")) {
-				titleBar.getChildren().add(arrow);
+				titleBar.getChildren().addAll(titleLabel, spacer, arrow);
+				// 设置箭头的初始状态为向下
+				arrow.getStyleClass().add("arrow-down");
+				// 设置箭头的右边距
+				HBox.setMargin(arrow, new Insets(0, 8, 0, 0));
+			} else {
+				titleBar.getChildren().add(titleLabel);
 			}
 			
 			// 创建内容容器
@@ -367,7 +378,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 					boolean isExpanded = otherProperties.isVisible();
 					otherProperties.setVisible(!isExpanded);
 					otherProperties.setManaged(!isExpanded);
-					arrow.getStyleClass().remove(isExpanded ? "arrow-up" : "arrow-down");
+					arrow.getStyleClass().removeAll("arrow-up", "arrow-down");
 					arrow.getStyleClass().add(isExpanded ? "arrow-down" : "arrow-up");
 					titleBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("expanded"), !isExpanded);
 				});
@@ -376,7 +387,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				titleBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("expanded"), true);
 				otherProperties.setVisible(true);
 				otherProperties.setManaged(true);
-				arrow.getStyleClass().remove("arrow-down");
+				arrow.getStyleClass().removeAll("arrow-down");
 				arrow.getStyleClass().add("arrow-up");
 			} else {
 				// 其他分组正常显示所有内容
@@ -1503,6 +1514,10 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			}
 			if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
 				container.getChildren().addAll(item1, item2);
+			} else if(row1 == ImageDetailRow.WIDTH && row2 == ImageDetailRow.HEIGHT){
+				Region spacer = new Region();
+				HBox.setHgrow(spacer, Priority.ALWAYS);
+				container.getChildren().addAll(item1, item2, spacer, unitLabel1);
 			} else {
 				container.getChildren().addAll(item1, item2, unitLabel1);
 			}

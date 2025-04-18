@@ -572,7 +572,6 @@
     -fx-pref-height: 36px;
     -fx-min-height: 36px;
     -fx-max-height: 36px;
-    -fx-cursor: hand;
 }
 
 .image-details-pane .detail-group-header .arrow {
@@ -580,15 +579,14 @@
     -fx-shape: "M 0 0 h 7 l -3.5 4 z";
     -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em;
     -fx-rotate: 0;
-    -fx-translate-x: 8;
 }
 
 .image-details-pane .detail-group-header .arrow-up {
-    -fx-rotate: 180;
+    -fx-rotate: 0;
 }
 
 .image-details-pane .detail-group-header .arrow-down {
-    -fx-rotate: 0;
+    -fx-rotate: -90;
 }
 
 .image-details-pane .detail-group-title {
