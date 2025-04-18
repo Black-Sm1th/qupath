@@ -199,6 +199,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		// Create top tab bar
 		HBox topTabBar = new HBox();
 		topTabBar.getStyleClass().add("topbar-tab-container");
+		VBox.setMargin(topTabBar, new Insets(0, 12, 0, 12));
 		topTabBar.setAlignment(Pos.CENTER_LEFT);
 		ToggleGroup group = new ToggleGroup();
 		
@@ -265,7 +266,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		
 		// 创建分组
 		Map<String, List<ImageDetailRow>> groups = new LinkedHashMap<>();
-		groups.put("属性", Arrays.asList(ImageDetailRow.NAME, ImageDetailRow.URI, ImageDetailRow.UNCOMPRESSED_SIZE,ImageDetailRow.METADATA_CHANGED,ImageDetailRow.SERVER_TYPE,ImageDetailRow.PYRAMID));
+		groups.put("属性", Arrays.asList(ImageDetailRow.URI, ImageDetailRow.UNCOMPRESSED_SIZE, ImageDetailRow.METADATA_CHANGED, ImageDetailRow.SERVER_TYPE, ImageDetailRow.PYRAMID));
 		groups.put("尺寸", Arrays.asList(ImageDetailRow.MAGNIFICATION, ImageDetailRow.DIMENSIONS, ImageDetailRow.WIDTH, ImageDetailRow.HEIGHT));
 		groups.put("像素", Arrays.asList(ImageDetailRow.PIXEL_TYPE, ImageDetailRow.PIXEL_WIDTH, ImageDetailRow.PIXEL_HEIGHT));
 		groups.put("染色", Arrays.asList(ImageDetailRow.IMAGE_TYPE, ImageDetailRow.STAIN_1, ImageDetailRow.STAIN_2, ImageDetailRow.STAIN_3, ImageDetailRow.BACKGROUND));
@@ -284,8 +285,9 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				
 			// 创建分组容器
 			VBox groupContainer = new VBox();
-			groupContainer.getStyleClass().add("detail-group");
 			groupContainer.setSpacing(8);
+			groupContainer.getStyleClass().add("detail-group");
+			
 			// 创建分组标题栏
 			HBox titleBar = new HBox();
 			titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -334,15 +336,28 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				otherProperties.setManaged(false);
 				
 				// 添加其他属性
-				for (ImageDetailRow row : groupRows) {
-					if (row != ImageDetailRow.NAME) {
-						String name = getName(row);
-						Object value = getValue(row);
-						if (name != null && value != null) {
-							HBox itemContainer = createDetailItem(name, value, row);
-							otherProperties.getChildren().add(itemContainer);
+				int i = 0;
+				while (i < groupRows.size()) {
+					if (i + 1 < groupRows.size()) {
+						ImageDetailRow row1 = groupRows.get(i);
+						ImageDetailRow row2 = groupRows.get(i + 1);
+						
+						// 检查是否应该并排显示
+						if ((row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED)) {
+							otherProperties.getChildren().add(createPairedDetailItems(row1, row2));
+							i += 2;
+							continue;
 						}
 					}
+					
+					// 单独显示
+					String name = getName(groupRows.get(i));
+					Object value = getValue(groupRows.get(i));
+					if (name != null && value != null) {
+						HBox itemContainer = createDetailItem(name, value, groupRows.get(i));
+						otherProperties.getChildren().add(itemContainer);
+					}
+					i++;
 				}
 				
 				contentContainer.getChildren().add(otherProperties);
@@ -358,16 +373,37 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				});
 				
 				// 设置初始状态
-				titleBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("expanded"), false);
+				titleBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("expanded"), true);
+				otherProperties.setVisible(true);
+				otherProperties.setManaged(true);
+				arrow.getStyleClass().remove("arrow-down");
+				arrow.getStyleClass().add("arrow-up");
 			} else {
 				// 其他分组正常显示所有内容
-				for (ImageDetailRow row : groupRows) {
-					String name = getName(row);
-					Object value = getValue(row);
+				int i = 0;
+				while (i < groupRows.size()) {
+					if (i + 1 < groupRows.size()) {
+						ImageDetailRow row1 = groupRows.get(i);
+						ImageDetailRow row2 = groupRows.get(i + 1);
+						
+						// 检查是否应该并排显示
+						if ((row1 == ImageDetailRow.MAGNIFICATION && row2 == ImageDetailRow.DIMENSIONS) ||
+							(row1 == ImageDetailRow.WIDTH && row2 == ImageDetailRow.HEIGHT) ||
+							(row1 == ImageDetailRow.PIXEL_WIDTH && row2 == ImageDetailRow.PIXEL_HEIGHT)) {
+							contentContainer.getChildren().add(createPairedDetailItems(row1, row2));
+							i += 2;
+							continue;
+						}
+					}
+					
+					// 单独显示
+					String name = getName(groupRows.get(i));
+					Object value = getValue(groupRows.get(i));
 					if (name != null && value != null) {
-						HBox itemContainer = createDetailItem(name, value, row);
+						HBox itemContainer = createDetailItem(name, value, groupRows.get(i));
 						contentContainer.getChildren().add(itemContainer);
 					}
+					i++;
 				}
 			}
 			
@@ -433,6 +469,11 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				.magnification(mag2)
 				.build();
 		imageData.updateServerMetadata(metadata2);
+		
+		// 触发更新
+		if (instance != null) {
+			instance.updateDetailsView();
+		}
 		return true;
 	}
 
@@ -536,6 +577,11 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				step = new DefaultScriptableWorkflowStep("Set pixel size " + GeneralTools.micrometerSymbol(), map, script);
 			}
 			imageData.getHistoryWorkflow().addStep(step);
+			
+			// 触发更新
+			if (instance != null) {
+				instance.updateDetailsView();
+			}
 			return true;
 		} else
 			return false;
@@ -736,11 +782,9 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			if (selectedType != imageData.getImageType()) {
 				imageData.setImageType(selectedType);
 				// 触发更新
-				Platform.runLater(() -> {
-					if (instance != null) {
-						instance.updateDetailsView();
-					}
-				});
+				if (instance != null) {
+					instance.updateDetailsView();
+				}
 				return true;
 			}
 		}
@@ -1149,21 +1193,31 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		// Set the collective name
 		stains = stains.changeName(collectiveName);
 		imageData.setColorDeconvolutionStains(stains);
+		
+		// 触发更新
+		if (instance != null) {
+			instance.updateDetailsView();
+		}
 	}
 
 	private HBox createDetailItem(String name, Object value, ImageDetailRow row) {
 		HBox itemContainer = new HBox();
-		itemContainer.setSpacing(16);
+		itemContainer.setSpacing(4);
 		itemContainer.getStyleClass().add("detail-item");
-		itemContainer.setFillHeight(true);
 		
 		Label nameLabel = new Label(name);
-		nameLabel.getStyleClass().add("detail-name");
+		if(row == ImageDetailRow.PIXEL_TYPE) {
+			nameLabel.getStyleClass().add("special-name");
+			itemContainer.setMaxWidth(256);
+			itemContainer.setMinWidth(256);
+			itemContainer.setPrefWidth(256);
+		} else {
+			nameLabel.getStyleClass().add("detail-name");
+		}
 		
 		Label valueLabel = new Label(value.toString());
 		valueLabel.setWrapText(true);
 		valueLabel.getStyleClass().add("detail-value");
-		HBox.setHgrow(valueLabel, Priority.ALWAYS);
 		
 		if (value instanceof StainVector) {
 			StainVector stain = (StainVector)value;
@@ -1226,12 +1280,234 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 				});
 			} else if (row == ImageDetailRow.UNCOMPRESSED_SIZE) {
 				valueLabel.setTooltip(new Tooltip("存储所有未压缩像素所需的大致内存"));
-			}else{
+			} else {
 				valueLabel.setTooltip(new Tooltip(value.toString()));
 			}
 		}
 		
 		itemContainer.getChildren().addAll(nameLabel, valueLabel);
 		return itemContainer;
+	}
+
+	private Node createPairedDetailItems(ImageDetailRow row1, ImageDetailRow row2) {
+		HBox container = new HBox();
+		container.setSpacing(4);
+		
+		String name1 = getName(row1);
+		Object value1 = getValue(row1);
+		String name2 = getName(row2);
+		Object value2 = getValue(row2);
+		var widthValue = 126;
+		if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
+			widthValue = 140;
+		}
+		if (name1 != null && value1 != null && name2 != null && value2 != null) {
+			// 创建第一个单元格
+			HBox item1 = new HBox();
+			item1.getStyleClass().add("detail-item");
+			item1.setSpacing(4);
+			item1.setPrefWidth(widthValue);
+			item1.setMinWidth(widthValue);
+			item1.setMaxWidth(widthValue);
+			
+			Label nameLabel1 = new Label(name1);
+			if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
+				nameLabel1.getStyleClass().add("detail-name");
+			} else {
+				nameLabel1.getStyleClass().add("special-name");
+			}
+			
+			// 分离数值和单位
+			String valueStr1 = value1.toString();
+			String unit1 = "";
+			if (valueStr1.contains(" px")) {
+				valueStr1 = valueStr1.substring(0, valueStr1.indexOf(" px"));
+				unit1 = " px";
+			} else if (valueStr1.contains(" " + GeneralTools.micrometerSymbol())) {
+				valueStr1 = valueStr1.substring(0, valueStr1.indexOf(" " + GeneralTools.micrometerSymbol()));
+				unit1 = " " + GeneralTools.micrometerSymbol();
+			}
+			
+			Label valueLabel1 = new Label(valueStr1);
+			valueLabel1.setWrapText(true);
+			valueLabel1.getStyleClass().add("detail-value");
+			
+			Label unitLabel1 = new Label(unit1);
+			unitLabel1.getStyleClass().add("detail-unit");
+			unitLabel1.setAlignment(Pos.CENTER);
+
+			
+			item1.getChildren().addAll(nameLabel1, valueLabel1);
+			
+			// 添加第一个单元格的点击事件和提示
+			if (row1 == ImageDetailRow.PIXEL_WIDTH || row1 == ImageDetailRow.PIXEL_HEIGHT || row1 == ImageDetailRow.Z_SPACING) {
+				if ("Unknown".equals(valueStr1))
+					valueLabel1.setStyle("-fx-text-fill: red;");
+				valueLabel1.setTooltip(new Tooltip("双击设置像素校准（可以使用选定的线条或区域ROI）"));
+				item1.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						promptToSetPixelSize(imageData, row1 == ImageDetailRow.Z_SPACING);
+				});
+			} else if (row1 == ImageDetailRow.MAGNIFICATION) {
+				valueLabel1.setTooltip(new Tooltip("双击设置放大倍数"));
+				item1.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (promptToSetMagnification(imageData)) {
+							updateDetailsView();
+							imageData.getHierarchy().fireHierarchyChangedEvent(this);
+						}
+					}
+				});
+			} else if (row1 == ImageDetailRow.IMAGE_TYPE) {
+				valueLabel1.setTooltip(new Tooltip("双击设置图像类型"));
+				item1.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (promptToSetImageType(imageData, imageData.getImageType())) {
+							updateDetailsView();
+						}
+					}
+				});
+			} else if (row1 == ImageDetailRow.METADATA_CHANGED) {
+				valueLabel1.setTooltip(new Tooltip("双击重置原始元数据"));
+				item1.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (!hasOriginalMetadata(imageData.getServer())) {
+							if (promptToResetServerMetadata(imageData)) {
+								updateDetailsView();
+								imageData.getHierarchy().fireHierarchyChangedEvent(this);
+							}
+						}
+					}
+				});
+			} else if (row1 == ImageDetailRow.UNCOMPRESSED_SIZE) {
+				valueLabel1.setTooltip(new Tooltip("存储所有未压缩像素所需的大致内存"));
+			} else if (value1 instanceof StainVector) {
+				StainVector stain = (StainVector)value1;
+				Integer color = stain.getColor();
+				valueLabel1.setStyle(String.format("-fx-text-fill: rgb(%d, %d, %d);", 
+					ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color)));
+				valueLabel1.setTooltip(new Tooltip("双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
+				
+				item1.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						editStainVector(imageData, value1);
+				});
+			} else if (value1 instanceof double[]) {
+				valueLabel1.setText(GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value1, 2));
+				valueLabel1.setTooltip(new Tooltip("双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
+				
+				item1.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						editStainVector(imageData, value1);
+				});
+			} else {
+				valueLabel1.setTooltip(new Tooltip(value1.toString()));
+			}
+			
+			// 创建第二个单元格
+			HBox item2 = new HBox();
+			item2.getStyleClass().add("detail-item");
+			item2.setPrefWidth(widthValue);
+			item2.setMinWidth(widthValue);
+			item2.setMaxWidth(widthValue);
+			item2.setSpacing(4);
+			Label nameLabel2 = new Label(name2);
+			if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
+				nameLabel2.getStyleClass().add("detail-name");
+			} else {
+				nameLabel2.getStyleClass().add("special-name");
+			}
+			// 分离数值和单位
+			String valueStr2 = value2.toString();
+			String unit2 = "";
+			if (valueStr2.contains(" px")) {
+				valueStr2 = valueStr2.substring(0, valueStr2.indexOf(" px"));
+				unit2 = " px";
+			} else if (valueStr2.contains(" " + GeneralTools.micrometerSymbol())) {
+				valueStr2 = valueStr2.substring(0, valueStr2.indexOf(" " + GeneralTools.micrometerSymbol()));
+				unit2 = " " + GeneralTools.micrometerSymbol();
+			}
+			
+			Label valueLabel2 = new Label(valueStr2);
+			valueLabel2.setWrapText(true);
+			valueLabel2.getStyleClass().add("detail-value");
+			
+			Label unitLabel2 = new Label(unit2);
+			unitLabel2.getStyleClass().add("detail-unit");
+			
+			item2.getChildren().addAll(nameLabel2, valueLabel2);
+			
+			// 添加第二个单元格的点击事件和提示
+			if (row2 == ImageDetailRow.PIXEL_WIDTH || row2 == ImageDetailRow.PIXEL_HEIGHT || row2 == ImageDetailRow.Z_SPACING) {
+				if ("Unknown".equals(valueStr2))
+					valueLabel2.setStyle("-fx-text-fill: red;");
+				valueLabel2.setTooltip(new Tooltip("双击设置像素校准（可以使用选定的线条或区域ROI）"));
+				item2.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						promptToSetPixelSize(imageData, row2 == ImageDetailRow.Z_SPACING);
+				});
+			} else if (row2 == ImageDetailRow.MAGNIFICATION) {
+				valueLabel2.setTooltip(new Tooltip("双击设置放大倍数"));
+				item2.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (promptToSetMagnification(imageData)) {
+							updateDetailsView();
+							imageData.getHierarchy().fireHierarchyChangedEvent(this);
+						}
+					}
+				});
+			} else if (row2 == ImageDetailRow.IMAGE_TYPE) {
+				valueLabel2.setTooltip(new Tooltip("双击设置图像类型"));
+				item2.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (promptToSetImageType(imageData, imageData.getImageType())) {
+							updateDetailsView();
+						}
+					}
+				});
+			} else if (row2 == ImageDetailRow.METADATA_CHANGED) {
+				valueLabel2.setTooltip(new Tooltip("双击重置原始元数据"));
+				item2.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2) {
+						if (!hasOriginalMetadata(imageData.getServer())) {
+							if (promptToResetServerMetadata(imageData)) {
+								updateDetailsView();
+								imageData.getHierarchy().fireHierarchyChangedEvent(this);
+							}
+						}
+					}
+				});
+			} else if (row2 == ImageDetailRow.UNCOMPRESSED_SIZE) {
+				valueLabel2.setTooltip(new Tooltip("存储所有未压缩像素所需的大致内存"));
+			} else if (value2 instanceof StainVector) {
+				StainVector stain = (StainVector)value2;
+				Integer color = stain.getColor();
+				valueLabel2.setStyle(String.format("-fx-text-fill: rgb(%d, %d, %d);", 
+					ColorTools.red(color), ColorTools.green(color), ColorTools.blue(color)));
+				valueLabel2.setTooltip(new Tooltip("双击设置染色颜色（可以输入数值或在图像中使用小矩形ROI）"));
+				
+				item2.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						editStainVector(imageData, value2);
+				});
+			} else if (value2 instanceof double[]) {
+				valueLabel2.setText(GeneralTools.arrayToString(Locale.getDefault(Category.FORMAT), (double[])value2, 2));
+				valueLabel2.setTooltip(new Tooltip("双击设置颜色反卷积的背景值（可以输入数值或在图像中使用小矩形ROI）"));
+				
+				item2.setOnMouseClicked(e -> {
+					if (e.getClickCount() == 2)
+						editStainVector(imageData, value2);
+				});
+			} else {
+				valueLabel2.setTooltip(new Tooltip(value2.toString()));
+			}
+			if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
+				container.getChildren().addAll(item1, item2);
+			} else {
+				container.getChildren().addAll(item1, item2, unitLabel1);
+			}
+		}
+		
+		return container;
 	}
 }

@@ -455,9 +455,9 @@
     -fx-background-color: rgba(255, 255, 255, 1);
     -fx-background-radius: 28px;
     -fx-padding: 12 0 12 0;
-    -fx-pref-width: 300px;
-    -fx-width-width: 300px;
-    -fx-max-width: 300px;
+    -fx-pref-width: 320px;
+    -fx-min-width: 320px;
+    -fx-max-width: 320px;
 }
 
 .project-browser .project-topbar {
@@ -544,7 +544,6 @@
     -fx-max-height: 36px;
     -fx-border-color: transparent transparent rgba(0, 0, 0, 0.04) transparent;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 0 12 0 12;
 }
 
 .image-details-pane .topbar-tab-container .tab-button {
@@ -621,3 +620,17 @@
     -fx-font-size: 14px;
 }
 
+.image-details-pane .detail-unit {
+    -fx-font-size: 12px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+    -fx-pref-height: 36px;
+}
+
+.image-details-pane .special-name {
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-min-width: 28;
+    -fx-max-width: 28;
+    -fx-pref-width: 28;
+}
