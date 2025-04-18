@@ -613,6 +613,11 @@
     -fx-pref-width: 42;
 }
 
+.image-details-pane .extend-detail-name {
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+}
+
 .image-details-pane .detail-value {
     -fx-text-fill: rgba(0, 0, 0, 0.85);
     -fx-font-size: 14px;

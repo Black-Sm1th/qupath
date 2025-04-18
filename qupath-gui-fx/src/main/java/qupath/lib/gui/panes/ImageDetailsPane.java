@@ -144,7 +144,7 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	private VBox detailsContainer = new VBox();
 	private ListView<String> listAssociatedImages = new ListView<>();
 	private BorderPane mdPane = new BorderPane();
-	private TitledPane titlePaneAssociated;
+	private VBox associatedImagesContainer = new VBox();
 
 	private Map<String, SimpleImageViewer> associatedImageViewers = new HashMap<>();
 
@@ -227,13 +227,17 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			}
 		});
 		
-		// Create master detail pane and titled pane
-		titlePaneAssociated = new TitledPane("相关图像", listAssociatedImages);
-		titlePaneAssociated.setCollapsible(false);
-		listAssociatedImages.setTooltip(new Tooltip("当前图像相关的额外图像，例如标签或缩略图"));
+		// Create associated images container
+		associatedImagesContainer.getStyleClass().add("associated-images-container");
+		associatedImagesContainer.setSpacing(8);
+		associatedImagesContainer.setPadding(new Insets(0, 8, 0, 8));
 		
+		ScrollPane associatedScrollPane = new ScrollPane(associatedImagesContainer);
+		associatedScrollPane.setFitToWidth(true);
+		associatedScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		associatedScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		associatedScrollPane.setFitToHeight(true);
 		mdPane.setCenter(scrollPane);
-		
 		// Handle tab changes
 		button1.selectedProperty().addListener((obs, oldVal, newVal) -> {
 			if (newVal) {
@@ -242,14 +246,13 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		});
 		button2.selectedProperty().addListener((obs, oldVal, newVal) -> {
 			if (newVal) {
-				mdPane.setCenter(titlePaneAssociated);
+				mdPane.setCenter(associatedScrollPane);
 			}
 		});
 		
 		topTabBar.getChildren().addAll(button1, button2);
 		pane.getChildren().add(topTabBar);
 		
-		listAssociatedImages.setOnMouseClicked(this::handleAssociatedImagesMouseClick);
 		PathPrefs.maskImageNamesProperty().addListener((v, o, n) -> updateDetailsView());
 		
 		pane.getChildren().add(mdPane);
@@ -427,9 +430,14 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 	}
 	
 	private void handleAssociatedImagesMouseClick(MouseEvent event) {
-		if (event.getClickCount() < 2 || listAssociatedImages.getSelectionModel().getSelectedItem() == null)
+		if (event.getClickCount() < 2)
 			return;
-		String name = listAssociatedImages.getSelectionModel().getSelectedItem();
+			
+		Node source = (Node)event.getSource();
+		String name = (String)source.getUserData();
+		if (name == null)
+			return;
+			
 		var simpleViewer = associatedImageViewers.get(name);
 		if (simpleViewer == null) {
 			simpleViewer = new SimpleImageViewer();
@@ -871,11 +879,42 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 		updateDetailsView();
 		
 		ImageServer<BufferedImage> server = imageData == null ? null : imageData.getServer();
-		if (listAssociatedImages != null) {
-			if (server == null)
-				listAssociatedImages.getItems().clear();
-			else
-				listAssociatedImages.getItems().setAll(server.getAssociatedImageList());
+		if (server == null) {
+			associatedImagesContainer.getChildren().clear();
+		} else {
+			associatedImagesContainer.getChildren().clear();
+			for (String name : server.getAssociatedImageList()) {
+				HBox item = new HBox();
+				item.getStyleClass().add("detail-item");
+				item.setSpacing(4);
+				var nameTranslate = name;
+				switch(name){
+					case "macro":
+						nameTranslate = "宏";
+						break;
+					case "label":
+						nameTranslate = "标签";
+						break;
+					case "thumbnail":
+						nameTranslate = "缩略图";
+						break;
+					default:
+						nameTranslate = name;
+						break;
+				}
+				Label nameLabel = new Label(nameTranslate);
+				nameLabel.getStyleClass().add("extend-detail-name");
+				
+				Region spacer = new Region();
+				HBox.setHgrow(spacer, Priority.ALWAYS);
+				
+				item.getChildren().addAll(nameLabel, spacer);
+				item.setCursor(Cursor.HAND);
+				item.setUserData(name);
+				item.setOnMouseClicked(this::handleAssociatedImagesMouseClick);
+				
+				associatedImagesContainer.getChildren().add(item);
+			}
 		}
 
 		// Check if we're showing associated images
