@@ -27,8 +27,10 @@ package qupath.lib.gui;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;	
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -46,12 +48,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import qupath.lib.gui.ToolBarComponent.ViewerMagnificationLabel;
 import qupath.lib.gui.panes.ProjectBrowser;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.LLMClient;
 import qupath.lib.gui.viewer.QuPathViewerPlus;
-import qupath.lib.gui.ToolBarComponent.ViewerMagnificationLabel;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -294,7 +296,7 @@ class QuPathMainPaneManager {
 		// 添加回车键事件监听
 		input.setOnKeyPressed(e -> {
 			if (e.getCode() == KeyCode.ENTER) {
-				client.getCompletionAsync(input.getText(), 
+				client.getStreamingCompletionAsync(input.getText(), 
 					response -> {
 						// 更新UI
 						Platform.runLater(() -> logger.info(response));
@@ -340,7 +342,6 @@ class QuPathMainPaneManager {
 		bottomBarContainer.setLeft(leftContainer);
 		bottomBarContainer.setCenter(inputContainer);
 		bottomBarContainer.setRight(rightContainer);
-
 		return bottomBarContainer;
 	}
 
@@ -393,13 +394,15 @@ class QuPathMainPaneManager {
 		var imagePane = analysisTabPane.getTabPane().getTabs().get(1).getContent();
 		var annotationPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
+		var analysisPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
 		
 		// Add all panes to container but make them invisible initially
-		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane);
+		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane, analysisPane);
 		projectPane.setVisible(true);
 		imagePane.setVisible(false);
 		annotationPane.setVisible(false);
 		workflowPane.setVisible(false);
+		analysisPane.setVisible(false);
 		
 		// Add navigation buttons
 		var projectBtn = (ToggleButton)createNavButton("project", "项目");
@@ -420,6 +423,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
+			analysisPane.setVisible(false);
 		});
 		
 		imageBtn.setOnAction(e -> {
@@ -429,6 +433,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(true);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
+			analysisPane.setVisible(false);
 		});
 		
 		annotationBtn.setOnAction(e -> {
@@ -438,6 +443,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(true);
 			workflowPane.setVisible(false);
+			analysisPane.setVisible(false);
 		});
 		
 		workflowBtn.setOnAction(e -> {
@@ -447,10 +453,16 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(true);
+			analysisPane.setVisible(false);
 		});
 		
 		analysisBtn.setOnAction(e -> {
 			// 处理分析按钮点击事件
+			projectPane.setVisible(false);
+			imagePane.setVisible(false);
+			annotationPane.setVisible(false);
+			workflowPane.setVisible(false);
+			analysisPane.setVisible(true);
 		});
 		
 		classifyBtn.setOnAction(e -> {

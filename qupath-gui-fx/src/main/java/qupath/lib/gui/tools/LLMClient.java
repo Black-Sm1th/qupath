@@ -32,6 +32,39 @@ public class LLMClient {
         });
     }
 
+    public void getStreamingCompletionAsync(String prompt, Consumer<String> onChunk, Consumer<Exception> onError) {
+        executor.execute(() -> {
+            try {
+                streamRequest(prompt, onChunk);
+            } catch (Exception e) {
+                Platform.runLater(() -> onError.accept(e));
+            }
+        });
+    }
+
+    private void streamRequest(String prompt, Consumer<String> onChunk) throws IOException {
+        HttpURLConnection conn = createConnection();
+        writeRequestBody(conn, createStreamingRequestJson(prompt));
+        validateResponse(conn);
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("data: ")) {
+                    String data = line.substring(6);
+                    if (data.equals("[DONE]")) {
+                        break;
+                    }
+                    String content = parseContent(data);
+                    if (content != null && !content.isEmpty()) {
+                        Platform.runLater(() -> onChunk.accept(content));
+                    }
+                }
+            }
+        }
+    }
+
     private String sendRequest(String prompt) throws IOException {
         HttpURLConnection conn = createConnection();
         writeRequestBody(conn, createRequestJson(prompt));
@@ -56,6 +89,11 @@ public class LLMClient {
 
     private String createRequestJson(String prompt) {
         return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+                escapeJson(prompt));
+    }
+
+    private String createStreamingRequestJson(String prompt) {
+        return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}],\"stream\":true}",
                 escapeJson(prompt));
     }
 
