@@ -457,6 +457,7 @@ class QuPathMainPaneManager {
 		});
 		
 		analysisBtn.setOnAction(e -> {
+			analysisTabPane.getTabPane().getSelectionModel().select(3);
 			// 处理分析按钮点击事件
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
