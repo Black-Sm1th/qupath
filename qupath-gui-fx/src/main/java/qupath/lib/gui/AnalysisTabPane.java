@@ -33,11 +33,9 @@ import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TabPane.TabDragPolicy;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.Tooltip;
 import qupath.fx.utils.FXUtils;
 import qupath.lib.gui.localization.QuPathResources;
 import qupath.lib.gui.panes.AnnotationPane;
@@ -150,12 +148,7 @@ class AnalysisTabPane {
 		});
 		
 		
-		TitledPane titledLog = new TitledPane(titleHistory.get(), workflowLogView.getPane());
-		titledLog.textProperty().bind(titleHistory);
-		titledLog.setCollapsible(false);
-		titledLog.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		var pane = new BorderPane(titledLog);
-		tabPane.getTabs().add(createTab(titleWorkflow, pane));
+		tabPane.getTabs().add(createTab(titleWorkflow, workflowLogView.getPane()));
 	}
 	
 	private void makeTabsUndockable() {
