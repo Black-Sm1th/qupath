@@ -24,11 +24,11 @@
 
 package qupath.lib.gui;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;	
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -75,10 +75,11 @@ class QuPathMainPaneManager {
 	private ToggleGroup navToggleGroup;
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
 	private LLMClient client;
-
+	private LLMClient.LLMType llmtype = LLMClient.LLMType.DEEP_SEEK;
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
+
 		// Create main components
 		toolbar = new ToolBarComponent(qupath.getToolManager(),
 				qupath.getViewerActions(),
@@ -96,12 +97,23 @@ class QuPathMainPaneManager {
 				return;
 			}
 			prop.load(input);
-			String apiKey = prop.getProperty("llm.api.key");
+			String apiKey;
+			switch (llmtype) {
+				case PATHOLOGY:
+					apiKey = prop.getProperty("llm.pathology.api.key");
+					break;
+				case DEEP_SEEK:
+					apiKey = prop.getProperty("llm.deepseek.api.key");
+					break;
+				default:
+					apiKey = prop.getProperty("llm.pathology.api.key");
+					break;
+			}
 			if (apiKey == null || apiKey.isEmpty()) {
 				logger.error("API key not found in config.properties");
 				return;
 			}
-			client = new LLMClient(apiKey, LLMClient.LLMType.PATHOLOGY);
+			client = new LLMClient(apiKey, llmtype);
 		} catch (IOException ex) {
 			logger.error("Error loading config.properties", ex);
 			return;

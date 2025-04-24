@@ -61,12 +61,12 @@ import javafx.scene.text.FontWeight;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.scripting.ScriptEditor;
+import qupath.lib.gui.tools.QuPathTranslator;
 import qupath.lib.images.ImageData;
 import qupath.lib.plugins.workflow.ScriptableWorkflowStep;
 import qupath.lib.plugins.workflow.Workflow;
 import qupath.lib.plugins.workflow.WorkflowListener;
 import qupath.lib.plugins.workflow.WorkflowStep;
-import qupath.lib.gui.tools.QuPathTranslator;
 
 
 /**
@@ -179,24 +179,9 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		stepScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 		stepScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		stepScrollPane.setFitToHeight(true);
+		
 
-		ScrollPane deatilScrollPane = new ScrollPane(detailsBox);
-		deatilScrollPane.setFitToWidth(true);
-		deatilScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-		deatilScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		deatilScrollPane.setFitToHeight(true);
-		mdPane.setCenter(stepScrollPane);
-		button1.selectedProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal) {
-				mdPane.setCenter(stepScrollPane);
-			}
-		});
-		button2.selectedProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal) {
-				mdPane.setCenter(deatilScrollPane);
-			}
-		});
-		topTabBar.getChildren().addAll(button1, button2);
+		VBox detailBox = new VBox();
 		// Create workflow button
 		Button btnCreateWorkflow = new Button("创建脚本");
 		btnCreateWorkflow.setStyle("-fx-background-color: rgba(22, 146, 255, 1); -fx-text-fill: rgba(255, 255, 255, 1); -fx-font-size: 14px; -fx-background-radius: 12;");
@@ -207,6 +192,27 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		btnCreateWorkflow.setOnAction(e -> showScript());
 		btnCreateWorkflow.disableProperty().bind(workflowProperty.isNull());
 		VBox.setMargin(btnCreateWorkflow, new Insets(0, 12, 0, 12));
+
+		ScrollPane deatilScrollPane = new ScrollPane(detailsBox);
+		deatilScrollPane.setFitToWidth(true);
+		deatilScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		deatilScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		deatilScrollPane.setFitToHeight(true);
+
+		detailBox.getChildren().addAll(deatilScrollPane, btnCreateWorkflow);
+		mdPane.setCenter(stepScrollPane);
+		button1.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				mdPane.setCenter(stepScrollPane);
+			}
+		});
+		button2.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				mdPane.setCenter(detailBox);
+			}
+		});
+		topTabBar.getChildren().addAll(button1, button2);
+		
 		pane.setFillWidth(true);
 		detailsBox.setFillWidth(true);
 		// Set layout
@@ -281,13 +287,6 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		if (step == null) {
 			return;
 		}
-		
-		// Add step name as header
-		Label nameLabel = new Label(QuPathTranslator.getTranslatedName(step.getName()));
-		nameLabel.setFont(Font.font(null, FontWeight.BOLD, 14));
-		nameLabel.setTextFill(Color.web("#333333"));
-		detailsBox.getChildren().add(nameLabel);
-		
 		// Add parameters
 		Map<String, ?> params = step.getParameterMap();
 		if (!params.isEmpty()) {

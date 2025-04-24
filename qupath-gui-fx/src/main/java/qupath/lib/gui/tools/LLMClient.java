@@ -9,10 +9,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javafx.application.Platform;
 
 public class LLMClient {
+    private static final Logger logger = LoggerFactory.getLogger(LLMClient.class);
     private String API_URL = "";
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final String apiKey;
@@ -102,6 +104,7 @@ public class LLMClient {
     }
 
     private void writeRequestBody(HttpURLConnection conn, String json) throws IOException {
+        logger.info("Sending {} request to URL: {}", llmType, API_URL);
         try (OutputStream os = conn.getOutputStream()) {
             os.write(json.getBytes(StandardCharsets.UTF_8));
         }
