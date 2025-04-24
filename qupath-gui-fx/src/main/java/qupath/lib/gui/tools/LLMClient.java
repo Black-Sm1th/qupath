@@ -13,12 +13,28 @@ import java.util.concurrent.Executors;
 import javafx.application.Platform;
 
 public class LLMClient {
-    private static final String API_URL = "https://api.deepseek.com/v1/chat/completions";
+    private String API_URL = "";
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final String apiKey;
-
-    public LLMClient(String apiKey) {
+    private final LLMType llmType;
+    public enum LLMType {
+        PATHOLOGY,
+        DEEP_SEEK
+    }
+    public LLMClient(String apiKey, LLMType llmType) {
         this.apiKey = apiKey;
+        this.llmType = llmType;
+        switch (llmType) {
+            case PATHOLOGY:
+                API_URL = "http://111.6.178.34:25423/chat";
+                break;
+            case DEEP_SEEK:
+                API_URL = "https://api.deepseek.com/v1/chat/completions";
+                break;
+            default:
+                API_URL = "http://111.6.178.34:25423/chat";
+                break;
+        }
     }
 
     public void getCompletionAsync(String prompt, Consumer<String> onSuccess, Consumer<Exception> onError) {
@@ -76,7 +92,11 @@ public class LLMClient {
         HttpURLConnection conn = (HttpURLConnection) new URL(API_URL).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+        if (llmType == LLMType.DEEP_SEEK) {
+            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+        } else {
+            conn.setRequestProperty("X-API-Key", apiKey);
+        }
         conn.setDoOutput(true);
         return conn;
     }
@@ -88,13 +108,23 @@ public class LLMClient {
     }
 
     private String createRequestJson(String prompt) {
-        return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
-                escapeJson(prompt));
+        if (llmType == LLMType.DEEP_SEEK) {
+            return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+                    escapeJson(prompt));
+        } else {
+            return String.format("{\"prompt\":\"%s\",\"temperature\":0.6}",
+                    escapeJson(prompt));
+        }
     }
 
     private String createStreamingRequestJson(String prompt) {
-        return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}],\"stream\":true}",
-                escapeJson(prompt));
+        if (llmType == LLMType.DEEP_SEEK) {
+            return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}],\"stream\":true}",
+                    escapeJson(prompt));
+        } else {
+            return String.format("{\"prompt\":\"%s\",\"temperature\":0.6,\"stream\":true}",
+                    escapeJson(prompt));
+        }
     }
 
     private String escapeJson(String input) {
@@ -125,9 +155,16 @@ public class LLMClient {
     }
 
     private String parseContent(String json) {
-        int contentStart = json.indexOf("\"content\":\"") + 11;
-        int contentEnd = json.indexOf("\"", contentStart);
-        return unescapeJson(json.substring(contentStart, contentEnd));
+        int responseStart;
+        int responseEnd;
+        if (llmType == LLMType.DEEP_SEEK) {
+            responseStart = json.indexOf("\"content\":\"") + 11;
+            responseEnd = json.indexOf("\"", responseStart);
+        } else {
+            responseStart = json.indexOf("\"response\":\"") + 12;
+            responseEnd = json.indexOf("\"", responseStart);
+        }
+        return unescapeJson(json.substring(responseStart, responseEnd));
     }
 
     private String unescapeJson(String input) {

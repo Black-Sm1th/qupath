@@ -84,7 +84,8 @@ class QuPathMainPaneManager {
 				qupath.getOverlayActions());
 		// Create the main pane
 		pane = new StackPane();	
-		client = new LLMClient("sk-0cd1d137904448bf8d41b2b2c5d4988e");
+		// client = new LLMClient("sk-0cd1d137904448bf8d41b2b2c5d4988e", LLMClient.LLMType.DEEP_SEEK);
+		client = new LLMClient("af59e9c0a84d46c6bd3c1a3d1e9f4391e2f6b6f3f9cb48db98f1e5a7b70c2d63", LLMClient.LLMType.PATHOLOGY);
 		// Get viewer pane
 		mainViewerPane = qupath.getViewerManager().getRegion();
 		pane.getChildren().add(mainViewerPane);
