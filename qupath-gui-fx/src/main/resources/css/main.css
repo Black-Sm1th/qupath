@@ -649,12 +649,38 @@
     -fx-padding: 0 12 0 12;
 }
 
+.workflow-command-pane .workflow-details-box {
+    -fx-padding: 0 12 0 12;
+    -fx-spacing: 8
+}
+
 .workflow-command-pane .workflow-command-step {
     -fx-padding: 8 12 8 12;
     -fx-background-color: transparent;
     -fx-background-radius: 12px;
     -fx-border-radius: 12px;
     -fx-cursor: hand;
+}
+
+.workflow-command-pane .workflow-parmeter-box {
+    -fx-padding: 8 12 8 12;
+    -fx-background-color: rgba(0, 0, 0, 0.04);
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-spacing: 4px
+}
+
+.workflow-command-pane .workflow-parmeter-box .workflow-parmeter-box-key{
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-min-width: 42;
+    -fx-max-width: 42;
+    -fx-pref-width: 42;
+}
+
+.workflow-command-pane .workflow-parmeter-box .workflow-parmeter-box-value{
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-font-size: 14px;
 }
 
 .workflow-command-pane .workflow-command-step.selected {

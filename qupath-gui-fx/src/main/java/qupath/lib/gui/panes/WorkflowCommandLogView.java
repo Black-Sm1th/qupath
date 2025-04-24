@@ -148,7 +148,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		ToggleGroup group = new ToggleGroup();
 		
 		// Create toggle buttons
-        ToggleButton button1 = new ToggleButton("历史命令");
+        ToggleButton button1 = new ToggleButton("命令历史");
         ToggleButton button2 = new ToggleButton("脚本");
 		button1.getStyleClass().add("tab-button");
 		button2.getStyleClass().add("tab-button");
@@ -171,6 +171,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		stepsBox.getStyleClass().add("workflow-steps-box");
 		// Details box
 		detailsBox = new VBox();
+		detailsBox.getStyleClass().add("workflow-details-box");
 
 		
 		// Single ScrollPane containing all content
@@ -180,26 +181,22 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		stepScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		stepScrollPane.setFitToHeight(true);
 		
-
-		VBox detailBox = new VBox();
 		// Create workflow button
 		Button btnCreateWorkflow = new Button("创建脚本");
-		btnCreateWorkflow.setStyle("-fx-background-color: rgba(22, 146, 255, 1); -fx-text-fill: rgba(255, 255, 255, 1); -fx-font-size: 14px; -fx-background-radius: 12;");
+		btnCreateWorkflow.setStyle("-fx-background-color: rgba(22, 146, 255, 1); -fx-text-fill: rgba(255, 255, 255, 1); -fx-font-size: 14px; -fx-background-radius: 12; -fx-cursor:hand;");
 		btnCreateWorkflow.setPrefHeight(48);
 		btnCreateWorkflow.setMinHeight(48);
 		btnCreateWorkflow.setMaxHeight(48);
 		btnCreateWorkflow.setPrefWidth(Double.MAX_VALUE);
 		btnCreateWorkflow.setOnAction(e -> showScript());
 		btnCreateWorkflow.disableProperty().bind(workflowProperty.isNull());
-		VBox.setMargin(btnCreateWorkflow, new Insets(0, 12, 0, 12));
-
+		BorderPane.setMargin(btnCreateWorkflow, new Insets(12, 12, 0, 12));
+		mdPane.setBottom(btnCreateWorkflow);
 		ScrollPane deatilScrollPane = new ScrollPane(detailsBox);
 		deatilScrollPane.setFitToWidth(true);
 		deatilScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 		deatilScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		deatilScrollPane.setFitToHeight(true);
-
-		detailBox.getChildren().addAll(deatilScrollPane, btnCreateWorkflow);
 		mdPane.setCenter(stepScrollPane);
 		button1.selectedProperty().addListener((obs, oldVal, newVal) -> {
 			if (newVal) {
@@ -208,7 +205,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		});
 		button2.selectedProperty().addListener((obs, oldVal, newVal) -> {
 			if (newVal) {
-				mdPane.setCenter(detailBox);
+				mdPane.setCenter(deatilScrollPane);
 			}
 		});
 		topTabBar.getChildren().addAll(button1, button2);
@@ -291,7 +288,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		Map<String, ?> params = step.getParameterMap();
 		if (!params.isEmpty()) {
 			for (Map.Entry<String, ?> entry : params.entrySet()) {
-				VBox paramBox = createParameterBox(entry.getKey(), entry.getValue());
+				HBox paramBox = createParameterBox(entry.getKey(), entry.getValue());
 				detailsBox.getChildren().add(paramBox);
 			}
 		}
@@ -300,26 +297,22 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		if (step instanceof ScriptableWorkflowStep) {
 			String script = ((ScriptableWorkflowStep) step).getScript();
 			if (script != null && !script.isEmpty()) {
-				VBox scriptBox = createParameterBox("Script", script);
+				HBox scriptBox = createParameterBox("Script", script);
 				detailsBox.getChildren().add(scriptBox);
 			}
 		}
 	}
 	
-	private VBox createParameterBox(String key, Object value) {
-		VBox box = new VBox(5);
-		box.setPadding(new Insets(5, 0, 5, 0));
-		
+	private HBox createParameterBox(String key, Object value) {
+		HBox box = new HBox();
+		box.getStyleClass().add("workflow-parmeter-box");
 		// Parameter name
 		Label keyLabel = new Label(key);
-		keyLabel.setFont(Font.font(null, FontWeight.MEDIUM, 12));
-		keyLabel.setTextFill(Color.web("#666666"));
+		keyLabel.getStyleClass().add("workflow-parmeter-box-key");
 		
 		// Parameter value
 		Label valueLabel = new Label(value == null ? "" : value.toString());
-		valueLabel.setFont(Font.font(null, FontWeight.NORMAL, 12));
-		valueLabel.setTextFill(Color.web("#333333"));
-		valueLabel.setWrapText(true);
+		valueLabel.getStyleClass().add("workflow-parmeter-box-value");
 		
 		box.getChildren().addAll(keyLabel, valueLabel);
 		return box;
@@ -374,11 +367,12 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 			return;
 		if (imageDataOld != null)
 			imageDataOld.getHistoryWorkflow().removeWorkflowListener(this);
-		
+
+		selectedStep = null;
+		detailsBox.getChildren().clear();
 		if (imageDataNew != null) {
 			imageDataNew.getHistoryWorkflow().addWorkflowListener(this);
 			workflowProperty.set(imageDataNew.getHistoryWorkflow());
-			selectedStep = null;
 			Workflow workflow = imageDataNew.getHistoryWorkflow();
 			updateStepsList(workflow.getSteps());
 			workflowUpdated(workflow);
