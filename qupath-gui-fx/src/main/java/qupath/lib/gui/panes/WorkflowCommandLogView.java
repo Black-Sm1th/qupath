@@ -37,27 +37,27 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
-import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.scripting.ScriptEditor;
@@ -66,6 +66,7 @@ import qupath.lib.plugins.workflow.ScriptableWorkflowStep;
 import qupath.lib.plugins.workflow.Workflow;
 import qupath.lib.plugins.workflow.WorkflowListener;
 import qupath.lib.plugins.workflow.WorkflowStep;
+import qupath.lib.gui.tools.QuPathTranslator;
 
 
 /**
@@ -92,7 +93,6 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 	private WorkflowStep selectedStep;
 	
 	private final KeyCodeCombination copyCombination = new KeyCodeCombination(KeyCode.C, KeyCombination.SHORTCUT_DOWN);
-	
 	/**
 	 * Construct a view to display the workflow for the currently-active ImageData within a running QuPath instance.
 	 * 
@@ -137,20 +137,19 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 	
 	protected VBox createPane() {
 		VBox pane = new VBox();
+		BorderPane mdPane = new BorderPane();
+		VBox.setVgrow(mdPane, Priority.ALWAYS);
 		pane.getStyleClass().add("workflow-command-pane");
-		// Main content VBox that will contain title, steps and details
-		VBox contentBox = new VBox();
-		contentBox.setPadding(new Insets(0,12,0,12));
 		// Title
 		HBox topTabBar = new HBox();
 		topTabBar.getStyleClass().add("topbar-tab-container");
-		VBox.setMargin(topTabBar, new Insets(0, 12, 0, 12));
 		topTabBar.setAlignment(Pos.CENTER_LEFT);
+		VBox.setMargin(topTabBar, new Insets(0, 12, 0, 12));
 		ToggleGroup group = new ToggleGroup();
 		
 		// Create toggle buttons
-        ToggleButton button1 = new ToggleButton("图像");
-        ToggleButton button2 = new ToggleButton("相关图像");
+        ToggleButton button1 = new ToggleButton("历史命令");
+        ToggleButton button2 = new ToggleButton("脚本");
 		button1.getStyleClass().add("tab-button");
 		button2.getStyleClass().add("tab-button");
 		button1.setToggleGroup(group);
@@ -169,19 +168,35 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		});
 		// Steps list
 		stepsBox = new VBox();
+		stepsBox.getStyleClass().add("workflow-steps-box");
 		// Details box
 		detailsBox = new VBox();
-		
-		// Combine title, steps and details in the content box
-		contentBox.getChildren().addAll(topTabBar, stepsBox, detailsBox);
+
 		
 		// Single ScrollPane containing all content
-		ScrollPane scrollPane = new ScrollPane(contentBox);
-		scrollPane.setFitToWidth(true);
-		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		scrollPane.setFitToHeight(true);
-		
+		ScrollPane stepScrollPane = new ScrollPane(stepsBox);
+		stepScrollPane.setFitToWidth(true);
+		stepScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		stepScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		stepScrollPane.setFitToHeight(true);
+
+		ScrollPane deatilScrollPane = new ScrollPane(detailsBox);
+		deatilScrollPane.setFitToWidth(true);
+		deatilScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		deatilScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		deatilScrollPane.setFitToHeight(true);
+		mdPane.setCenter(stepScrollPane);
+		button1.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				mdPane.setCenter(stepScrollPane);
+			}
+		});
+		button2.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				mdPane.setCenter(deatilScrollPane);
+			}
+		});
+		topTabBar.getChildren().addAll(button1, button2);
 		// Create workflow button
 		Button btnCreateWorkflow = new Button("创建脚本");
 		btnCreateWorkflow.setStyle("-fx-background-color: rgba(22, 146, 255, 1); -fx-text-fill: rgba(255, 255, 255, 1); -fx-font-size: 14px; -fx-background-radius: 12;");
@@ -192,9 +207,10 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		btnCreateWorkflow.setOnAction(e -> showScript());
 		btnCreateWorkflow.disableProperty().bind(workflowProperty.isNull());
 		VBox.setMargin(btnCreateWorkflow, new Insets(0, 12, 0, 12));
-		
+		pane.setFillWidth(true);
+		detailsBox.setFillWidth(true);
 		// Set layout
-		pane.getChildren().addAll(scrollPane, btnCreateWorkflow);
+		pane.getChildren().addAll(topTabBar, mdPane);
 		
 		return pane;
 	}
@@ -212,7 +228,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 	private Node createStepNode(WorkflowStep step) {
 		VBox stepBox = new VBox();
 		stepBox.getStyleClass().add("workflow-command-step");
-		Label nameLabel = new Label(step.getName());
+		Label nameLabel = new Label(QuPathTranslator.getTranslatedName(step.getName()));
 		nameLabel.getStyleClass().add("workflow-command-step-name");
 		stepBox.getChildren().add(nameLabel);
 		
@@ -244,11 +260,14 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		// Selection handling
 		stepBox.setOnMouseClicked(e -> {
 			// Clear previous selection
-			stepsBox.getChildren().forEach(node -> 
-				node.setStyle("-fx-background-color: transparent;"));
+			stepsBox.getChildren().forEach(node -> {
+				node.getStyleClass().remove("selected");
+				node.lookup(".workflow-command-step-name").getStyleClass().remove("selected");
+			});
 			
 			// Set new selection
-			stepBox.setStyle("-fx-background-color: #e6f7ff; -fx-background-radius: 3;");
+			stepBox.getStyleClass().add("selected");
+			nameLabel.getStyleClass().add("selected");
 			selectedStep = step;
 			updateDetailsPane(step);
 		});
@@ -264,7 +283,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		}
 		
 		// Add step name as header
-		Label nameLabel = new Label(step.getName());
+		Label nameLabel = new Label(QuPathTranslator.getTranslatedName(step.getName()));
 		nameLabel.setFont(Font.font(null, FontWeight.BOLD, 14));
 		nameLabel.setTextFill(Color.web("#333333"));
 		detailsBox.getChildren().add(nameLabel);
