@@ -27,6 +27,9 @@ package qupath.lib.gui;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;	
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +87,26 @@ class QuPathMainPaneManager {
 				qupath.getOverlayActions());
 		// Create the main pane
 		pane = new StackPane();	
-		// client = new LLMClient("sk-0cd1d137904448bf8d41b2b2c5d4988e", LLMClient.LLMType.DEEP_SEEK);
-		client = new LLMClient("af59e9c0a84d46c6bd3c1a3d1e9f4391e2f6b6f3f9cb48db98f1e5a7b70c2d63", LLMClient.LLMType.PATHOLOGY);
+		
+		// Load API key from config file
+		Properties prop = new Properties();
+		try (InputStream input = getClass().getResourceAsStream("/config.properties")) {
+			if (input == null) {
+				logger.error("Unable to find config.properties");
+				return;
+			}
+			prop.load(input);
+			String apiKey = prop.getProperty("llm.api.key");
+			if (apiKey == null || apiKey.isEmpty()) {
+				logger.error("API key not found in config.properties");
+				return;
+			}
+			client = new LLMClient(apiKey, LLMClient.LLMType.PATHOLOGY);
+		} catch (IOException ex) {
+			logger.error("Error loading config.properties", ex);
+			return;
+		}
+		
 		// Get viewer pane
 		mainViewerPane = qupath.getViewerManager().getRegion();
 		pane.getChildren().add(mainViewerPane);
