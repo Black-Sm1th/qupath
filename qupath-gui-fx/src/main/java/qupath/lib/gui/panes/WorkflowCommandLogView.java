@@ -64,7 +64,7 @@ import qupath.lib.plugins.workflow.ScriptableWorkflowStep;
 import qupath.lib.plugins.workflow.Workflow;
 import qupath.lib.plugins.workflow.WorkflowListener;
 import qupath.lib.plugins.workflow.WorkflowStep;
-
+import javafx.scene.control.Tooltip;
 
 /**
  * Show logged commands, and optionally generate a script.
@@ -304,11 +304,13 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		HBox box = new HBox();
 		box.getStyleClass().add("workflow-parmeter-box");
 		// Parameter name
-		Label keyLabel = new Label(key);
+		Label keyLabel = new Label(QuPathTranslator.getTranslatedName(key));
+		keyLabel.setTooltip(new Tooltip(QuPathTranslator.getTranslatedName(key)));
 		keyLabel.getStyleClass().add("workflow-parmeter-box-key");
 		
 		// Parameter value
-		Label valueLabel = new Label(value == null ? "" : value.toString());
+		Label valueLabel = new Label(value == null ? "" : QuPathTranslator.getTranslatedName(value.toString()));
+		valueLabel.setTooltip(new Tooltip(value == null ? "" : QuPathTranslator.getTranslatedName(value.toString())));
 		valueLabel.getStyleClass().add("workflow-parmeter-box-value");
 		
 		box.getChildren().addAll(keyLabel, valueLabel);

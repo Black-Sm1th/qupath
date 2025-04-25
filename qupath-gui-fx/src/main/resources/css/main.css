@@ -673,9 +673,6 @@
 .workflow-command-pane .workflow-parmeter-box .workflow-parmeter-box-key{
     -fx-font-size: 14px;
     -fx-text-fill: rgba(0, 0, 0, 0.45);
-    -fx-min-width: 42;
-    -fx-max-width: 42;
-    -fx-pref-width: 42;
 }
 
 .workflow-command-pane .workflow-parmeter-box .workflow-parmeter-box-value{
