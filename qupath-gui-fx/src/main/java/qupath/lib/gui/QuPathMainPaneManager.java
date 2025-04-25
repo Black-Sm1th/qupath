@@ -75,7 +75,7 @@ class QuPathMainPaneManager {
 	private ToggleGroup navToggleGroup;
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
 	private LLMClient client;
-	private LLMClient.LLMType llmtype = LLMClient.LLMType.DEEP_SEEK;
+	private LLMClient.LLMType llmtype = LLMClient.LLMType.PATHOLOGY;
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
