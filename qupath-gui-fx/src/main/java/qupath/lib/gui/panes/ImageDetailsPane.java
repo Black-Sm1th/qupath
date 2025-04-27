@@ -1503,10 +1503,6 @@ public class ImageDetailsPane implements ChangeListener<ImageData<BufferedImage>
 			
 			if(row1 == ImageDetailRow.UNCOMPRESSED_SIZE && row2 == ImageDetailRow.METADATA_CHANGED){
 				container.getChildren().addAll(item1, item2);
-			} else if(row1 == ImageDetailRow.WIDTH && row2 == ImageDetailRow.HEIGHT){
-				Region spacer = new Region();
-				HBox.setHgrow(spacer, Priority.ALWAYS);
-				container.getChildren().addAll(item1, item2, spacer, unitLabel1);
 			} else {
 				container.getChildren().addAll(item1, item2, unitLabel1);
 			}

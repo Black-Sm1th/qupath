@@ -132,6 +132,8 @@ public class QuPathTranslator {
         Map.entry("Background", "背景"),
         Map.entry("H-DAB modified", "H-DAB 修改"),
         Map.entry("Type", "类型"),
+        Map.entry("true", "是"),
+        Map.entry("false", "否"),
         Map.entry("Annotation", "标注"),
         Map.entry("detectionImageBrightfield", "检测图像明场"),
         Map.entry("Hematoxylin OD", "苏木精光密度"),
@@ -151,7 +153,9 @@ public class QuPathTranslator {
         Map.entry("smoothBoundaries", "平滑边界"),
         Map.entry("makeMeasurements", "进行测量"),
         Map.entry("fwhmMicrons", "半高全宽(微米)"),
-        Map.entry("smoothWithinClasses", "在类别内平滑")
+        Map.entry("smoothWithinClasses", "在类别内平滑"),
+        Map.entry("pixelHeightMicrons", "像素高度(微米)"),
+        Map.entry("pixelWidthMicrons", "像素宽度(微米)")
     );
     
     // 用于记录未翻译的关键字
@@ -219,18 +223,52 @@ public class QuPathTranslator {
         }
         
         try {
-            Path filePath = Paths.get(UNTRANSLATED_FILE);
-            boolean fileExists = Files.exists(filePath);
+            // 清空文件内容
+            try (PrintWriter writer = new PrintWriter(UNTRANSLATED_FILE)) {
+                writer.println("// 未翻译的关键字列表");
+                writer.println("// 格式: 英文关键字");
+                writer.println();
+            }
             
+            // 写入新的内容
             try (PrintWriter writer = new PrintWriter(new FileWriter(UNTRANSLATED_FILE, true))) {
-                if (!fileExists) {
-                    writer.println("// 未翻译的关键字列表");
-                    writer.println("// 格式: 英文关键字");
-                    writer.println();
-                }
-                
-                // 按字母顺序排序
+                // 按字母顺序排序并过滤
                 untranslatedKeywords.stream()
+                    .filter(keyword -> {
+                        if (keyword == null || keyword.trim().isEmpty()) {
+                            return false;
+                        }
+                        
+                        String trimmed = keyword.trim();
+                        
+                        // 排除纯数字（包括小数和空格分隔的数字）
+                        if (trimmed.matches("^[\\d\\s.]+$")) {
+                            return false;
+                        }
+                        
+                        // 排除中文
+                        if (trimmed.matches(".*[\\u4e00-\\u9fa5].*")) {
+                            return false;
+                        }
+                        
+                        // 排除脚本语句
+                        if (trimmed.contains("setImageType") || 
+                            trimmed.contains("setColorDeconvolutionStains") ||
+                            trimmed.contains("setPixelSizeMicrons") ||
+                            trimmed.contains("runPlugin") ||
+                            trimmed.contains("selectAnnotations") ||
+                            trimmed.startsWith("'") || trimmed.endsWith("'") ||
+                            trimmed.startsWith("\"") || trimmed.endsWith("\"")) {
+                            return false;
+                        }
+                        
+                        // 排除RGB值
+                        if (trimmed.matches("^\\d+\\s+\\d+\\s+\\d+$")) {
+                            return false;
+                        }
+                        
+                        return true;
+                    })
                     .sorted()
                     .forEach(writer::println);
             }
