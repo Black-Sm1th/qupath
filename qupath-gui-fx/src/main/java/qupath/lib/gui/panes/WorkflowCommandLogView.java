@@ -46,6 +46,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
@@ -64,7 +65,6 @@ import qupath.lib.plugins.workflow.ScriptableWorkflowStep;
 import qupath.lib.plugins.workflow.Workflow;
 import qupath.lib.plugins.workflow.WorkflowListener;
 import qupath.lib.plugins.workflow.WorkflowStep;
-import javafx.scene.control.Tooltip;
 
 /**
  * Show logged commands, and optionally generate a script.
@@ -234,7 +234,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		
 		// Context menu
 		ContextMenu contextMenu = new ContextMenu();
-		MenuItem miCopyCommand = new MenuItem("Copy command");
+		MenuItem miCopyCommand = new MenuItem("复制命令");
 		miCopyCommand.setOnAction(e -> {
 			if (step instanceof ScriptableWorkflowStep) {
 				String script = ((ScriptableWorkflowStep)step).getScript();
@@ -246,9 +246,9 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		contextMenu.getItems().add(miCopyCommand);
 		
 		if (isStaticWorkflow) {
-			MenuItem miRemoveSelected = new MenuItem("Remove step");
+			MenuItem miRemoveSelected = new MenuItem("删除步骤");
 			miRemoveSelected.setOnAction(e -> {
-				if (Dialogs.showYesNoDialog("Remove workflow step", "Remove workflow step?")) {
+				if (Dialogs.showYesNoDialog("删除工作流步骤", "是否删除工作流步骤？")) {
 					getWorkflow().removeStep(step);
 				}
 			});
@@ -294,7 +294,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		if (step instanceof ScriptableWorkflowStep) {
 			String script = ((ScriptableWorkflowStep) step).getScript();
 			if (script != null && !script.isEmpty()) {
-				HBox scriptBox = createParameterBox("Script", script);
+				HBox scriptBox = createParameterBox("脚本", script);
 				detailsBox.getChildren().add(scriptBox);
 			}
 		}
@@ -307,6 +307,10 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		Label keyLabel = new Label(QuPathTranslator.getTranslatedName(key));
 		keyLabel.setTooltip(new Tooltip(QuPathTranslator.getTranslatedName(key)));
 		keyLabel.getStyleClass().add("workflow-parmeter-box-key");
+		if(key == "脚本") {
+			keyLabel.setMinWidth(QuPathTranslator.getTranslatedName(key).length() * 14);
+			keyLabel.setMaxWidth(QuPathTranslator.getTranslatedName(key).length() * 14);
+		}
 		
 		// Parameter value
 		Label valueLabel = new Label(value == null ? "" : QuPathTranslator.getTranslatedName(value.toString()));
@@ -320,7 +324,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 	private Workflow getWorkflow() {
 		var workflow = workflowProperty.get();
 		if (workflow == null) {
-			logger.error("Workflow is null!");
+			logger.error("工作流为空！");
 		}
 		return workflow;
 	}
@@ -340,7 +344,7 @@ public class WorkflowCommandLogView implements ChangeListener<ImageData<Buffered
 		String script = workflow.createScript();
 		logger.info("\n//---------------------------------\n" + script + "\n//---------------------------------");
 		if (scriptEditor != null)
-			scriptEditor.showScript("New script", script);
+			scriptEditor.showScript("新建脚本", script);
 	}
 	
 	@Override
