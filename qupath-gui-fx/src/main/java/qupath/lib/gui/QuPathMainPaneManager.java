@@ -39,6 +39,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -379,12 +382,23 @@ class QuPathMainPaneManager {
 		return bottomBarContainer;
 	}
 
+	private MenuItem copyMenuItem(MenuItem item) {
+		if (item instanceof Menu menu) {
+			// 直接返回原始Menu，保证动态子菜单能正常显示
+			return menu;
+		} else {
+			MenuItem newItem = new MenuItem(item.getText());
+			newItem.setOnAction(item.getOnAction());
+			return newItem;
+		}
+	}
+
 	private HBox createTopBarContainer() {
 		// Create topbar container
 		var topBarContainer = new HBox();
 		BorderPane.setMargin(topBarContainer,new Insets(16,16,0,16));
 		topBarContainer.getStyleClass().add("toolbar-main-container");
-	
+
 		// Create left button container
 		var leftButtonContainer = new VBox();
 		leftButtonContainer.getStyleClass().add("toolbar-left-container");
@@ -392,20 +406,26 @@ class QuPathMainPaneManager {
 		menuBtn.getStyleClass().add("qupath-tool-button");
 		leftButtonContainer.getChildren().add(menuBtn);
 
+		// 新增：弹出菜单
+		ContextMenu popupMenu = new ContextMenu();
+		for (Menu menu : qupath.getMenuBar().getMenus()) {
+			popupMenu.getItems().add(copyMenuItem(menu));
+		}
+		menuBtn.setOnMouseClicked(e -> {
+			popupMenu.show(menuBtn, javafx.geometry.Side.BOTTOM, 0, 0);
+		});
+
 		// Create right button container
 		var rightButtonContainer = new VBox();
 		rightButtonContainer.getStyleClass().add("toolbar-right-container");
-		
 		// Create Spacer
 		Region leftSpacer = new Region();
-        Region rightSpacer = new Region();
+		Region rightSpacer = new Region();
 		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 		var toolBar = toolbar.getToolBar();
-
 		// Add components to main container
 		topBarContainer.getChildren().addAll(leftButtonContainer, leftSpacer, toolBar, rightSpacer, rightButtonContainer);
-
 		return topBarContainer;
 	}
 
