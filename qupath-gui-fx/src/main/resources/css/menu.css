@@ -1,0 +1,65 @@
+/* Modern popup menu style for ContextMenu and Menu */
+.context-menu, .menu {
+    -fx-background-color: #fff;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 8 0 8 0;
+    -fx-font-size: 14px;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Arial", sans-serif;
+}
+
+/* 一级菜单项 */
+.menu-item, .menu .menu-item {
+    -fx-background-color: transparent;
+    -fx-padding: 8 32 8 24;
+    -fx-font-weight: 500;
+    -fx-text-fill: #222;
+    -fx-background-radius: 8px;
+    -fx-font-size: 14px;
+    -fx-min-width: 160px;
+}
+
+/* 悬浮高亮 */
+.menu-item:hover, .menu .menu-item:hover, .menu-item:focused, .menu .menu-item:focused {
+    -fx-background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* 悬浮高亮 */
+.menu-item:hover .label, .menu .menu-item:hover .label, .menu-item:focused .label, .menu .menu-item:focused .label {
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+}
+
+
+/* 子菜单箭头 */
+.menu .arrow, .menu-item .arrow {
+    -fx-shape: \"M0,0 L0,8 L4,4 Z\";
+    -fx-background-color: #bfbfbf;
+    -fx-padding: 0 8 0 0;
+}
+
+/* 分隔线 */
+.menu .separator {
+    -fx-background-color: #f0f0f0;
+    -fx-padding: 0 0 0 0;
+    -fx-min-height: 1px;
+    -fx-max-height: 1px;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-margin: 4 0 4 0;
+}
+
+/* 禁用项 */
+.menu-item:disabled, .menu .menu-item:disabled {
+    -fx-text-fill: #bfbfbf;
+    -fx-background-color: transparent;
+}
+
+/* 一级菜单左侧圆角 */
+.menu-item:first-child, .menu .menu-item:first-child {
+    -fx-background-radius: 12 12 0 0;
+}
+
+/* 一级菜单右侧圆角 */
+.menu-item:last-child, .menu .menu-item:last-child {
+    -fx-background-radius: 0 0 12 12;
+}

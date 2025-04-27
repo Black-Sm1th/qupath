@@ -4,7 +4,7 @@
 
 /* Import scrollbar styles */
 @import url("scrollbar.css");
-
+@import url("menu.css");
 /* Define colors that may be used by script editors and log viewers */
 .root {
 
