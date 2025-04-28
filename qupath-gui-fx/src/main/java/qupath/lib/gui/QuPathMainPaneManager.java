@@ -446,18 +446,19 @@ class QuPathMainPaneManager {
 		this.analysisTabPane = new AnalysisTabPane(qupath);
 		var projectPane = analysisTabPane.getProjectBrowser().getPane();
 		var imagePane = analysisTabPane.getTabPane().getTabs().get(1).getContent();
-		var annotationPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
+		// var annotationPane;
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
-		var analysisPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
+		var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
+		var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
 		
 		// Add all panes to container but make them invisible initially
-		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane, analysisPane);
+		workContainer.getChildren().addAll(projectPane, imagePane, /*annotationPane,*/ workflowPane, analysisPane, classifyPane);
 		projectPane.setVisible(true);
 		imagePane.setVisible(false);
-		annotationPane.setVisible(false);
+		// annotationPane.setVisible(false);
 		workflowPane.setVisible(false);
 		analysisPane.setVisible(false);
-		
+		classifyPane.setVisible(false);
 		// Add navigation buttons
 		var projectBtn = (ToggleButton)createNavButton("project", "项目");
 		var imageBtn = (ToggleButton)createNavButton("image", "图像");
@@ -475,9 +476,10 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(true);
 			imagePane.setVisible(false);
-			annotationPane.setVisible(false);
+			// annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
+			classifyPane.setVisible(false);
 		});
 		
 		imageBtn.setOnAction(e -> {
@@ -485,19 +487,21 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(true);
-			annotationPane.setVisible(false);
+			// annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
+			classifyPane.setVisible(false);
 		});
 		
 		annotationBtn.setOnAction(e -> {
-			analysisTabPane.getTabPane().getSelectionModel().select(2);
+			analysisTabPane.getTabPane().getSelectionModel().select(5);
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			annotationPane.setVisible(true);
+			// annotationPane.setVisible(true);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
+			classifyPane.setVisible(false);
 		});
 		
 		workflowBtn.setOnAction(e -> {
@@ -505,23 +509,33 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			annotationPane.setVisible(false);
+			// annotationPane.setVisible(false);
 			workflowPane.setVisible(true);
 			analysisPane.setVisible(false);
+			classifyPane.setVisible(false);
 		});
 		
 		analysisBtn.setOnAction(e -> {
-			analysisTabPane.getTabPane().getSelectionModel().select(3);
+			analysisTabPane.getTabPane().getSelectionModel().select(2);
 			// 处理分析按钮点击事件
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			annotationPane.setVisible(false);
+			// annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(true);
+			classifyPane.setVisible(false);
 		});
 		
 		classifyBtn.setOnAction(e -> {
 			// 处理分类按钮点击事件
+			analysisTabPane.getTabPane().getSelectionModel().select(3);
+			// 切换工作区显示
+			projectPane.setVisible(false);
+			imagePane.setVisible(false);
+			// annotationPane.setVisible(false);
+			workflowPane.setVisible(false);
+			analysisPane.setVisible(false);
+			classifyPane.setVisible(true);
 		});
 
 		for (var btn : Arrays.asList(projectBtn, imageBtn, annotationBtn, workflowBtn, analysisBtn, classifyBtn)) {

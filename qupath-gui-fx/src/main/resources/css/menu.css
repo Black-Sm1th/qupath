@@ -29,12 +29,8 @@
     -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
-
-/* 子菜单箭头 */
-.menu .arrow, .menu-item .arrow {
-    -fx-shape: \"M0,0 L0,8 L4,4 Z\";
-    -fx-background-color: #bfbfbf;
-    -fx-padding: 0 8 0 0;
+.menu-item:hover .arrow, .menu .menu-item:hover .arrow, .menu-item:focused .arrow, .menu .menu-item:focused .arrow {
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
 /* 分隔线 */
