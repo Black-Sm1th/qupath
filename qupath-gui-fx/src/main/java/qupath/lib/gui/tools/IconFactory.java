@@ -350,9 +350,13 @@ public class IconFactory {
 									CREATE_PROJECT(IconSuppliers.icoMoon('\ue946')),
 									OPEN_PROJECT(IconSuppliers.icoMoon('\ue947')),
 									ADD_IMAGES(IconSuppliers.icoMoon('\ue948')),
-									PROJECT_MORE(IconSuppliers.icoMoon('\ue949')),
+									MORE_BTN(IconSuppliers.icoMoon('\ue949')),
 									EDIT_BTN(IconSuppliers.icoMoon('\ue94D')),
-									
+									DELETE_BTN(IconSuppliers.icoMoon('\ue94E')),
+									SELECT_ALL_BTN(IconSuppliers.icoMoon('\ue94F')),
+									LOCK_BTN(IconSuppliers.icoMoon('\ue950')),
+									SET_SELECT_BTN(IconSuppliers.icoMoon('\ue951')),
+									AUTO_SET_BTN(IconSuppliers.icoMoon('\ue952')),
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									
 									PIXEL_CLASSIFICATION(IconSuppliers.icoMoon('\ue92F')),

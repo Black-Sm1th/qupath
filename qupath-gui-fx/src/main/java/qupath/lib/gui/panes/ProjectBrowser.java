@@ -270,7 +270,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		Button btnCreate = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_NEW);
 		Button btnAdd = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_ADD_IMAGES);
 		Button btnMore = new Button();
-		btnMore.setGraphic(IconFactory.createNode(16, 16, PathIcons.PROJECT_MORE));
+		btnMore.setGraphic(IconFactory.createNode(16, 16, PathIcons.MORE_BTN));
 		Region region = new Region();
 		HBox.setHgrow(region, Priority.ALWAYS);
 		HBox topBar = new HBox();

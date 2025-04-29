@@ -55,6 +55,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import qupath.lib.gui.ToolBarComponent.ViewerMagnificationLabel;
+import qupath.lib.gui.panes.CustomAnnotationPane;
 import qupath.lib.gui.panes.ProjectBrowser;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
@@ -79,6 +80,10 @@ class QuPathMainPaneManager {
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
 	private LLMClient client;
 	private LLMClient.LLMType llmtype = LLMClient.LLMType.PATHOLOGY;
+	
+	// 添加自定义标注面板
+	private CustomAnnotationPane customAnnotationPane;
+	
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
@@ -446,16 +451,20 @@ class QuPathMainPaneManager {
 		this.analysisTabPane = new AnalysisTabPane(qupath);
 		var projectPane = analysisTabPane.getProjectBrowser().getPane();
 		var imagePane = analysisTabPane.getTabPane().getTabs().get(1).getContent();
-		// var annotationPane;
+		
+		// 初始化自定义标注面板
+		this.customAnnotationPane = new CustomAnnotationPane(qupath);
+		var annotationPane = customAnnotationPane.getPane();
+		
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
 		var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
 		var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
 		
 		// Add all panes to container but make them invisible initially
-		workContainer.getChildren().addAll(projectPane, imagePane, /*annotationPane,*/ workflowPane, analysisPane, classifyPane);
+		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane, analysisPane, classifyPane);
 		projectPane.setVisible(true);
 		imagePane.setVisible(false);
-		// annotationPane.setVisible(false);
+		annotationPane.setVisible(false);
 		workflowPane.setVisible(false);
 		analysisPane.setVisible(false);
 		classifyPane.setVisible(false);
@@ -476,7 +485,7 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(true);
 			imagePane.setVisible(false);
-			// annotationPane.setVisible(false);
+			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
@@ -487,7 +496,7 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(true);
-			// annotationPane.setVisible(false);
+			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
@@ -498,7 +507,7 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			// annotationPane.setVisible(true);
+			annotationPane.setVisible(true);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
@@ -509,7 +518,7 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			// annotationPane.setVisible(false);
+			annotationPane.setVisible(false);
 			workflowPane.setVisible(true);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
@@ -520,7 +529,7 @@ class QuPathMainPaneManager {
 			// 处理分析按钮点击事件
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			// annotationPane.setVisible(false);
+			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(true);
 			classifyPane.setVisible(false);
@@ -532,7 +541,7 @@ class QuPathMainPaneManager {
 			// 切换工作区显示
 			projectPane.setVisible(false);
 			imagePane.setVisible(false);
-			// annotationPane.setVisible(false);
+			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(true);
