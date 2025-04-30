@@ -1087,12 +1087,12 @@ public class GuiTools {
 	
 	private static void createAnnotationsMenuImpl(QuPathGUI qupath, Object menu) {
 		// Add annotation options
-		CheckMenuItem miLockAnnotations = new CheckMenuItem("Lock");
-		CheckMenuItem miUnlockAnnotations = new CheckMenuItem("Unlock");
+		CheckMenuItem miLockAnnotations = new CheckMenuItem(QuPathResources.getString("miLockAnnotations.text"));
+		CheckMenuItem miUnlockAnnotations = new CheckMenuItem(QuPathResources.getString("miUnlockAnnotations.text"));
 		miLockAnnotations.setOnAction(e -> setSelectedAnnotationsLocked(qupath.getImageData(), true));
 		miUnlockAnnotations.setOnAction(e -> setSelectedAnnotationsLocked(qupath.getImageData(), false));
 		
-		MenuItem miSetProperties = new MenuItem("Set properties");
+		MenuItem miSetProperties = new MenuItem(QuPathResources.getString("miSetProperties.text"));
 		miSetProperties.setOnAction(e -> {
 			var hierarchy = qupath.getViewer().getHierarchy();
 			if (hierarchy != null)
@@ -1101,30 +1101,30 @@ public class GuiTools {
 		
 		
 		var actionInsertInHierarchy = qupath.createImageDataAction(imageData -> Commands.insertSelectedObjectsInHierarchy(imageData));
-		actionInsertInHierarchy.setText("Insert in hierarchy");
+		actionInsertInHierarchy.setText(QuPathResources.getString("miInsertHierarchy.text"));
 		var miInsertHierarchy = ActionTools.createMenuItem(actionInsertInHierarchy);
 		
 		var actionMerge = qupath.createImageDataAction(imageData -> Commands.mergeSelectedAnnotations(imageData));
-		actionMerge.setText("Merge selected");
+		actionMerge.setText(QuPathResources.getString("actionMerge.text"));
 		var actionSubtract = qupath.createImageDataAction(imageData -> Commands.combineSelectedAnnotations(imageData, CombineOp.SUBTRACT));
-		actionSubtract.setText("Subtract selected");
+		actionSubtract.setText(QuPathResources.getString("actionSubtract.text"));
 		var actionIntersect = qupath.createImageDataAction(imageData -> Commands.combineSelectedAnnotations(imageData, CombineOp.INTERSECT));
-		actionIntersect.setText("Intersect selected");
+		actionIntersect.setText(QuPathResources.getString("actionIntersect.text"));
 		
 		var actionInverse = qupath.createImageDataAction(imageData -> Commands.makeInverseAnnotation(imageData));
-		actionInverse.setText("Make inverse");
+		actionInverse.setText(QuPathResources.getString("actionInverse.text"));
 		
 		Menu menuCombine = MenuTools.createMenu(
-				"Edit multiple annotations",
+				QuPathResources.getString("menuCombine.text"),
 				actionMerge,
 				actionSubtract, // TODO: Make this less ambiguous!
 				actionIntersect
 				);
 		
 		Menu menuEdit = MenuTools.createMenu(
-				"Edit 1 annotation",
+				QuPathResources.getString("menuEdit.text"),
 				actionInverse,
-				qupath.createPluginAction("Split", SplitAnnotationsPlugin.class, null)
+				qupath.createPluginAction(QuPathResources.getString("SplitAnnotationsPlugin.text"), SplitAnnotationsPlugin.class, null)
 				);
 		
 //		Menu menuPoints = MenuTools.createMenu(

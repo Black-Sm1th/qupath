@@ -525,7 +525,7 @@ public class PathObjectTools {
 			if (cls.equals(PathRootObject.class))
 				return "Root objects";
 			if (cls.equals(PathAnnotationObject.class))
-				return "Annotations";
+				return "标注";
 			if (cls.equals(TMACoreObject.class))
 				return "TMA cores";
 			if (cls.equals(PathDetectionObject.class))
@@ -539,7 +539,7 @@ public class PathObjectTools {
 		if (cls.equals(PathRootObject.class))
 			return "Root object";
 		if (cls.equals(PathAnnotationObject.class))
-			return "Annotation";
+			return "标注";
 		if (cls.equals(TMACoreObject.class))
 			return "TMA core";
 		if (cls.equals(PathDetectionObject.class))

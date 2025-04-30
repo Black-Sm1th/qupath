@@ -155,7 +155,19 @@ public class QuPathTranslator {
         Map.entry("fwhmMicrons", "半高全宽(微米)"),
         Map.entry("smoothWithinClasses", "在类别内平滑"),
         Map.entry("pixelHeightMicrons", "像素高度(微米)"),
-        Map.entry("pixelWidthMicrons", "像素宽度(微米)")
+        Map.entry("pixelWidthMicrons", "像素宽度(微米)"),
+        Map.entry("Tumor", "肿瘤"),
+        Map.entry("Stroma", "间质"),
+        Map.entry("Immune cells", "免疫细胞"),
+        Map.entry("Ignore*", "忽略*"),
+        Map.entry("Ignore", "忽略"),
+        Map.entry("Image", "图像"),
+        Map.entry("Necrosis", "坏疽"),
+        Map.entry("Other", "其他"),
+        Map.entry("Region*", "区域*"),
+        Map.entry("Region", "区域"),
+        Map.entry("Positive", "阳性"),
+        Map.entry("Negative", "阴性")
     );
     
     // 用于记录未翻译的关键字

@@ -724,3 +724,42 @@
     -fx-max-height: 24;
     -fx-cursor: hand;
 }
+
+.custom-annotation-box .custom-annotation-button:hover .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.4);
+}
+
+.custom-annotation-box .custom-annotation-button:pressed .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.2);
+}
+
+.custom-annotation-box .custom-annotation-item {
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 4;
+}
+
+.custom-annotation-box .custom-annotation-item .custom-annotation-name{
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+}
+
+.custom-annotation-box .custom-annotation-icon {
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+}
+
+.custom-annotation-box .custom-annotation-count{
+    -fx-font-size: 14px;
+    -fx-background-color: rgba(0, 0, 0, 0.04);
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-padding: 0 4 0 4;
+    -fx-min-height: 21px;
+    -fx-max-height: 21px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+}
+
