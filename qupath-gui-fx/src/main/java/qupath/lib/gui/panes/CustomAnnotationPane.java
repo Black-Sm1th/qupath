@@ -32,7 +32,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.stage.Popup;
 import qupath.fx.controls.PredicateTextField;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.tools.ColorToolsFX;
@@ -49,7 +48,8 @@ import qupath.lib.objects.hierarchy.events.PathObjectHierarchyEvent;
 import qupath.lib.objects.hierarchy.events.PathObjectHierarchyListener;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionListener;
 
-public class CustomAnnotationPane implements PathObjectSelectionListener, ChangeListener<ImageData<BufferedImage>>, PathObjectHierarchyListener {
+
+public class CustomAnnotationPane implements PathObjectSelectionListener, ChangeListener<ImageData<BufferedImage>>, PathObjectHierarchyListener{
     private QuPathGUI qupath;
     private static final Logger logger = LoggerFactory.getLogger(CustomAnnotationPane.class);
     private ScrollPane pane;
@@ -68,11 +68,6 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     private PredicateTextField<PathObject> filter;
     
     private boolean suppressSelectionChanges = false;
-    
-    // 新增：用于显示细胞列表的弹出框
-    private Popup cellListPopup;
-    private VBox cellListContent;
-    private Label activeCountLabel;
     
     public CustomAnnotationPane(QuPathGUI qupath){
         this.qupath = qupath;
