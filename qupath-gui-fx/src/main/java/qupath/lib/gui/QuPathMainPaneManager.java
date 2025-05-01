@@ -78,6 +78,7 @@ import qupath.lib.gui.tools.QuPathTranslator;
 import qupath.lib.gui.viewer.QuPathViewerPlus;
 import qupath.lib.objects.DefaultPathObjectComparator;
 import qupath.lib.objects.PathObject;
+import qupath.lib.objects.PathObjectTools;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -502,7 +503,51 @@ class QuPathMainPaneManager {
 				}
 			}
 		});
+			
+		// 监听ImageData变化，以便更新扩展面板
+		qupath.imageDataProperty().addListener((v, o, n) -> {
+			if (n != null) {
+				// 添加层次结构监听器
+				n.getHierarchy().addListener(hierarchyEvent -> {
+					// 当层次结构变化时，如果扩展面板可见且当前有选中标注，刷新扩展面板
+					if (extendContainer != null && extendContainer.isVisible() && currentSelectedAnnotation != null) {
+						Platform.runLater(() -> {
+							// 检查当前选中标注是否仍然存在
+							if (n.getHierarchy() != null && PathObjectTools.hierarchyContainsObject(n.getHierarchy(), currentSelectedAnnotation)) {
+								// 刷新扩展面板
+								populateExtendContainerWithChildren(currentSelectedAnnotation);
+							} else {
+								// 如果标注已不存在，隐藏扩展面板
+								showExtendContainer(false);
+								currentSelectedAnnotation = null;
+							}
+						});
+					}
+				});
+			}
+		});
 		
+		// 初始添加层次结构监听器（如果已有图像）
+		if (qupath.getImageData() != null) {
+			qupath.getImageData().getHierarchy().addListener(hierarchyEvent -> {
+				// 当层次结构变化时，如果扩展面板可见且当前有选中标注，刷新扩展面板
+				if (extendContainer != null && extendContainer.isVisible() && currentSelectedAnnotation != null) {
+					Platform.runLater(() -> {
+						// 检查当前选中标注是否仍然存在
+						if (qupath.getImageData() != null && 
+							PathObjectTools.hierarchyContainsObject(qupath.getImageData().getHierarchy(), currentSelectedAnnotation)) {
+							// 刷新扩展面板
+							populateExtendContainerWithChildren(currentSelectedAnnotation);
+						} else {
+							// 如果标注已不存在，隐藏扩展面板
+							showExtendContainer(false);
+							currentSelectedAnnotation = null;
+						}
+					});
+				}
+			});
+		}
+
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
 		var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
 		var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
