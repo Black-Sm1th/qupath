@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,6 +171,9 @@ class QuPathMainPaneManager {
 
 		// Add CSS styles
 		pane.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
+		
+		// 添加选择监听器 
+		setupSelectionListener();
 	}
 
 	private Node createNormalButton(String icon, String tooltip) {
@@ -583,6 +587,8 @@ class QuPathMainPaneManager {
 			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
+			// 清除所有标签选中效果
+			customAnnotationPane.clearAllCountLabelSelections();
 		});
 		
 		imageBtn.setOnAction(e -> {
@@ -596,6 +602,8 @@ class QuPathMainPaneManager {
 			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
+			// 清除所有标签选中效果
+			customAnnotationPane.clearAllCountLabelSelections();
 		});
 		
 		annotationBtn.setOnAction(e -> {
@@ -607,6 +615,8 @@ class QuPathMainPaneManager {
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
+			// 清除所有标签选中效果
+			customAnnotationPane.clearAllCountLabelSelections();
 		});
 		
 		workflowBtn.setOnAction(e -> {
@@ -620,6 +630,8 @@ class QuPathMainPaneManager {
 			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
+			// 清除所有标签选中效果
+			customAnnotationPane.clearAllCountLabelSelections();
 		});
 		
 		analysisBtn.setOnAction(e -> {
@@ -633,6 +645,8 @@ class QuPathMainPaneManager {
 			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
+			// 清除所有标签选中效果
+			customAnnotationPane.clearAllCountLabelSelections();
 		});
 		
 		classifyBtn.setOnAction(e -> {
@@ -647,6 +661,8 @@ class QuPathMainPaneManager {
 			classifyPane.setVisible(true);
 			// 隐藏扩展面板
 			showExtendContainer(false);
+			// 清除所有标签选中效果
+			customAnnotationPane.clearAllCountLabelSelections();
 		});
 
 		for (var btn : Arrays.asList(projectBtn, imageBtn, annotationBtn, workflowBtn, analysisBtn, classifyBtn)) {
@@ -743,6 +759,35 @@ class QuPathMainPaneManager {
 		
 		// 将VBox添加到扩展容器中
 		extendContainer.getChildren().add(childrenBox);
+		
+		// 确保与当前选中对象同步
+		if (qupath.getImageData() != null) {
+			Platform.runLater(() -> {
+				PathObject selectedObject = qupath.getImageData().getHierarchy().getSelectionModel().getSelectedObject();
+				updateChildSelectionState(selectedObject);
+			});
+		}
+	}
+	
+	// 更新子对象的选中状态
+	private void updateChildSelectionState(PathObject selectedObject) {
+		if (listContainer == null || selectedObject == null)
+			return;
+			
+		// 遍历所有子项，更新选中状态
+		for (Node node : listContainer.getChildren()) {
+			if (node instanceof HBox childItem) {
+				// 清除所有项的选中状态
+				childItem.setStyle("-fx-background-color: transparent;");
+				
+				// 从childItem中获取对应的PathObject（将其存储为用户数据）
+				Object userData = childItem.getUserData();
+				if (userData instanceof PathObject pathObject && pathObject.equals(selectedObject)) {
+					// 如果是当前选中的对象，设置选中样式
+					childItem.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06);");
+				}
+			}
+		}
 	}
 	
 	// 创建子对象列表项
@@ -750,6 +795,9 @@ class QuPathMainPaneManager {
 		HBox childItem = new HBox();
 		childItem.setAlignment(Pos.CENTER_LEFT);
 		childItem.getStyleClass().add("custom-annotation-item");
+		
+		// 存储PathObject引用
+		childItem.setUserData(child);
 		
 		// 获取对象的类型和分类图标
 		Node typeIcon = IconFactory.createPathObjectIcon(child, 16, 16);
@@ -769,8 +817,8 @@ class QuPathMainPaneManager {
 		if (qupath.getImageData() != null && 
 			qupath.getImageData().getHierarchy().getSelectionModel().isSelected(child)) {
 			childItem.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06)");
+			logger.info("创建时设置选中样式: " + child.getDisplayedName());
 		}
-
 
 		// 添加鼠标悬停效果
 		childItem.setOnMouseEntered(e -> {
@@ -799,7 +847,8 @@ class QuPathMainPaneManager {
 						node.setStyle("-fx-background-color: transparent;");
 					}
 				}
-				childItem.setStyle(childItem.getStyle() + " -fx-background-color: rgba(22, 146, 255, 0.06);");
+				childItem.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06);");
+				logger.info("点击设置选中样式: " + child.getDisplayedName());
 				
 				// 如果是双击，居中显示
 				if (e.getClickCount() > 1 && child.hasROI()) {
@@ -809,5 +858,94 @@ class QuPathMainPaneManager {
 		});
 		
 		return childItem;
+	}
+
+	// 设置选择变化监听器
+	private void setupSelectionListener() {
+		// 监听图像数据变化
+		qupath.imageDataProperty().addListener((v, oldImageData, newImageData) -> {
+			if (newImageData != null) {
+				// 为新图像添加选择监听器
+				newImageData.getHierarchy().getSelectionModel().addPathObjectSelectionListener(
+					new qupath.lib.objects.hierarchy.events.PathObjectSelectionListener() {
+						@Override
+						public void selectedPathObjectChanged(PathObject pathObjectSelected, 
+															 PathObject previousObject,
+															 Collection<PathObject> allSelected) {
+							// 如果扩展面板已显示，则更新子项选择状态
+							if (extendContainer != null && extendContainer.isVisible() && 
+								currentSelectedAnnotation != null && listContainer != null) {
+								
+								// 使用Platform.runLater确保在JavaFX线程中更新UI
+								Platform.runLater(() -> {
+									logger.info("选择变化: " + (pathObjectSelected == null ? "null" : pathObjectSelected.getDisplayedName()));
+									
+									// 遍历所有子项
+									for (Node node : listContainer.getChildren()) {
+										if (node instanceof HBox childItem) {
+											// 清除所有项的选中样式
+											childItem.setStyle("-fx-background-color: transparent;");
+											
+											// 获取关联的PathObject
+											Object userData = childItem.getUserData();
+											if (userData instanceof PathObject pathObject) {
+												// 比较ID更可靠
+												boolean isSelected = pathObjectSelected != null && 
+													pathObject.getID().equals(pathObjectSelected.getID());
+												
+												if (isSelected) {
+													// 应用选中样式
+													childItem.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06);");
+													logger.info("找到并更新选中项: " + pathObject.getDisplayedName());
+												}
+											}
+										}
+									}
+								});
+							}
+						}
+					}
+				);
+			}
+		});
+		
+		// 初始为当前图像添加监听器
+		if (qupath.getImageData() != null) {
+			qupath.getImageData().getHierarchy().getSelectionModel().addPathObjectSelectionListener(
+				(pathObjectSelected, previousObject, allSelected) -> {
+					// 如果扩展面板已显示，则更新子项选择状态
+					if (extendContainer != null && extendContainer.isVisible() && 
+						currentSelectedAnnotation != null && listContainer != null) {
+						
+						// 使用Platform.runLater确保在JavaFX线程中更新UI
+						Platform.runLater(() -> {
+							logger.info("选择变化: " + (pathObjectSelected == null ? "null" : pathObjectSelected.getDisplayedName()));
+							
+							// 遍历所有子项
+							for (Node node : listContainer.getChildren()) {
+								if (node instanceof HBox childItem) {
+									// 清除所有项的选中样式
+									childItem.setStyle("-fx-background-color: transparent;");
+									
+									// 获取关联的PathObject
+									Object userData = childItem.getUserData();
+									if (userData instanceof PathObject pathObject) {
+										// 比较ID更可靠
+										boolean isSelected = pathObjectSelected != null && 
+											pathObject.getID().equals(pathObjectSelected.getID());
+										
+										if (isSelected) {
+											// 应用选中样式
+											childItem.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06);");
+											logger.info("找到并更新选中项: " + pathObject.getDisplayedName());
+										}
+									}
+								}
+							}
+						});
+					}
+				}
+			);
+		}
 	}
 }

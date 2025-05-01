@@ -156,13 +156,11 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         selectAllBtn.getStyleClass().add("custom-annotation-button");
         selectAllBtn.setOnAction(e -> selectAllAnnotations());
         selectAllBtn.setTooltip(new Tooltip("选择所有标注"));
-        
         Button deleteBtn = new Button();
         deleteBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.DELETE_BTN));
         deleteBtn.getStyleClass().add("custom-annotation-button");
         deleteBtn.setOnAction(e -> GuiTools.promptToClearAllSelectedObjects(imageData));
         deleteBtn.setTooltip(new Tooltip("删除选中的标注"));
-        
         Button moreBtn = new Button();
         moreBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.MORE_BTN));
         moreBtn.getStyleClass().add("custom-annotation-button");
@@ -170,25 +168,42 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
             menuAnnotations.show(moreBtn, javafx.geometry.Side.BOTTOM, 0, 0);
         });
         moreBtn.setTooltip(new Tooltip("更多选项"));
-        
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         topBarAnnotation.getChildren().addAll(labelAnnotation, spacer, selectAllBtn, deleteBtn, moreBtn);
 
         annotationList = new VBox();
         annotationList.getStyleClass().add("custom-annotation-list");
+        VBox.setMargin(annotationList, new Insets(0, 0, 8, 0));
         mdPane.getChildren().add(annotationList);
         
-        // 分类部分
-        VBox classificationBox = new VBox();
-        classificationBox.getStyleClass().add("custom-annotation-classification-box");
+        HBox classificationTopBox = new HBox();
+        classificationTopBox.getStyleClass().add("custom-annotation-top-bar");
         Label classificationLabel = new Label("分类");
         classificationLabel.getStyleClass().add("custom-annotation-label");
-        classificationBox.getChildren().add(classificationLabel);
-        
+        Button searchBtn = new Button();
+        searchBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.SEARCH_BTN));
+        searchBtn.getStyleClass().add("custom-annotation-button");
+        searchBtn.setTooltip(new Tooltip("搜索"));
+        Button setSelectBtn = new Button();
+        setSelectBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.SET_SELECT_BTN));
+        setSelectBtn.getStyleClass().add("custom-annotation-button");
+        setSelectBtn.setTooltip(new Tooltip("设置选中"));
+        Button autoSetBtn = new Button();
+        autoSetBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.AUTO_SET_BTN));
+        autoSetBtn.getStyleClass().add("custom-annotation-button");
+        autoSetBtn.setTooltip(new Tooltip("自动设置"));
+        Button moreBtnClassification = new Button();
+        moreBtnClassification.setGraphic(IconFactory.createNode(16, 16, PathIcons.MORE_BTN));
+        moreBtnClassification.getStyleClass().add("custom-annotation-button");
+        moreBtnClassification.setTooltip(new Tooltip("更多选项"));
+        Region spacerClassification = new Region();
+        HBox.setHgrow(spacerClassification, Priority.ALWAYS);
+        classificationTopBox.getChildren().addAll(classificationLabel, spacerClassification, searchBtn, setSelectBtn, autoSetBtn, moreBtnClassification);
+        mdPane.getChildren().add(classificationTopBox);
+
         // 添加分类列表（可以根据需要扩展）
         VBox classList = new VBox();
-        
         // 创建各种分类选项
         HBox tumorClass = createClassificationItem("肿瘤", Color.RED);
         HBox stromaClass = createClassificationItem("间质", Color.GREEN);
@@ -202,9 +217,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         classList.getChildren().addAll(tumorClass, stromaClass, immuneClass, necrosisClass, 
                 otherClass, regionClass, ignoreClass, positiveClass, negativeClass);
-        
-        classificationBox.getChildren().add(classList);
-        mdPane.getChildren().add(classificationBox);
+        mdPane.getChildren().add(classList);
         
         VBox attributesBox = new VBox();
         attributesBox.getStyleClass().add("custom-annotation-attributes-box");
@@ -639,5 +652,16 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         }
         // 设置当前的选中状态
         selectedCountLabels.put(annotation.getID().toString(), selected);
+    }
+    
+    // 清除所有标签的选中效果
+    public void clearAllCountLabelSelections() {
+        // 清除当前选中的标签样式
+        if (currentSelectedCountLabel != null) {
+            currentSelectedCountLabel.setStyle("");
+            currentSelectedCountLabel = null;
+        }
+        // 清空选中状态记录
+        selectedCountLabels.clear();
     }
 } 

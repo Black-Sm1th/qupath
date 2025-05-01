@@ -265,7 +265,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		// panel.setBottom(paneUserFilter);
 		panel.setCenter(panelTree);
 		Button btnSearch = new Button();
-		btnSearch.setGraphic(IconFactory.createNode(16, 16, PathIcons.PROJECT_SEARCH));
+		btnSearch.setGraphic(IconFactory.createNode(16, 16, PathIcons.SEARCH_BTN));
 		Button btnOpen = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_OPEN);
 		Button btnCreate = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_NEW);
 		Button btnAdd = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_ADD_IMAGES);
