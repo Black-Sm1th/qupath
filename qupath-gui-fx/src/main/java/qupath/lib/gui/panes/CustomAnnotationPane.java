@@ -3,7 +3,9 @@ package qupath.lib.gui.panes;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -76,6 +78,12 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     
     // 添加一个监听器列表
     private List<CountLabelClickListener> countLabelClickListeners = new ArrayList<>();
+    
+    // 添加一个Map来存储已选中的countLabel对应的annotation
+    private Map<String, Boolean> selectedCountLabels = new HashMap<>();
+    
+    // 添加一个记录当前选中的countLabel的变量
+    private Label currentSelectedCountLabel = null;
     
     public CustomAnnotationPane(QuPathGUI qupath){
         this.qupath = qupath;
@@ -379,8 +387,34 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
             Label countLabel = new Label(countText);
             countLabel.getStyleClass().add("custom-annotation-count");
             countLabel.setCursor(javafx.scene.Cursor.HAND);
+            
+            // 检查是否应该应用选中样式
+            if (isCountLabelSelected(annotation)) {
+                countLabel.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06); -fx-text-fill: rgba(22, 146, 255, 1);");
+                currentSelectedCountLabel = countLabel; // 记录当前选中的标签
+            }
+            
             // 添加鼠标点击事件到countLabel
             countLabel.setOnMouseClicked(event -> {
+                // 设置选中效果
+                boolean isSelected = countLabel.getStyle().contains("rgba(22, 146, 255, 0.06)");
+                
+                // 先清除其他标签的选中状态
+                if (currentSelectedCountLabel != null && currentSelectedCountLabel != countLabel) {
+                    currentSelectedCountLabel.setStyle("");
+                }
+                
+                if (isSelected) {
+                    // 如果已经是选中状态，则取消选中
+                    countLabel.setStyle("");
+                    setCountLabelSelected(annotation, false);
+                    currentSelectedCountLabel = null;
+                } else {
+                    // 设置选中效果：背景色和字体颜色
+                    countLabel.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06); -fx-text-fill: rgba(22, 146, 255, 1);");
+                    setCountLabelSelected(annotation, true);
+                    currentSelectedCountLabel = countLabel;
+                }
                 // 调用回调通知监听器
                 fireCountLabelClicked(annotation);
                 // 阻止事件冒泡，防止触发item的点击事件
@@ -561,6 +595,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         this.hierarchy = imageData == null ? null : imageData.getHierarchy();
         this.hasImageData.set(imageData != null);
         
+        // 重置选中状态
+        this.selectedCountLabels.clear();
+        
         // 添加新监听器
         if (this.hierarchy != null) {
             this.hierarchy.addListener(this);
@@ -586,5 +623,21 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
             count += countAllDescendants(child);
         }
         return count;
+    }
+
+    // 检查countLabel是否被选中
+    private boolean isCountLabelSelected(PathObject annotation) {
+        return selectedCountLabels.getOrDefault(annotation.getID().toString(), false);
+    }
+    
+    // 设置countLabel选中状态
+    private void setCountLabelSelected(PathObject annotation, boolean selected) {
+        // 如果是设置为选中状态，则先清除所有的选中状态
+        if (selected) {
+            // 清除所有选中状态
+            selectedCountLabels.clear();
+        }
+        // 设置当前的选中状态
+        selectedCountLabels.put(annotation.getID().toString(), selected);
     }
 } 
