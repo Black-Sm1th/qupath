@@ -50,6 +50,11 @@ import qupath.lib.objects.hierarchy.events.PathObjectSelectionListener;
 
 
 public class CustomAnnotationPane implements PathObjectSelectionListener, ChangeListener<ImageData<BufferedImage>>, PathObjectHierarchyListener{
+    // 定义一个回调接口，用于监听子对象计数标签的点击事件
+    public interface CountLabelClickListener {
+        void onCountLabelClicked(PathObject annotation);
+    }
+    
     private QuPathGUI qupath;
     private static final Logger logger = LoggerFactory.getLogger(CustomAnnotationPane.class);
     private ScrollPane pane;
@@ -69,6 +74,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     
     private boolean suppressSelectionChanges = false;
     
+    // 添加一个监听器列表
+    private List<CountLabelClickListener> countLabelClickListeners = new ArrayList<>();
+    
     public CustomAnnotationPane(QuPathGUI qupath){
         this.qupath = qupath;
         this.disableUpdates.addListener((v, o, n) -> {
@@ -81,6 +89,25 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         setImageData(qupath.getImageData());
         qupath.imageDataProperty().addListener(this);
+    }
+    
+    // 添加监听器方法
+    public void addCountLabelClickListener(CountLabelClickListener listener) {
+        if (listener != null && !countLabelClickListeners.contains(listener)) {
+            countLabelClickListeners.add(listener);
+        }
+    }
+    
+    // 移除监听器方法
+    public void removeCountLabelClickListener(CountLabelClickListener listener) {
+        countLabelClickListeners.remove(listener);
+    }
+    
+    // 触发监听器的方法
+    private void fireCountLabelClicked(PathObject annotation) {
+        for (CountLabelClickListener listener : countLabelClickListeners) {
+            listener.onCountLabelClicked(annotation);
+        }
     }
     
     private void initializeFilter() {
@@ -351,6 +378,14 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
             
             Label countLabel = new Label(countText);
             countLabel.getStyleClass().add("custom-annotation-count");
+            countLabel.setCursor(javafx.scene.Cursor.HAND);
+            // 添加鼠标点击事件到countLabel
+            countLabel.setOnMouseClicked(event -> {
+                // 调用回调通知监听器
+                fireCountLabelClicked(annotation);
+                // 阻止事件冒泡，防止触发item的点击事件
+                event.consume();
+            });
             rightIcons.getChildren().add(countLabel);
         }
         

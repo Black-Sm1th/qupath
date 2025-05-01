@@ -167,7 +167,8 @@ public class QuPathTranslator {
         Map.entry("Region*", "区域*"),
         Map.entry("Region", "区域"),
         Map.entry("Positive", "阳性"),
-        Map.entry("Negative", "阴性")
+        Map.entry("Negative", "阴性"),
+        Map.entry("Cell", "细胞")
     );
     
     // 用于记录未翻译的关键字

@@ -26,8 +26,10 @@ package qupath.lib.gui;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -35,13 +37,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -55,12 +66,18 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import qupath.lib.gui.ToolBarComponent.ViewerMagnificationLabel;
+import qupath.lib.gui.tools.QuPathTranslator;
 import qupath.lib.gui.panes.CustomAnnotationPane;
 import qupath.lib.gui.panes.ProjectBrowser;
+import qupath.lib.gui.tools.ColorToolsFX;
+import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.gui.tools.IconFactory;
 import qupath.lib.gui.tools.IconFactory.PathIcons;
 import qupath.lib.gui.tools.LLMClient;
+import qupath.lib.gui.tools.QuPathTranslator;
 import qupath.lib.gui.viewer.QuPathViewerPlus;
+import qupath.lib.objects.DefaultPathObjectComparator;
+import qupath.lib.objects.PathObject;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -68,7 +85,7 @@ import qupath.lib.gui.viewer.QuPathViewerPlus;
  * @since v0.5.0
  */
 class QuPathMainPaneManager {
-	
+		
 	private static final Logger logger = LoggerFactory.getLogger(QuPathMainPaneManager.class);
 	
 	private StackPane pane;
@@ -84,6 +101,13 @@ class QuPathMainPaneManager {
 	// 添加自定义标注面板
 	private CustomAnnotationPane customAnnotationPane;
 	
+	private StackPane extendContainer;
+	// 记录当前选中的标注对象
+	private PathObject currentSelectedAnnotation;
+	
+	// 用于列表项的滚动容器
+	private VBox listContainer;
+
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
@@ -446,6 +470,13 @@ class QuPathMainPaneManager {
 		// Create work pane container
 		var workContainer = new StackPane();
 		workContainer.getStyleClass().add("work-pane");
+		HBox.setHgrow(workContainer, Priority.ALWAYS);
+
+		// Create extend pane container
+		extendContainer = new StackPane();
+		extendContainer.getStyleClass().add("extend-pane");
+		extendContainer.setVisible(false); // 初始状态为隐藏
+		extendContainer.setManaged(false); // 添加这一行，让隐藏时不占据空间
 		
 		// Get work panes from analysis tab pane
 		this.analysisTabPane = new AnalysisTabPane(qupath);
@@ -455,6 +486,22 @@ class QuPathMainPaneManager {
 		// 初始化自定义标注面板
 		this.customAnnotationPane = new CustomAnnotationPane(qupath);
 		var annotationPane = customAnnotationPane.getPane();
+		
+		// 注册到CustomAnnotationPane的点击事件
+		this.customAnnotationPane.addCountLabelClickListener(new CustomAnnotationPane.CountLabelClickListener() {
+			@Override
+			public void onCountLabelClicked(PathObject annotation) {
+				// 直接显示或隐藏扩展面板
+				if (annotation.equals(currentSelectedAnnotation)) {
+					toggleExtendContainerVisibility();
+				} else {
+					// 如果是新对象，显示扩展面板并保存当前对象
+					currentSelectedAnnotation = annotation;
+					populateExtendContainerWithChildren(annotation);
+					showExtendContainer(true);
+				}
+			}
+		});
 		
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
 		var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
@@ -489,6 +536,8 @@ class QuPathMainPaneManager {
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
+			// 隐藏扩展面板
+			showExtendContainer(false);
 		});
 		
 		imageBtn.setOnAction(e -> {
@@ -500,6 +549,8 @@ class QuPathMainPaneManager {
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
+			// 隐藏扩展面板
+			showExtendContainer(false);
 		});
 		
 		annotationBtn.setOnAction(e -> {
@@ -522,6 +573,8 @@ class QuPathMainPaneManager {
 			workflowPane.setVisible(true);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(false);
+			// 隐藏扩展面板
+			showExtendContainer(false);
 		});
 		
 		analysisBtn.setOnAction(e -> {
@@ -533,6 +586,8 @@ class QuPathMainPaneManager {
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(true);
 			classifyPane.setVisible(false);
+			// 隐藏扩展面板
+			showExtendContainer(false);
 		});
 		
 		classifyBtn.setOnAction(e -> {
@@ -545,13 +600,169 @@ class QuPathMainPaneManager {
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
 			classifyPane.setVisible(true);
+			// 隐藏扩展面板
+			showExtendContainer(false);
 		});
 
 		for (var btn : Arrays.asList(projectBtn, imageBtn, annotationBtn, workflowBtn, analysisBtn, classifyBtn)) {
 			navBar.getChildren().add(btn);
 		}
 
-		leftContainer.getChildren().addAll(navBar, workContainer);
+		leftContainer.getChildren().addAll(navBar, workContainer, extendContainer);
 		return leftContainer;
+	}
+
+	// 显示或隐藏扩展面板
+	public void showExtendContainer(boolean show) {
+		if (extendContainer != null) {
+			extendContainer.setVisible(show);
+			extendContainer.setManaged(show); // 同时设置managed属性，确保布局正确调整
+		}
+	}
+	
+	// 切换扩展面板的显示状态
+	private void toggleExtendContainerVisibility() {
+		if (extendContainer != null) {
+			boolean currentVisible = extendContainer.isVisible();
+			showExtendContainer(!currentVisible); // 使用showExtendContainer方法确保一致性
+		}
+	}
+	
+	// 用子对象的内容填充扩展面板
+	private void populateExtendContainerWithChildren(PathObject annotation) {
+		if (extendContainer == null || annotation == null)
+			return;
+		
+		// 清空当前内容
+		extendContainer.getChildren().clear();
+		
+		// 创建一个VBox来放置子对象信息
+		VBox childrenBox = new VBox();
+		
+		// 添加标题
+		HBox titleBox = new HBox();
+		titleBox.getStyleClass().add("extend-container-title");
+		// 获取标注名称作为标题
+		String annotationName = annotation.getDisplayedName();
+		if (annotationName == null || annotationName.isEmpty()) {
+			annotationName = "标注子对象";
+		}
+		if (annotation.getPathClass() != null && annotationName.contains("(")) {
+            annotationName = annotationName.substring(0, annotationName.lastIndexOf("(")).trim();
+        }
+		Label titleLabel = new Label(annotationName);
+		titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
+		titleBox.getChildren().addAll(titleLabel);
+		childrenBox.getChildren().add(titleBox);
+		
+		// 创建滚动视图来包含子对象列表
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setFitToWidth(true);
+		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		
+		// 创建子对象列表容器
+		listContainer = new VBox();
+		listContainer.setPadding(new Insets(0, 12, 0, 12));
+		
+		// 如果有子对象，添加到列表中
+		if (annotation.nChildObjects() > 0) {
+			// 遍历子对象并添加到VBox中
+			// 对子对象进行排序，与PathObjectHierarchyView保持一致
+			List<PathObject> children = new ArrayList<>(annotation.getChildObjects());
+			
+			// 按照显示名称排序
+			children.sort((o1, o2) -> o1.getDisplayedName().compareTo(o2.getDisplayedName()));
+			
+			for (PathObject child : children) {
+				HBox childItem = createChildItem(child);
+				listContainer.getChildren().add(childItem);
+			}
+		} else {
+			// 如果没有子对象，显示一个提示
+			HBox noChildItem = new HBox();
+			noChildItem.setAlignment(Pos.CENTER_LEFT);
+			noChildItem.setPadding(new Insets(10, 15, 10, 15));
+			
+			Label noChildrenLabel = new Label("没有子对象");
+			noChildrenLabel.setStyle("-fx-text-fill: #999;");
+			
+			noChildItem.getChildren().add(noChildrenLabel);
+			listContainer.getChildren().add(noChildItem);
+		}
+		
+		scrollPane.setContent(listContainer);
+		childrenBox.getChildren().add(scrollPane);
+		VBox.setVgrow(scrollPane, Priority.ALWAYS);
+		
+		// 将VBox添加到扩展容器中
+		extendContainer.getChildren().add(childrenBox);
+	}
+	
+	// 创建子对象列表项
+	private HBox createChildItem(PathObject child) {
+		HBox childItem = new HBox();
+		childItem.setAlignment(Pos.CENTER_LEFT);
+		childItem.getStyleClass().add("custom-annotation-item");
+		
+		// 获取对象的类型和分类图标
+		Node typeIcon = IconFactory.createPathObjectIcon(child, 16, 16);
+		typeIcon.getStyleClass().add("custom-annotation-icon");
+		
+		// 创建子对象名称标签，包含分类信息（如果有）
+		String displayName = child.getDisplayedName();
+		if (displayName.contains("(")) {
+            displayName = displayName.substring(0, displayName.lastIndexOf("(")).trim();
+        }
+		Label childNameLabel = new Label(QuPathTranslator.getTranslatedName(displayName));
+		childNameLabel.getStyleClass().add("custom-annotation-name");
+		
+		childItem.getChildren().addAll(typeIcon, childNameLabel);
+		
+		// 设置选中状态的样式变化
+		if (qupath.getImageData() != null && 
+			qupath.getImageData().getHierarchy().getSelectionModel().isSelected(child)) {
+			childItem.setStyle("-fx-background-color: rgba(22, 146, 255, 0.06)");
+		}
+
+
+		// 添加鼠标悬停效果
+		childItem.setOnMouseEntered(e -> {
+			if (!(qupath.getImageData() != null && 
+				qupath.getImageData().getHierarchy().getSelectionModel().isSelected(child))) {
+				childItem.setStyle(childItem.getStyle() + " -fx-background-color: rgba(22, 146, 255, 0.06);");
+			}
+		});
+		
+		childItem.setOnMouseExited(e -> {
+			if (!(qupath.getImageData() != null && 
+				qupath.getImageData().getHierarchy().getSelectionModel().isSelected(child))) {
+				childItem.setStyle(childItem.getStyle().replace("-fx-background-color: rgba(22, 146, 255, 0.06);", ""));
+			}
+		});	
+		
+		// 添加点击事件
+		childItem.setOnMouseClicked(e -> {
+			// 选中该子对象
+			if (qupath.getImageData() != null) {
+				qupath.getImageData().getHierarchy().getSelectionModel().setSelectedObject(child);
+				
+				// 应用选中状态样式
+				for (Node node : listContainer.getChildren()) {
+					if (node instanceof HBox) {
+						node.setStyle("-fx-background-color: transparent;");
+					}
+				}
+				childItem.setStyle(childItem.getStyle() + " -fx-background-color: rgba(22, 146, 255, 0.06);");
+				
+				// 如果是双击，居中显示
+				if (e.getClickCount() > 1 && child.hasROI()) {
+					qupath.getViewer().centerROI(child.getROI());
+				}
+			}
+		});
+		
+		return childItem;
 	}
 }

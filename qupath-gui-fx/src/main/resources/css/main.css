@@ -460,6 +460,33 @@
     -fx-max-width: 320px;
 }
 
+/* 左侧工作栏样式 */
+.left-container .extend-pane {
+    -fx-background-color: rgba(255, 255, 255, 1);
+    -fx-background-radius: 28px;
+    -fx-padding: 12 0 12 0;
+    -fx-pref-width: 160px;
+    -fx-min-width: 160px;
+    -fx-max-width: 160px;
+}
+
+.extend-pane .custom-annotation-item {
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 4;
+}
+
+.extend-pane .extend-container-title{
+    -fx-padding: 0 12 0 12;
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+}
+
 .project-browser .project-topbar {
     -fx-alignment: center-left;
     -fx-border-color: transparent transparent rgba(0, 0, 0, 0.04) transparent;
@@ -740,12 +767,16 @@
     -fx-spacing: 4;
 }
 
-.custom-annotation-box .custom-annotation-item .custom-annotation-name{
+.custom-annotation-box .custom-annotation-item:hover {
+    -fx-background-color: rgba(22, 146, 255, 0.06);
+}
+
+.custom-annotation-name{
     -fx-font-size: 14px;
     -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
-.custom-annotation-box .custom-annotation-icon {
+.custom-annotation-icon {
     -fx-min-width: 20px;
     -fx-min-height: 20px;
     -fx-max-width: 20px;
@@ -762,4 +793,3 @@
     -fx-max-height: 21px;
     -fx-text-fill: rgba(0, 0, 0, 0.45);
 }
-
