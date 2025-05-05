@@ -25,17 +25,21 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import qupath.fx.controls.PredicateTextField;
 import qupath.lib.gui.QuPathGUI;
+import qupath.lib.gui.commands.Commands;
 import qupath.lib.gui.tools.ColorToolsFX;
 import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.gui.tools.IconFactory;
@@ -85,6 +89,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     // 添加一个记录当前选中的countLabel的变量
     private Label currentSelectedCountLabel = null;
     
+    // 添加分类列表的右键菜单变量和初始化方法
+    private final ContextMenu menuClasses = new ContextMenu();
+    
     public CustomAnnotationPane(QuPathGUI qupath){
         this.qupath = qupath;
         this.disableUpdates.addListener((v, o, n) -> {
@@ -94,6 +101,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         initializeFilter();
         GuiTools.populateAnnotationsMenu(qupath, menuAnnotations);
+        initializeClassesContextMenu();
         
         setImageData(qupath.getImageData());
         qupath.imageDataProperty().addListener(this);
@@ -173,7 +181,6 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         topBarAnnotation.getChildren().addAll(labelAnnotation, spacer, selectAllBtn, deleteBtn, moreBtn);
 
         annotationList = new VBox();
-        annotationList.getStyleClass().add("custom-annotation-list");
         VBox.setMargin(annotationList, new Insets(0, 0, 8, 0));
         mdPane.getChildren().add(annotationList);
         
@@ -203,36 +210,63 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         mdPane.getChildren().add(classificationTopBox);
 
         // 添加分类列表（可以根据需要扩展）
-        VBox classList = new VBox();
-        // 创建各种分类选项
-        HBox tumorClass = createClassificationItem("肿瘤", Color.RED);
-        HBox stromaClass = createClassificationItem("间质", Color.GREEN);
-        HBox immuneClass = createClassificationItem("免疫细胞", Color.PURPLE);
-        HBox necrosisClass = createClassificationItem("坏死", Color.BLACK);
-        HBox otherClass = createClassificationItem("其他", Color.ORANGE);
-        HBox regionClass = createClassificationItem("区域*", Color.BLUE);
-        HBox ignoreClass = createClassificationItem("忽略*", Color.LIGHTGRAY);
-        HBox positiveClass = createClassificationItem("良性", Color.RED);
-        HBox negativeClass = createClassificationItem("异常", Color.BLUE);
-        
-        classList.getChildren().addAll(tumorClass, stromaClass, immuneClass, necrosisClass, 
-                otherClass, regionClass, ignoreClass, positiveClass, negativeClass);
-        mdPane.getChildren().add(classList);
-        
-        VBox attributesBox = new VBox();
-        attributesBox.getStyleClass().add("custom-annotation-attributes-box");
-        Label attributesLabel = new Label("属性");
-        attributesLabel.getStyleClass().add("custom-annotation-label");
-        attributesBox.getChildren().add(attributesLabel);
-        
-        HBox descriptionBox = new HBox();
-        descriptionBox.setPadding(new Insets(10));
-        Label descriptionLabel = new Label("描述  这里是描述，编辑后不隐藏");
-        descriptionBox.getChildren().add(descriptionLabel);
-        attributesBox.getChildren().add(descriptionBox);
-        
-        mdPane.getChildren().add(attributesBox);
-        
+        GridPane classList = new GridPane();
+        classList.getStyleClass().add("custom-class-list");
+        classList.setHgap(4);  // 水平间距
+        classList.setVgap(4);  // 垂直间距
+        classList.setMaxWidth(Double.MAX_VALUE); // 让GridPane填充可用宽度
+
+        // 设置列宽约束，使三列均匀分布
+        ColumnConstraints column1 = new ColumnConstraints();
+        column1.setPercentWidth(33.33);
+        column1.setHgrow(Priority.ALWAYS);
+        column1.setFillWidth(true);
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setPercentWidth(33.33);
+        column2.setHgrow(Priority.ALWAYS);
+        column2.setFillWidth(true);
+        ColumnConstraints column3 = new ColumnConstraints();
+        column3.setPercentWidth(33.33);
+        column3.setHgrow(Priority.ALWAYS);
+        column3.setFillWidth(true);
+        classList.getColumnConstraints().addAll(column1, column2, column3);
+
+        // 创建一个包装容器，确保GridPane能够完全填充宽度
+        VBox classListContainer = new VBox(classList);
+        classListContainer.setMaxWidth(Double.MAX_VALUE);
+        classListContainer.setPrefWidth(Double.MAX_VALUE);
+        classListContainer.setFillWidth(true);
+
+        // 从QuPath获取所有可用的分类
+        List<PathClass> pathClasses = new ArrayList<>(qupath.getAvailablePathClasses());
+
+        // 过滤掉空分类（如果有的话）
+        pathClasses.removeIf(pc -> pc == null || pc.getName() == null || pc.getName().isEmpty());
+
+        // 创建类名称项目并添加到GridPane
+        int row = 0;
+        int col = 0;
+        int maxCols = 3; // 每行显示3个项目
+
+        for (PathClass pathClass : pathClasses) {
+            if (pathClass == null) continue;
+            
+            // 创建分类项
+            HBox classItem = createClassificationItem(pathClass);
+            classItem.setMaxWidth(Double.MAX_VALUE);
+            
+            // 添加到网格的对应位置
+            classList.add(classItem, col, row);
+            
+            // 更新行列索引
+            col++;
+            if (col >= maxCols) {
+                col = 0;
+                row++;
+            }
+        }
+        mdPane.getChildren().add(classListContainer);
+
         pane = new ScrollPane(mdPane);
         pane.setFitToWidth(true);
         pane.setFitToHeight(true);
@@ -244,51 +278,141 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         return pane;
     }
     
-    private HBox createClassificationItem(String name, Color color) {
+    // 添加初始化分类右键菜单的方法
+    private void initializeClassesContextMenu() {
+        MenuItem miSelectByClass = new MenuItem("选择此分类的对象");
+        miSelectByClass.setOnAction(e -> {
+            if (imageData == null || hierarchy == null)
+                return;
+            
+            PathClass selectedClass = getLastSelectedPathClass();
+            if (selectedClass != null) {
+                Commands.selectObjectsByClassification(imageData, selectedClass);
+            }
+        });
+        
+        MenuItem miEditClass = new MenuItem("编辑分类");
+        miEditClass.setOnAction(e -> {
+            PathClass selectedClass = getLastSelectedPathClass();
+            if (selectedClass != null && Commands.promptToEditClass(selectedClass)) {
+                // 更新UI显示
+                qupath.getViewerManager().repaintAllViewers();
+            }
+        });
+        
+        menuClasses.getItems().addAll(miSelectByClass, miEditClass);
+    }
+
+    // 获取最后选中的PathClass
+    private PathClass getLastSelectedPathClass() {
+        Node focusOwner = qupath.getStage().getScene().getFocusOwner();
+        if (focusOwner == null)
+            return null;
+        
+        // 从鼠标点击位置或者焦点位置查找PathClass
+        if (focusOwner instanceof HBox) {
+            HBox box = (HBox)focusOwner;
+            if (box.getUserData() instanceof PathClass)
+                return (PathClass)box.getUserData();
+        }
+        
+        // 从鼠标事件的目标查找
+        if (menuClasses.getUserData() instanceof PathClass)
+            return (PathClass)menuClasses.getUserData();
+        
+        return null;
+    }
+    
+    private HBox createClassificationItem(PathClass pathClass) {
         HBox item = new HBox();
-        item.setSpacing(5);
-        item.setAlignment(Pos.CENTER_LEFT);
+        item.getStyleClass().add("custom-class-item");
+        item.setMaxWidth(Double.MAX_VALUE); // 宽度自适应
+        item.setPrefWidth(Double.MAX_VALUE); // 预设宽度尽可能占满父容器
+        item.setUserData(pathClass); // 存储PathClass引用
         
-        Circle colorCircle = new Circle(6);
-        colorCircle.setFill(color);
-        colorCircle.setStroke(Color.BLACK);
-        colorCircle.setStrokeWidth(0.5);
+        String name = pathClass.getName();
+        String translatedName = QuPathTranslator.getTranslatedName(name);
+        Color color = ColorToolsFX.getPathClassColor(pathClass);
         
-        Label classLabel = new Label(name);
+        // 使用Rectangle替代Circle
+        Rectangle colorRect = new Rectangle(8, 8);
+        colorRect.setFill(color);
+        colorRect.setArcWidth(6); // 添加轻微的圆角
+        colorRect.setArcHeight(6);
         
-        item.getChildren().addAll(colorCircle, classLabel);
+        Label classLabel = new Label(translatedName);
+        classLabel.getStyleClass().add("custom-class-label");
+        HBox.setHgrow(classLabel, Priority.ALWAYS); // 让标签自适应宽度增长
+        classLabel.setMaxWidth(Double.MAX_VALUE);
+        
+        item.getChildren().addAll(colorRect, classLabel);
         
         // 添加点击事件
         item.setOnMouseClicked(event -> {
             if (imageData == null)
                 return;
             
-            List<PathObject> selected = new ArrayList<>(hierarchy.getSelectionModel().getSelectedObjects());
-            if (selected.isEmpty())
+            // 右键菜单
+            if (event.getButton() == MouseButton.SECONDARY) {
+                menuClasses.setUserData(pathClass);
+                menuClasses.show(item, event.getScreenX(), event.getScreenY());
                 return;
+            }
             
-            // 查找对应的PathClass
-            PathClass pathClass = null;
-            for (PathClass cls : qupath.getAvailablePathClasses()) {
-                if (cls.getName() != null && cls.getName().equals(name)) {
-                    pathClass = cls;
-                    break;
+            // 双击编辑分类
+            if (event.getClickCount() > 1) {
+                if (Commands.promptToEditClass(pathClass)) {
+                    // 更新UI显示
+                    colorRect.setFill(ColorToolsFX.getPathClassColor(pathClass));
+                    classLabel.setText(QuPathTranslator.getTranslatedName(pathClass.getName()));
+                    
+                    // 更新所有视图
+                    qupath.getViewerManager().repaintAllViewers();
+                    
+                    // 如果有hierarchy，通知变更
+                    if (hierarchy != null)
+                        hierarchy.fireHierarchyChangedEvent(this);
+                }
+                return;
+            }
+            
+            // 单击只显示选中效果
+            // 清除其他项目的样式
+            Node parent = item.getParent();
+            if (parent instanceof GridPane) {
+                GridPane grid = (GridPane) parent;
+                for (Node node : grid.getChildren()) {
+                    if (node instanceof HBox && node != item) {
+                        node.setStyle("");
+                    }
                 }
             }
             
-            // 应用分类到选中对象
-            if (pathClass != null) {
-                for (PathObject pathObject : selected) {
-                    if (pathObject.isTMACore() || pathObject.isAnnotation() || pathObject.isDetection())
-                        pathObject.setPathClass(pathClass);
-                }
-                hierarchy.fireObjectClassificationsChangedEvent(this, selected);
-            }
+            // 设置当前项目的选中样式
+            String backgroundColor = String.format(
+                "-fx-background-color: rgba(%d,%d,%d,%.1f);", 
+                (int)(color.getRed() * 255),
+                (int)(color.getGreen() * 255),
+                (int)(color.getBlue() * 255),
+                0.1 // 透明度0.1
+            );
+            item.setStyle(backgroundColor);
+        });
+        
+        // 添加鼠标悬停效果
+        item.setOnMouseEntered(e -> {
+            if (!item.getStyle().contains("-fx-background-color"))
+                item.setStyle("-fx-background-color: rgba(0, 0, 0, 0.05);");
+        });
+        
+        item.setOnMouseExited(e -> {
+            if (item.getStyle().contains("rgba(0, 0, 0, 0.05)"))
+                item.setStyle("");
         });
         
         return item;
     }
-    
+  
     private void selectAllAnnotations() {
         if (hierarchy == null)
             return;

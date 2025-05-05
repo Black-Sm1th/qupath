@@ -792,3 +792,22 @@
     -fx-max-height: 21px;
     -fx-text-fill: rgba(0, 0, 0, 0.45);
 }
+
+.custom-annotation-box .custom-class-list .custom-class-item{
+    -fx-alignment: center-left;
+    -fx-spacing: 4;
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+    -fx-padding: 8 12;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-border-color: rgba(0, 0, 0, 0.04);
+    -fx-cursor: hand;
+}
+
+.custom-annotation-box .custom-class-list .custom-class-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+}
+
