@@ -1,6 +1,7 @@
 package qupath.lib.gui.panes;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +19,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
@@ -26,8 +28,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
@@ -40,6 +44,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import qupath.fx.controls.PredicateTextField;
+import qupath.fx.dialogs.Dialogs;
+import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.commands.Commands;
 import qupath.lib.gui.measure.ObservableMeasurementTableData;
@@ -58,6 +64,8 @@ import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectHierarchyEvent;
 import qupath.lib.objects.hierarchy.events.PathObjectHierarchyListener;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionListener;
+import qupath.lib.projects.Project;
+import qupath.lib.projects.ProjectIO;
 import java.util.LinkedHashMap;
 
 
@@ -125,6 +133,11 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         // 初始化自动设置类别的状态
         doAutoSetPathClass.addListener((e, f, g) -> updateAutoSetPathClassProperty());
+        
+        // 添加对分类列表的监听，当分类列表发生变化时更新UI
+        qupath.getAvailablePathClasses().addListener((ListChangeListener<PathClass>) c -> {
+            Platform.runLater(this::updateClassList);
+        });
     }
     
     // 添加监听器方法
@@ -187,7 +200,13 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         Button deleteBtn = new Button();
         deleteBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.DELETE_BTN));
         deleteBtn.getStyleClass().add("custom-annotation-button");
-        deleteBtn.setOnAction(e -> GuiTools.promptToClearAllSelectedObjects(imageData));
+        deleteBtn.setOnAction(e -> {
+            if (imageData == null) {
+                Dialogs.showErrorMessage("删除标注", "没有打开的图像");
+                return;
+            }
+            GuiTools.promptToClearAllSelectedObjects(imageData);
+        });
         deleteBtn.setTooltip(new Tooltip("删除选中的标注"));
         Button moreBtn = new Button();
         moreBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.MORE_BTN));
@@ -247,8 +266,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         classificationTopBox.getChildren().addAll(classificationLabel, spacerClassification, searchBtn, setSelectBtn, autoSetBtn, moreBtnClassification);
         mdPane.getChildren().add(classificationTopBox);
 
-        // 添加分类列表（可以根据需要扩展）
+        // 添加分类列表（使用GridPane，但初始为空）
         GridPane classList = new GridPane();
+        classList.setId("classification-grid"); // 添加ID以便更容易查找
         VBox.setMargin(classList, new Insets(0, 0, 8, 0));
         classList.getStyleClass().add("custom-class-list");
         classList.setHgap(4);  // 水平间距
@@ -270,17 +290,324 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         column3.setFillWidth(true);
         classList.getColumnConstraints().addAll(column1, column2, column3);
 
+        mdPane.getChildren().add(classList);
+        
+        // 添加属性面板
+        VBox attributesPanel = createAttributesPanel();
+        mdPane.getChildren().add(attributesPanel);
+        
+        pane = new ScrollPane(mdPane);
+        pane.setFitToWidth(true);
+        pane.setFitToHeight(true);
+        pane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        pane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        
+        updateAnnotationList();
+        
+        // 创建完UI后，异步更新分类列表
+        Platform.runLater(this::updateClassList);
+        
+        return pane;
+    }
+    
+    // 更新自动设置按钮的样式，以反映当前状态
+    private void updateAutoSetButtonStyle(Button autoSetBtn) {
+        if (doAutoSetPathClass.get()) {
+            // 选中状态 - 添加样式类
+            if (!autoSetBtn.getStyleClass().contains("button-selected")) {
+                autoSetBtn.getStyleClass().add("button-selected");
+            }
+        } else {
+            // 未选中状态 - 移除样式类
+            autoSetBtn.getStyleClass().remove("button-selected");
+        }
+    }
+    
+    // 创建分类相关操作的菜单
+    private ContextMenu createClassesActionMenu() {
+        ContextMenu menu = new ContextMenu();
+        
+        // 添加/移除分类子菜单
+        Menu addRemoveMenu = new Menu("添加/移除");
+        MenuItem miAddClass = new MenuItem("添加分类");
+        miAddClass.setOnAction(e -> {
+            String input = Dialogs.showInputDialog("添加分类", "分类名称", "");
+            if (input != null && !input.trim().isEmpty() && !input.equalsIgnoreCase("null")) {
+                PathClass pathClass = PathClass.fromString(input);
+                if (!qupath.getAvailablePathClasses().contains(pathClass)) {
+                    qupath.getAvailablePathClasses().add(pathClass);
+                    // 更新分类列表UI
+                    updateClassList();
+                }
+            }
+        });
+        
+        MenuItem miRemoveClass = new MenuItem("移除选中分类");
+        miRemoveClass.setOnAction(e -> {
+            PathClass selectedClass = getSelectedPathClass();
+            if (selectedClass != null && selectedClass != PathClass.NULL_CLASS) {
+                if (Dialogs.showConfirmDialog("移除分类", "移除 '" + selectedClass.toString() + "' 从分类列表?")) {
+                    qupath.getAvailablePathClasses().remove(selectedClass);
+                    // 更新分类列表UI
+                    updateClassList();
+                }
+            }
+        });
+        addRemoveMenu.getItems().addAll(miAddClass, miRemoveClass);
+        
+        // 从现有对象填充菜单项
+        Menu populateFromObjects = new Menu("从现有对象填充");
+        MenuItem miPopulateAll = new MenuItem("所有分类(包括子分类)");
+        miPopulateAll.setOnAction(e -> {
+            if (hierarchy != null) {
+                // 获取图像中所有对象的分类
+                List<PathClass> newClasses = hierarchy.getFlattenedObjectList(null)
+                    .stream()
+                    .filter(p -> !p.isRootObject())
+                    .map(PathObject::getPathClass)
+                    .filter(p -> p != null && p != PathClass.NULL_CLASS)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toCollection(ArrayList::new));
+                    
+                if (!newClasses.isEmpty()) {
+                    // 添加Ignore分类
+                    newClasses.add(PathClass.StandardPathClasses.IGNORE);
+                    // 添加到现有分类
+                    boolean changed = false;
+                    for (PathClass pc : newClasses) {
+                        if (!qupath.getAvailablePathClasses().contains(pc)) {
+                            qupath.getAvailablePathClasses().add(pc);
+                            changed = true;
+                        }
+                    }
+                    // 有变化时更新UI
+                    if (changed) {
+                        updateClassList();
+                    }
+                }
+            }
+        });
+        
+        MenuItem miPopulateBase = new MenuItem("仅基础分类");
+        miPopulateBase.setOnAction(e -> {
+            if (hierarchy != null) {
+                // 获取图像中所有对象的基础分类
+                List<PathClass> newClasses = hierarchy.getFlattenedObjectList(null)
+                    .stream()
+                    .filter(p -> !p.isRootObject())
+                    .map(PathObject::getPathClass)
+                    .filter(p -> p != null && p != PathClass.NULL_CLASS)
+                    .map(PathClass::getBaseClass)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toCollection(ArrayList::new));
+                    
+                if (!newClasses.isEmpty()) {
+                    // 添加Ignore分类
+                    newClasses.add(PathClass.StandardPathClasses.IGNORE);
+                    // 添加到现有分类
+                    boolean changed = false;
+                    for (PathClass pc : newClasses) {
+                        if (!qupath.getAvailablePathClasses().contains(pc)) {
+                            qupath.getAvailablePathClasses().add(pc);
+                            changed = true;
+                        }
+                    }
+                    // 有变化时更新UI
+                    if (changed) {
+                        updateClassList();
+                    }
+                }
+            }
+        });
+        populateFromObjects.getItems().addAll(miPopulateAll, miPopulateBase);
+        
+        // 从图像通道填充
+        MenuItem miPopulateFromChannels = new MenuItem("从图像通道填充");
+        miPopulateFromChannels.setOnAction(e -> {
+            if (imageData == null)
+                return;
+                
+            var server = imageData.getServer();
+            List<PathClass> newClasses = new ArrayList<>();
+            
+            // 从通道创建分类
+            for (var channel : server.getMetadata().getChannels()) {
+                newClasses.add(PathClass.fromString(channel.getName(), channel.getColor()));
+            }
+            
+            if (!newClasses.isEmpty()) {
+                // 添加Ignore分类
+                newClasses.add(PathClass.StandardPathClasses.IGNORE);
+                // 添加到现有分类
+                boolean changed = false;
+                for (PathClass pc : newClasses) {
+                    if (!qupath.getAvailablePathClasses().contains(pc)) {
+                        qupath.getAvailablePathClasses().add(pc);
+                        changed = true;
+                    }
+                }
+                // 有变化时更新UI
+                if (changed) {
+                    updateClassList();
+                }
+            }
+        });
+        
+        // 重置为默认分类
+        MenuItem miResetToDefault = new MenuItem("重置为默认分类");
+        miResetToDefault.setOnAction(e -> {
+            if (Dialogs.showConfirmDialog("重置分类", "重置所有可用分类?")) {
+                qupath.resetAvailablePathClasses();
+                // 更新分类列表UI
+                updateClassList();
+            }
+        });
+        
+        // 从项目导入分类
+        MenuItem miImportFromProject = new MenuItem("从项目导入分类");
+        miImportFromProject.setOnAction(e -> {
+            File file = FileChoosers.promptForFile("导入分类", 
+                FileChoosers.createExtensionFilter("QuPath项目", ProjectIO.getProjectExtension()));
+                
+            if (file != null && file.getAbsolutePath().toLowerCase().endsWith(ProjectIO.getProjectExtension())) {
+                try {
+                    Project<?> project = ProjectIO.loadProject(file, BufferedImage.class);
+                    List<PathClass> pathClasses = project.getPathClasses();
+                    if (!pathClasses.isEmpty()) {
+                        // 添加到现有分类
+                        boolean changed = false;
+                        for (PathClass pc : pathClasses) {
+                            if (!qupath.getAvailablePathClasses().contains(pc)) {
+                                qupath.getAvailablePathClasses().add(pc);
+                                changed = true;
+                            }
+                        }
+                        // 有变化时更新UI
+                        if (changed) {
+                            updateClassList();
+                        }
+                    }
+                } catch (Exception ex) {
+                    Dialogs.showErrorMessage("读取项目错误", ex);
+                    logger.error(ex.getMessage(), ex);
+                }
+            }
+        });
+        
+        // 显示/隐藏菜单
+        Menu showHideMenu = new Menu("显示/隐藏分类");
+        MenuItem miShowSelected = new MenuItem("显示选中的分类");
+        miShowSelected.setOnAction(e -> {
+            PathClass selectedClass = getSelectedPathClass();
+            if (selectedClass != null && qupath.getOverlayOptions() != null) {
+                // 从隐藏列表中移除选中的分类，使其显示
+                qupath.getOverlayOptions().selectedClassesProperty().remove(selectedClass);
+            }
+        });
+        
+        MenuItem miHideSelected = new MenuItem("隐藏选中的分类");
+        miHideSelected.setOnAction(e -> {
+            PathClass selectedClass = getSelectedPathClass();
+            if (selectedClass != null && qupath.getOverlayOptions() != null) {
+                // 添加到隐藏列表中
+                if (!qupath.getOverlayOptions().selectedClassesProperty().contains(selectedClass)) {
+                    qupath.getOverlayOptions().selectedClassesProperty().add(selectedClass);
+                }
+            }
+        });
+        
+        showHideMenu.getItems().addAll(miShowSelected, miHideSelected);
+        
+        // 为显示/隐藏菜单项设置启用/禁用条件
+        showHideMenu.setOnShowing(e -> {
+            PathClass selectedClass = getSelectedPathClass();
+            boolean hasSelection = selectedClass != null && selectedClass != PathClass.NULL_CLASS;
+            miShowSelected.setDisable(!hasSelection);
+            miHideSelected.setDisable(!hasSelection);
+        });
+        
+        // 按分类选择对象
+        MenuItem miSelectByClass = new MenuItem("按分类选择对象");
+        miSelectByClass.setOnAction(e -> {
+            PathClass selectedClass = getSelectedPathClass();
+            if (selectedClass != null && imageData != null) {
+                Commands.selectObjectsByClassification(imageData, selectedClass);
+            }
+        });
+        // 添加所有菜单项
+        menu.getItems().addAll(
+            addRemoveMenu,
+            populateFromObjects,
+            miPopulateFromChannels,
+            new SeparatorMenuItem(),
+            miResetToDefault,
+            miImportFromProject,
+            showHideMenu,
+            miSelectByClass
+        );
+
+        // 设置菜单项启用/禁用状态
+        menu.setOnShowing(e -> {
+            boolean hasImageData = imageData != null;
+            boolean hasHierarchy = hierarchy != null;
+            
+            populateFromObjects.setDisable(!hasHierarchy);
+            miPopulateFromChannels.setDisable(!hasImageData);
+            miSelectByClass.setDisable(getSelectedPathClass() == null || !hasImageData);
+        });
+        
+        return menu;
+    }
+    
+    /**
+     * 更新分类列表UI显示
+     */
+    private void updateClassList() {
+        // 确保在JavaFX主线程执行UI更新
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::updateClassList);
+            return;
+        }
+        
+        // 查找分类网格
+        if (pane == null || pane.getContent() == null) {
+            logger.debug("无法更新分类列表：pane为空或未完成初始化");
+            return;
+        }
+        
+        // 使用ID查找GridPane
+        Node content = pane.getContent();
+        GridPane classList = (GridPane)content.lookup("#classification-grid");
+        
+        // 如果找不到，再尝试使用CSS类查找
+        if (classList == null) {
+            classList = (GridPane)content.lookup(".custom-class-list");
+        }
+        
+        if (classList == null) {
+            logger.warn("无法找到分类列表网格");
+            return;
+        }
+        
+        // 清空现有分类列表
+        classList.getChildren().clear();
+        
         // 从QuPath获取所有可用的分类
         List<PathClass> pathClasses = new ArrayList<>(qupath.getAvailablePathClasses());
-
+        
         // 过滤掉空分类（如果有的话）
         pathClasses.removeIf(pc -> pc == null || pc.getName() == null || pc.getName().isEmpty());
-
+        
+        // 记录已处理的分类数量
+        logger.debug("更新分类列表，找到 {} 个分类", pathClasses.size());
+        
         // 创建类名称项目并添加到GridPane
         int row = 0;
         int col = 0;
         int maxCols = 3; // 每行显示3个项目
-
+        
         for (PathClass pathClass : pathClasses) {
             if (pathClass == null) continue;
             
@@ -298,53 +625,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
                 row++;
             }
         }
-        mdPane.getChildren().add(classList);
-
-        // 添加属性面板
-        VBox attributesPanel = createAttributesPanel();
-        mdPane.getChildren().add(attributesPanel);
         
-        pane = new ScrollPane(mdPane);
-        pane.setFitToWidth(true);
-        pane.setFitToHeight(true);
-        pane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        pane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        
-        updateAnnotationList();
-        
-        return pane;
-    }
-    
-    // 更新自动设置按钮的样式，以反映当前状态
-    private void updateAutoSetButtonStyle(Button autoSetBtn) {
-        if (doAutoSetPathClass.get()) {
-            // 选中状态
-            autoSetBtn.setStyle("-fx-background-color: rgba(22, 146, 255, 0.3);");
-        } else {
-            // 未选中状态
-            autoSetBtn.setStyle("");
-        }
-    }
-    
-    // 创建分类相关操作的菜单
-    private ContextMenu createClassesActionMenu() {
-        ContextMenu menu = new ContextMenu();
-        
-        MenuItem miSelectByClass = new MenuItem("按分类选择对象");
-        miSelectByClass.setOnAction(e -> {
-            PathClass selectedClass = getSelectedPathClass();
-            if (selectedClass != null && imageData != null) {
-                Commands.selectObjectsByClassification(imageData, selectedClass);
-            }
-        });
-        
-        MenuItem miResetClassification = new MenuItem("重置选中对象的分类");
-        miResetClassification.setOnAction(e -> {
-            resetClassificationsForSelectedObjects();
-        });
-        
-        menu.getItems().addAll(miSelectByClass, miResetClassification);
-        return menu;
+        // 通知界面刷新
+        classList.requestLayout();
     }
     
     // 设置选中对象的分类
@@ -580,7 +863,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         return item;
     }
-  
+    
     private void selectAllAnnotations() {
         if (hierarchy == null)
             return;
@@ -676,9 +959,6 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         if (annotation.hasROI()) {
             tipText.append("\n类型: ").append(annotation.getROI().getRoiName());
             tipText.append("\nID: ").append(annotation.getID());
-            if (annotation.getROI().getArea() > 0) {
-                tipText.append("\n面积: ").append(String.format("%.2f µm²", annotation.getROI().getArea()));
-            }
         }
         Tooltip tooltip = new Tooltip(tipText.toString());
         Tooltip.install(item, tooltip);

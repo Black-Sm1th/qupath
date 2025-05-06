@@ -744,11 +744,21 @@
 
 .custom-annotation-box .custom-annotation-button {
     -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
     -fx-min-width: 24;
     -fx-min-height: 24;
     -fx-max-width: 24;
     -fx-max-height: 24;
     -fx-cursor: hand;
+}
+
+.custom-annotation-box .custom-annotation-button.button-selected {
+    -fx-background-color: rgba(22, 146, 255, 0.06);
+}
+
+.custom-annotation-box .custom-annotation-button.button-selected .qupath-icon {
+    -fx-text-fill: rgba(22, 146, 255, 1);
 }
 
 .custom-annotation-box .custom-annotation-button:hover .qupath-icon {
