@@ -811,3 +811,22 @@
     -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
+
+.custom-annotation-box .custom-annotation-properties-item {
+    -fx-padding: 8 12 8 12;
+    -fx-background-color: rgba(0, 0, 0, 0.04);
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-spacing: 4px
+}
+
+.custom-annotation-box .custom-annotation-properties-item .custom-annotation-properties-item-key{
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+}
+
+.custom-annotation-box .custom-annotation-properties-item .custom-annotation-properties-item-value{
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-font-size: 14px;
+}
+

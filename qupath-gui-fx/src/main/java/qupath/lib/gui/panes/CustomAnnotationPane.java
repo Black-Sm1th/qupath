@@ -3,6 +3,7 @@ package qupath.lib.gui.panes;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.ColumnConstraints;
@@ -40,6 +42,9 @@ import javafx.scene.shape.Rectangle;
 import qupath.fx.controls.PredicateTextField;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.commands.Commands;
+import qupath.lib.gui.measure.ObservableMeasurementTableData;
+import qupath.lib.gui.panes.SelectedMeasurementTableView;
+import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.gui.tools.ColorToolsFX;
 import qupath.lib.gui.tools.GuiTools;
 import qupath.lib.gui.tools.IconFactory;
@@ -53,6 +58,7 @@ import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectHierarchyEvent;
 import qupath.lib.objects.hierarchy.events.PathObjectHierarchyListener;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionListener;
+import java.util.LinkedHashMap;
 
 
 public class CustomAnnotationPane implements PathObjectSelectionListener, ChangeListener<ImageData<BufferedImage>>, PathObjectHierarchyListener{
@@ -92,6 +98,17 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     // 添加分类列表的右键菜单变量和初始化方法
     private final ContextMenu menuClasses = new ContextMenu();
     
+    // 在CustomAnnotationPane类中添加属性面板相关变量
+    private VBox attributesBox;
+    private VBox propertiesBox;
+    private ObservableList<KeyValuePair> propertiesItems = FXCollections.observableArrayList();
+    private TabPane attributesTabs;
+    
+    private ObservableMeasurementTableData tableModel = new ObservableMeasurementTableData();
+    
+    // 添加自动设置分类的属性
+    private final BooleanProperty doAutoSetPathClass = new SimpleBooleanProperty(false);
+    
     public CustomAnnotationPane(QuPathGUI qupath){
         this.qupath = qupath;
         this.disableUpdates.addListener((v, o, n) -> {
@@ -105,6 +122,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         setImageData(qupath.getImageData());
         qupath.imageDataProperty().addListener(this);
+        
+        // 初始化自动设置类别的状态
+        doAutoSetPathClass.addListener((e, f, g) -> updateAutoSetPathClassProperty());
     }
     
     // 添加监听器方法
@@ -186,6 +206,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         HBox classificationTopBox = new HBox();
         classificationTopBox.getStyleClass().add("custom-annotation-top-bar");
+        VBox.setMargin(classificationTopBox, new Insets(0, 0, 4, 0));
         Label classificationLabel = new Label("分类");
         classificationLabel.getStyleClass().add("custom-annotation-label");
         Button searchBtn = new Button();
@@ -195,15 +216,32 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         Button setSelectBtn = new Button();
         setSelectBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.SET_SELECT_BTN));
         setSelectBtn.getStyleClass().add("custom-annotation-button");
-        setSelectBtn.setTooltip(new Tooltip("设置选中"));
+        setSelectBtn.setTooltip(new Tooltip("设置选中对象的分类"));
+        // 为设置选中对象的分类按钮添加点击事件
+        setSelectBtn.setOnAction(e -> promptToSetClass());
+        
         Button autoSetBtn = new Button();
         autoSetBtn.setGraphic(IconFactory.createNode(16, 16, PathIcons.AUTO_SET_BTN));
         autoSetBtn.getStyleClass().add("custom-annotation-button");
-        autoSetBtn.setTooltip(new Tooltip("自动设置"));
+        autoSetBtn.setTooltip(new Tooltip("自动设置新标注的分类"));
+        // 为自动设置分类按钮添加点击事件，切换自动设置状态
+        autoSetBtn.setOnAction(e -> {
+            doAutoSetPathClass.set(!doAutoSetPathClass.get());
+            updateAutoSetButtonStyle(autoSetBtn);
+        });
+        updateAutoSetButtonStyle(autoSetBtn); // 初始化按钮样式
+        
         Button moreBtnClassification = new Button();
         moreBtnClassification.setGraphic(IconFactory.createNode(16, 16, PathIcons.MORE_BTN));
         moreBtnClassification.getStyleClass().add("custom-annotation-button");
-        moreBtnClassification.setTooltip(new Tooltip("更多选项"));
+        moreBtnClassification.setTooltip(new Tooltip("更多分类操作"));
+        // 为更多分类操作按钮添加点击事件
+        moreBtnClassification.setOnAction(e -> {
+            // 创建分类操作菜单
+            ContextMenu menu = createClassesActionMenu();
+            menu.show(moreBtnClassification, javafx.geometry.Side.BOTTOM, 0, 0);
+        });
+        
         Region spacerClassification = new Region();
         HBox.setHgrow(spacerClassification, Priority.ALWAYS);
         classificationTopBox.getChildren().addAll(classificationLabel, spacerClassification, searchBtn, setSelectBtn, autoSetBtn, moreBtnClassification);
@@ -211,6 +249,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
 
         // 添加分类列表（可以根据需要扩展）
         GridPane classList = new GridPane();
+        VBox.setMargin(classList, new Insets(0, 0, 8, 0));
         classList.getStyleClass().add("custom-class-list");
         classList.setHgap(4);  // 水平间距
         classList.setVgap(4);  // 垂直间距
@@ -230,12 +269,6 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         column3.setHgrow(Priority.ALWAYS);
         column3.setFillWidth(true);
         classList.getColumnConstraints().addAll(column1, column2, column3);
-
-        // 创建一个包装容器，确保GridPane能够完全填充宽度
-        VBox classListContainer = new VBox(classList);
-        classListContainer.setMaxWidth(Double.MAX_VALUE);
-        classListContainer.setPrefWidth(Double.MAX_VALUE);
-        classListContainer.setFillWidth(true);
 
         // 从QuPath获取所有可用的分类
         List<PathClass> pathClasses = new ArrayList<>(qupath.getAvailablePathClasses());
@@ -265,8 +298,12 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
                 row++;
             }
         }
-        mdPane.getChildren().add(classListContainer);
+        mdPane.getChildren().add(classList);
 
+        // 添加属性面板
+        VBox attributesPanel = createAttributesPanel();
+        mdPane.getChildren().add(attributesPanel);
+        
         pane = new ScrollPane(mdPane);
         pane.setFitToWidth(true);
         pane.setFitToHeight(true);
@@ -278,7 +315,122 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         return pane;
     }
     
-    // 添加初始化分类右键菜单的方法
+    // 更新自动设置按钮的样式，以反映当前状态
+    private void updateAutoSetButtonStyle(Button autoSetBtn) {
+        if (doAutoSetPathClass.get()) {
+            // 选中状态
+            autoSetBtn.setStyle("-fx-background-color: rgba(22, 146, 255, 0.3);");
+        } else {
+            // 未选中状态
+            autoSetBtn.setStyle("");
+        }
+    }
+    
+    // 创建分类相关操作的菜单
+    private ContextMenu createClassesActionMenu() {
+        ContextMenu menu = new ContextMenu();
+        
+        MenuItem miSelectByClass = new MenuItem("按分类选择对象");
+        miSelectByClass.setOnAction(e -> {
+            PathClass selectedClass = getSelectedPathClass();
+            if (selectedClass != null && imageData != null) {
+                Commands.selectObjectsByClassification(imageData, selectedClass);
+            }
+        });
+        
+        MenuItem miResetClassification = new MenuItem("重置选中对象的分类");
+        miResetClassification.setOnAction(e -> {
+            resetClassificationsForSelectedObjects();
+        });
+        
+        menu.getItems().addAll(miSelectByClass, miResetClassification);
+        return menu;
+    }
+    
+    // 设置选中对象的分类
+    private void promptToSetClass() {
+        if (hierarchy == null)
+            return;
+        
+        PathClass pathClass = getSelectedPathClass();
+        if (pathClass == PathClass.NULL_CLASS)
+            pathClass = null;
+        
+        var pathObjects = new ArrayList<>(hierarchy.getSelectionModel().getSelectedObjects());
+        List<PathObject> changed = new ArrayList<>();
+        
+        for (PathObject pathObject : pathObjects) {
+            if (pathObject.getPathClass() == pathClass)
+                continue;
+            
+            pathObject.setPathClass(pathClass);
+            changed.add(pathObject);
+        }
+        
+        if (!changed.isEmpty()) {
+            hierarchy.fireObjectClassificationsChangedEvent(this, changed);
+            updateAnnotationList();
+        }
+    }
+    
+    // 重置选中对象的分类
+    private void resetClassificationsForSelectedObjects() {
+        if (hierarchy == null)
+            return;
+        
+        var pathObjects = new ArrayList<>(hierarchy.getSelectionModel().getSelectedObjects());
+        List<PathObject> changed = new ArrayList<>();
+        
+        for (PathObject pathObject : pathObjects) {
+            if (pathObject.getPathClass() == null)
+                continue;
+            
+            pathObject.setPathClass(null);
+            changed.add(pathObject);
+        }
+        
+        if (!changed.isEmpty()) {
+            hierarchy.fireObjectClassificationsChangedEvent(this, changed);
+            updateAnnotationList();
+        }
+    }
+    
+    // 获取当前选中的PathClass
+    private PathClass getSelectedPathClass() {
+        // 正确处理层次结构：pane.getContent()返回VBox，需要在其中查找GridPane
+        if (pane == null || pane.getContent() == null)
+            return null;
+            
+        // 使用lookup方法查找带有样式类custom-class-list的GridPane
+        Node content = pane.getContent();
+        GridPane classList = (GridPane)content.lookup(".custom-class-list");
+        if (classList == null)
+            return null;
+            
+        // 查找带有background-color样式的子项
+        for (Node node : classList.getChildren()) {
+            if (node instanceof HBox && node.getStyle().contains("background-color")) {
+                // 找到选中的项
+                if (node.getUserData() instanceof PathClass)
+                    return (PathClass)node.getUserData();
+            }
+        }
+        return null;
+    }
+    
+    // 更新自动设置分类的属性
+    private void updateAutoSetPathClassProperty() {
+        PathClass pathClass = null;
+        if (doAutoSetPathClass.get()) {
+            pathClass = getSelectedPathClass();
+        }
+        if (pathClass == null || pathClass == PathClass.NULL_CLASS)
+            PathPrefs.autoSetAnnotationClassProperty().set(null);
+        else
+            PathPrefs.autoSetAnnotationClassProperty().set(pathClass);
+    }
+    
+    // 初始化分类右键菜单的方法
     private void initializeClassesContextMenu() {
         MenuItem miSelectByClass = new MenuItem("选择此分类的对象");
         miSelectByClass.setOnAction(e -> {
@@ -347,6 +499,17 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         item.getChildren().addAll(colorRect, classLabel);
         
+        // 创建工具提示 - 包含分类详细信息
+        StringBuilder tipText = new StringBuilder();
+        tipText.append("分类名称: ").append(translatedName);
+        tipText.append("\n分类原名: ").append(name);
+        Color c = ColorToolsFX.getPathClassColor(pathClass);
+        tipText.append("\n颜色: RGB(").append((int)(c.getRed()*255)).append(",")
+               .append((int)(c.getGreen()*255)).append(",")
+               .append((int)(c.getBlue()*255)).append(")");
+        Tooltip tooltip = new Tooltip(tipText.toString());
+        Tooltip.install(item, tooltip);
+        
         // 添加点击事件
         item.setOnMouseClicked(event -> {
             if (imageData == null)
@@ -397,6 +560,11 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
                 0.1 // 透明度0.1
             );
             item.setStyle(backgroundColor);
+            
+            // 选中类别后，如果已开启自动设置，更新自动设置的类别
+            if (doAutoSetPathClass.get()) {
+                updateAutoSetPathClassProperty();
+            }
         });
         
         // 添加鼠标悬停效果
@@ -498,6 +666,23 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         // 标注名称
         Label nameLabel = new Label(pureName);
         nameLabel.getStyleClass().add("custom-annotation-name");
+        
+        // 创建工具提示 - 包含更详细的标注信息
+        StringBuilder tipText = new StringBuilder();
+        tipText.append("名称: ").append(pureName);
+        if (annotation.getPathClass() != null) {
+            tipText.append("\n分类: ").append(annotation.getPathClass().toString());
+        }
+        if (annotation.hasROI()) {
+            tipText.append("\n类型: ").append(annotation.getROI().getRoiName());
+            tipText.append("\nID: ").append(annotation.getID());
+            if (annotation.getROI().getArea() > 0) {
+                tipText.append("\n面积: ").append(String.format("%.2f µm²", annotation.getROI().getArea()));
+            }
+        }
+        Tooltip tooltip = new Tooltip(tipText.toString());
+        Tooltip.install(item, tooltip);
+        
         // 计数/锁定图标
         HBox rightIcons = new HBox();
         rightIcons.setAlignment(Pos.CENTER_RIGHT);
@@ -689,6 +874,9 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         if (disableUpdates.get() || suppressSelectionChanges)
             return;
         
+        // 更新属性表格
+        updatePropertiesGrid(pathObjectSelected);
+        
         Platform.runLater(() -> updateAnnotationList());
     }
 
@@ -787,5 +975,143 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         }
         // 清空选中状态记录
         selectedCountLabels.clear();
+    }
+
+    // 添加属性面板的创建方法
+    private VBox createAttributesPanel() {
+        attributesBox = new VBox();
+        attributesBox.getStyleClass().add("custom-annotation-attributes-box");
+        attributesBox.setSpacing(8);
+        // 创建标题栏
+        HBox attributesTopBar = new HBox();
+        attributesTopBar.getStyleClass().add("custom-annotation-top-bar");
+        // 创建标题
+        Label attributesLabel = new Label("测量");
+        attributesLabel.getStyleClass().add("custom-annotation-label");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        attributesTopBar.getChildren().addAll(attributesLabel, spacer);
+        attributesBox.getChildren().add(attributesTopBar);
+        // 创建属性容器
+        propertiesBox = new VBox();
+        propertiesBox.setSpacing(8);
+        // 添加各个组件到属性面板
+        attributesBox.getChildren().add(propertiesBox);
+        return attributesBox;
+    }
+
+    // 添加一个从原版获取属性的方法
+    private Map<String, String> getObjectProperties(PathObject pathObject) {
+        if (pathObject == null || imageData == null)
+            return Collections.emptyMap();
+        
+        // 使用LinkedHashMap保持顺序
+        Map<String, String> properties = new LinkedHashMap<>();
+        
+        // 设置表格模型
+        tableModel.setImageData(imageData, Collections.singletonList(pathObject));
+        
+        // 获取所有属性名称
+        List<String> allNames = tableModel.getAllNames();
+        
+        // 获取每个属性的值
+        int nDecimalPlaces = 4; // 与SelectedMeasurementTableView一致
+        for (String name : allNames) {
+            String value = tableModel.getStringValue(pathObject, name, nDecimalPlaces);
+            if (value != null && !value.isEmpty()) {
+                properties.put(name, value);
+            }
+        }
+        
+        return properties;
+    }
+
+    // 更新属性表格的方法
+    private void updatePropertiesGrid(PathObject pathObject) {
+        propertiesBox.getChildren().clear();
+        propertiesItems.clear();
+        
+        if (pathObject == null)
+            return;
+        
+        // 直接从原版属性列表获取属性
+        Map<String, String> properties = getObjectProperties(pathObject);
+        
+        // 转换为KeyValuePair列表
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            propertiesItems.add(new KeyValuePair(entry.getKey(), entry.getValue()));
+        }
+        
+        // 获取PathClass用于显示分类颜色
+        PathClass pathClass = pathObject.getPathClass();
+        
+        // 将所有属性添加到VBox中
+        for (KeyValuePair pair : propertiesItems) {
+            // 为每个属性创建一个HBox容器
+            HBox itemBox = new HBox();
+            itemBox.setSpacing(10);
+            itemBox.setAlignment(Pos.CENTER_LEFT);
+            itemBox.getStyleClass().add("custom-annotation-properties-item");
+            
+            // 创建键标签
+            Label keyLabel = new Label(QuPathTranslator.getTranslatedName(pair.getKey()));
+            keyLabel.setPrefWidth(120); // 固定宽度以对齐
+            keyLabel.setMinWidth(120);
+            keyLabel.getStyleClass().add("custom-annotation-properties-item-key");
+            // 根据行类型自定义样式
+            if ("Classification".equals(pair.getKey()) && pathClass != null) {
+                // 为分类添加颜色方块
+                Color color = ColorToolsFX.getPathClassColor(pathClass);
+                
+                Rectangle colorRect = new Rectangle(8, 8);
+                colorRect.setFill(color);
+                colorRect.setArcWidth(2);
+                colorRect.setArcHeight(2);
+                
+                HBox valueBox = new HBox(5, colorRect, new Label(pair.getValue()));
+                valueBox.setAlignment(Pos.CENTER_LEFT);
+                valueBox.getStyleClass().add("custom-annotation-properties-item-value");
+                // 添加到容器
+                itemBox.getChildren().addAll(keyLabel, valueBox);
+                
+                // 添加工具提示
+                Tooltip.install(itemBox, new Tooltip("对象的分类: " + pair.getValue()));
+            } else {
+                // 创建值标签
+                Label valueLabel = new Label(pair.getValue());
+                valueLabel.setWrapText(true); // 允许文本换行
+                valueLabel.getStyleClass().add("custom-annotation-properties-item-value");
+                HBox.setHgrow(valueLabel, Priority.ALWAYS); // 允许值标签自适应增长
+                
+                // 添加到容器
+                itemBox.getChildren().addAll(keyLabel, valueLabel);
+                
+                // 为每个属性项添加工具提示
+                String tipText = pair.getKey() + ": " + pair.getValue();
+                Tooltip.install(itemBox, new Tooltip(tipText));
+            }
+            
+            // 添加到属性列表
+            propertiesBox.getChildren().add(itemBox);
+        }
+    }
+
+    // 添加KeyValuePair类用于表格数据
+    public static class KeyValuePair {
+        private final String key;
+        private final String value;
+        
+        public KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+        
+        public String getKey() {
+            return key;
+        }
+        
+        public String getValue() {
+            return value;
+        }
     }
 } 
