@@ -54,3 +54,4 @@ hs_err*.log
 bin/
 .kotlin
 untranslated_keywords.txt
+*.lic

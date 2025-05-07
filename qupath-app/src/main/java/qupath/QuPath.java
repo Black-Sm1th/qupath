@@ -34,7 +34,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+
 import javax.script.ScriptException;
+import javax.swing.JOptionPane;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +127,50 @@ public class QuPath {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		while (true) {
+			// 检查许可证状态
+			qupath.lib.common.LicenseManager.LicenseInfo licenseInfo = qupath.lib.common.LicenseManager.checkLicenseStatus();
+			
+			// 显示许可证状态对话框
+			if (licenseInfo.getStatus() == qupath.lib.common.LicenseManager.LicenseStatus.VALID) {
+				// 许可证有效，显示过期时间和进入选项
+				Object[] options = {"进入软件"};
+				JOptionPane.showOptionDialog(null,
+					"许可证状态: " + licenseInfo.getMessage() + "\n" +
+					"过期时间: " + licenseInfo.getExpiryDate(),
+					"许可证验证",
+					JOptionPane.DEFAULT_OPTION,
+					JOptionPane.INFORMATION_MESSAGE,
+					null,
+					options,
+					options[0]);
+				break; // 许可证有效，退出循环
+			} else {
+				// 许可证无效，显示状态和选项
+				Object[] options = {"导入许可证", "退出"};
+				int choice = JOptionPane.showOptionDialog(null,
+					"当前许可证状态: " + licenseInfo.getMessage() + "\n" +
+					(licenseInfo.getExpiryDate().isEmpty() ? "" : "过期时间: " + licenseInfo.getExpiryDate()),
+					"许可证验证",
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE,
+					null,
+					options,
+					options[0]);
+					
+				if (choice == 0) {
+					// 用户选择导入许可证
+					if (!qupath.lib.common.LicenseManager.importLicense()) {
+						continue; // 导入失败，继续循环
+					}
+					// 重新检查许可证状态，继续循环
+					continue;
+				} else {
+					// 用户选择退出
+					System.exit(0);
+				}
+			}
+		}
 
 		initializeProperties();
 
