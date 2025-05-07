@@ -158,7 +158,30 @@ public class LicenseManager {
 
                 // 验证通过，复制许可证文件到当前目录
                 Path targetPath = Paths.get(LICENSE_FILE_NAME);
+                
+                // 如果目标文件已存在，先删除
+                if (Files.exists(targetPath)) {
+                    Files.delete(targetPath);
+                }
+                
+                // 复制文件
                 Files.copy(selectedFile.toPath(), targetPath);
+                
+                // 设置文件为只读
+                File targetFile = targetPath.toFile();
+                targetFile.setReadOnly();
+                
+                // 在Windows系统上设置隐藏属性
+                if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                    try {
+                        Process process = Runtime.getRuntime().exec("attrib +h " + targetPath.toString());
+                        process.waitFor();
+                    } catch (Exception e) {
+                        logger.warn("设置文件隐藏属性失败: " + e.getMessage());
+                    }
+                }
+                
+                logger.info("许可证文件已成功导入并设置为只读和隐藏");
                 return true;
             } catch (IOException e) {
                 logger.error("导入许可证失败: " + e.getMessage());
