@@ -19,6 +19,11 @@
     -fx-min-width: 160px;
 }
 
+/* 箭头默认样式 */
+.menu-item .arrow, .menu .menu-item .arrow {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+}
+
 /* 悬浮高亮 */
 .menu-item:hover, .menu .menu-item:hover, .menu-item:focused, .menu .menu-item:focused {
     -fx-background-color: rgba(0, 0, 0, 0.04);
@@ -29,8 +34,9 @@
     -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
+/* 悬浮箭头 */
 .menu-item:hover .arrow, .menu .menu-item:hover .arrow, .menu-item:focused .arrow, .menu .menu-item:focused .arrow {
-    -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-background-color: rgba(0, 0, 0, 0.85);
 }
 
 /* 分隔线 */
@@ -48,6 +54,11 @@
 .menu-item:disabled, .menu .menu-item:disabled {
     -fx-text-fill: #bfbfbf;
     -fx-background-color: transparent;
+}
+
+/* 禁用项箭头 */
+.menu-item:disabled .arrow, .menu .menu-item:disabled .arrow {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
 }
 
 /* 一级菜单左侧圆角 */

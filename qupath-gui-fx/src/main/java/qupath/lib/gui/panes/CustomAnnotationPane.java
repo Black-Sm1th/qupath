@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,7 +50,6 @@ import qupath.fx.dialogs.FileChoosers;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.commands.Commands;
 import qupath.lib.gui.measure.ObservableMeasurementTableData;
-import qupath.lib.gui.panes.SelectedMeasurementTableView;
 import qupath.lib.gui.prefs.PathPrefs;
 import qupath.lib.gui.tools.ColorToolsFX;
 import qupath.lib.gui.tools.GuiTools;
@@ -66,7 +66,6 @@ import qupath.lib.objects.hierarchy.events.PathObjectHierarchyListener;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionListener;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectIO;
-import java.util.LinkedHashMap;
 
 
 public class CustomAnnotationPane implements PathObjectSelectionListener, ChangeListener<ImageData<BufferedImage>>, PathObjectHierarchyListener{
@@ -78,6 +77,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     private QuPathGUI qupath;
     private static final Logger logger = LoggerFactory.getLogger(CustomAnnotationPane.class);
     private ScrollPane pane;
+    private VBox mdPane; // 保存对mdPane的引用
     
     private ImageData<BufferedImage> imageData;
     private PathObjectHierarchy hierarchy;
@@ -184,7 +184,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     }
     
     protected ScrollPane createPane(){
-        VBox mdPane = new VBox();
+        mdPane = new VBox();
         mdPane.getStyleClass().add("custom-annotation-box");
         
         HBox topBarAnnotation = new HBox();
@@ -302,12 +302,53 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         pane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         pane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         
+        // 设置mdPane初始右侧边距
+        mdPane.setPadding(new Insets(0, 12, 0, 0));
+        
+        // 监听滚动条显示状态，动态调整右侧padding
+        pane.viewportBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+            Platform.runLater(() -> updatePadding());
+        });
+        pane.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            Platform.runLater(() -> updatePadding());
+        });
+        
         updateAnnotationList();
         
         // 创建完UI后，异步更新分类列表
         Platform.runLater(this::updateClassList);
         
         return pane;
+    }
+    
+    // 更新padding方法
+    private void updatePadding() {
+        if (pane == null || mdPane == null)
+            return;
+            
+        // 判断是否显示了垂直滚动条
+        boolean vbarVisible = pane.getWidth() < mdPane.getWidth() || 
+                             pane.getViewportBounds().getHeight() < mdPane.getHeight();
+                             
+        // 根据滚动条显示状态设置右侧padding
+        Insets currentPadding = mdPane.getPadding();
+        if (vbarVisible) {
+            // 有滚动条，右侧padding为0
+            mdPane.setPadding(new Insets(
+                currentPadding.getTop(),
+                4,
+                currentPadding.getBottom(),
+                currentPadding.getLeft()
+            ));
+        } else {
+            // 没有滚动条，右侧padding为12
+            mdPane.setPadding(new Insets(
+                currentPadding.getTop(),
+                12,
+                currentPadding.getBottom(),
+                currentPadding.getLeft()
+            ));
+        }
     }
     
     // 更新自动设置按钮的样式，以反映当前状态
@@ -1367,7 +1408,7 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
                 itemBox.getChildren().addAll(keyLabel, valueLabel);
                 
                 // 为每个属性项添加工具提示
-                String tipText = pair.getKey() + ": " + pair.getValue();
+                String tipText = QuPathTranslator.getTranslatedName(pair.getKey()) + ": " + pair.getValue();
                 Tooltip.install(itemBox, new Tooltip(tipText));
             }
             
