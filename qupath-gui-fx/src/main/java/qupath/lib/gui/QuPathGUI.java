@@ -336,6 +336,8 @@ public class QuPathGUI {
 		pane.setCenter(initializeMainComponent());
 		// pane.setTop(menuBar);
 		
+		// Add CSS styles
+		pane.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
 		Scene scene = createAndInitializeMainScene(pane);
 		mainPaneManager.setDividerPosition(Math.min(0.5, 400/scene.getWidth()));
 		

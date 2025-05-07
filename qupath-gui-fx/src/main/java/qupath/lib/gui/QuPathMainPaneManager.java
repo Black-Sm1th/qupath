@@ -169,8 +169,6 @@ class QuPathMainPaneManager {
 		// Add bottom to overlayContainer
 		overlayContainer.setBottom(createBottomBarContainer());
 
-		// Add CSS styles
-		pane.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
 		
 		// 添加选择监听器 
 		setupSelectionListener();
