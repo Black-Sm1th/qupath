@@ -60,7 +60,7 @@ public class PositiveCellDetection extends WatershedCellDetection {
 			return super.getDefaultParameterList(imageData);
 		else {
 			super.getDefaultParameterList(imageData);
-			params.addTitleParameter("Intensity threshold parameters");
+			params.addTitleParameter("强度阈值参数");
 			var stains = imageData.getColorDeconvolutionStains();
 			Set<String> channels = new LinkedHashSet<>();
 			if (stains != null) {
@@ -97,22 +97,22 @@ public class PositiveCellDetection extends WatershedCellDetection {
 					tMax = Math.min(10000, Math.pow(2, type.getBitsPerPixel()) - 1);
 				}
 			}
-			params.addChoiceParameter("thresholdCompartment", "Score compartment", choices.get(0), choices, "Select the intensity measurement to threshold");
-//			params.addChoiceParameter("thresholdCompartment", "Score compartment", "Nucleus: DAB OD mean",
+			params.addChoiceParameter("thresholdCompartment", "评分区间", choices.get(0), choices, "选择要阈值化的强度测量");
+//			params.addChoiceParameter("thresholdCompartment", "评分区间", "Nucleus: DAB OD mean",
 //					Arrays.asList("Nucleus: DAB OD mean", "Nucleus: DAB OD max",
 //							"Cytoplasm: DAB OD mean", "Cytoplasm: DAB OD max",
 //							"Cell: DAB OD mean", "Cell: DAB OD max"));
-			params.addDoubleParameter("thresholdPositive1", "Threshold 1+", t1, null, 0, tMax, "Low positive intensity threshold");
-			params.addDoubleParameter("thresholdPositive2", "Threshold 2+", t1*2, null, 0, tMax, "Moderate positive intensity threshold");
-			params.addDoubleParameter("thresholdPositive3", "Threshold 3+", t1*3, null, 0, tMax, "High positive intensity threshold");
-			params.addBooleanParameter("singleThreshold", "Single threshold", true);
+			params.addDoubleParameter("thresholdPositive1", "阈值 1+", t1, null, 0, tMax, "低阳性强度阈值");
+			params.addDoubleParameter("thresholdPositive2", "阈值 2+", t1*2, null, 0, tMax, "中度阳性强度阈值");
+			params.addDoubleParameter("thresholdPositive3", "阈值 3+", t1*3, null, 0, tMax, "高阳性强度阈值");
+			params.addBooleanParameter("singleThreshold", "单一阈值", true);
 		}
 		return params;
 	}
 	
 	@Override
 	public String getName() {
-		return "Positive cell detection";
+		return "阳性细胞检测";
 	}
 	
 	

@@ -86,16 +86,16 @@ class EstimateStainVectorsCommand {
 	
 	static int MAX_PIXELS = 4000*4000;
 	
-	private static final String TITLE = "Estimate stain vectors";
+	private static final String TITLE = "估计染色向量";
 	
 	
 	private enum AxisColor {RED, GREEN, BLUE;
 		@Override
 		public String toString() {
             return switch (this) {
-                case RED -> "Red";
-                case GREEN -> "Green";
-                case BLUE -> "Blue";
+                case RED -> "红";
+                case GREEN -> "绿";
+                case BLUE -> "蓝";
                 default -> throw new IllegalArgumentException();
             };
 		}
@@ -108,12 +108,12 @@ class EstimateStainVectorsCommand {
 			return;
 		}
 		if (!imageData.isBrightfield() || imageData.getServer() == null || imageData.getServer().nChannels() != 3) {
-			Dialogs.showErrorMessage(TITLE, "No brightfield, 3-channel image selected!");
+			Dialogs.showErrorMessage(TITLE, "没有选择明场、3通道图像！");
 			return;
 		}
 		ColorDeconvolutionStains stains = imageData.getColorDeconvolutionStains();
 		if (stains == null || !stains.getStain(3).isResidual()) {
-			Dialogs.showErrorMessage(TITLE, "Sorry, stain estimation is only possible for brightfield, 3-channel images with 2 stains");
+			Dialogs.showErrorMessage(TITLE, "抱歉，染色估计只适用于具有2种染色的明场、3通道图像");
 			return;
 		}
 		
@@ -160,7 +160,7 @@ class EstimateStainVectorsCommand {
 		if (rMax != stains.getMaxRed() || gMax != stains.getMaxGreen() || bMax != stains.getMaxBlue()) {
 			ButtonType response =
 					Dialogs.showYesNoCancelDialog(TITLE,
-							String.format("Modal RGB values %s, %s, %s do not match current background values - do you want to use the modal values?",
+							String.format("模态RGB值 %s, %s, %s 与当前背景值不匹配 - 是否要使用模态值？",
 									GeneralTools.formatNumber(rMax, 2),
 									GeneralTools.formatNumber(gMax, 2),
 									GeneralTools.formatNumber(bMax, 2)));
@@ -178,7 +178,7 @@ class EstimateStainVectorsCommand {
 		try {
 			stainsUpdated = showStainEditor(img, stains);
 		} catch (Exception e) {
-			Dialogs.showErrorMessage(TITLE, "Error with stain estimation: " + e.getLocalizedMessage());
+			Dialogs.showErrorMessage(TITLE, "染色估计错误: " + e.getLocalizedMessage());
 			logger.error(e.getMessage(), e);
 			return;
 		}
@@ -190,7 +190,7 @@ class EstimateStainVectorsCommand {
 			else
 				suggestedName = collectiveNameBefore;
 			
-			String newName = Dialogs.showInputDialog(TITLE, "Set name for stain vectors", suggestedName);
+			String newName = Dialogs.showInputDialog(TITLE, "为染色向量设置名称", suggestedName);
 			if (newName == null)
 				return;
 			if (!newName.isBlank())
@@ -267,15 +267,15 @@ class EstimateStainVectorsCommand {
 			}
 			
 		});
-		TableColumn<Integer, String> colName = new TableColumn<>("Name");
+		TableColumn<Integer, String> colName = new TableColumn<>("名称");
 		colName.setCellValueFactory(v -> new SimpleStringProperty(stainsWrapper.getStains().getStain(v.getValue()).getName()));
-		TableColumn<Integer, String> colOrig = new TableColumn<>("Original");
+		TableColumn<Integer, String> colOrig = new TableColumn<>("原始");
 		colOrig.setCellValueFactory(v -> new SimpleStringProperty(
 				stainArrayAsString(Locale.getDefault(Category.FORMAT), stainsWrapper.getOriginalStains().getStain(v.getValue()), " | ", 3)));
-		TableColumn<Integer, String> colCurrent = new TableColumn<>("Current");
+		TableColumn<Integer, String> colCurrent = new TableColumn<>("当前");
 		colCurrent.setCellValueFactory(v -> new SimpleStringProperty(
 				stainArrayAsString(Locale.getDefault(Category.FORMAT), stainsWrapper.getStains().getStain(v.getValue()), " | ", 3)));
-		TableColumn<Integer, String> colAngle = new TableColumn<>("Angle");
+		TableColumn<Integer, String> colAngle = new TableColumn<>("角度");
 		colAngle.setCellValueFactory(v -> {
 			return new SimpleStringProperty(
 					GeneralTools.formatNumber(
@@ -291,13 +291,13 @@ class EstimateStainVectorsCommand {
 		
 		// Create auto detection parameters
 		ParameterList params = new ParameterList()
-				.addDoubleParameter("minStainOD", "Min channel OD", 0.05, "", "Minimum staining OD - pixels with a lower OD in any channel (RGB) are ignored (default = 0.05)")
-				.addDoubleParameter("maxStainOD", "Max total OD", 1., "", "Maximum staining OD - more densely stained pixels are ignored (default = 1)")
-				.addDoubleParameter("ignorePercentage", "Ignore extrema", 1., "%", "Percentage of extreme pixels to ignore, to improve robustness in the presence of noise/other artefacts (default = 1)")
-				.addBooleanParameter("checkColors", "Exclude unrecognised colors (H&E only)", false, "Exclude unexpected colors (e.g. green) that are likely to be caused by artefacts and not true staining");
+				.addDoubleParameter("minStainOD", "最小通道OD", 0.05, "", "最小染色OD - 任何通道(RGB)中OD值更低的像素将被忽略（默认= 0.05）")
+				.addDoubleParameter("maxStainOD", "最大总OD", 1., "", "最大染色OD - 染色更深的像素将被忽略（默认= 1）")
+				.addDoubleParameter("ignorePercentage", "忽略极值", 1., "%", "要忽略的极端像素的百分比，以提高在噪声/其他伪影存在时的稳健性（默认= 1）")
+				.addBooleanParameter("checkColors", "排除不可识别的颜色（仅限H&E）", false, "排除可能由伪影引起而非真实染色的意外颜色（如绿色）");
 //				.addDoubleParameter("ignorePercentage", "Ignore extrema", 1., "%", 0, 20, "Percentage of extreme pixels to ignore, to improve robustness in the presence of noise/other artefacts");
 		
-		Button btnAuto = new Button("Auto");
+		Button btnAuto = new Button("自动");
 		btnAuto.setOnAction(e -> {
 				double minOD = params.getDoubleParameterValue("minStainOD");
 				double maxOD = params.getDoubleParameterValue("maxStainOD");
@@ -321,11 +321,11 @@ class EstimateStainVectorsCommand {
 		panelAuto.setCenter(panelParams.getPane());
 		panelAuto.setBottom(btnAuto);
 
-		var titledStainVectors = new TitledPane("Stain vectors", table);
+		var titledStainVectors = new TitledPane("染色向量", table);
 		titledStainVectors.setCollapsible(false);
 		panelSouth.setCenter(titledStainVectors);
 
-		var titledAutoDetect = new TitledPane("Auto detect", panelAuto);
+		var titledAutoDetect = new TitledPane("自动检测", panelAuto);
 		titledAutoDetect.setCollapsible(false);
 		panelSouth.setBottom(titledAutoDetect);
 		
@@ -334,7 +334,7 @@ class EstimateStainVectorsCommand {
 		panelMain.setBottom(panelSouth);
 		
 		if (Dialogs.builder()
-				.title("Visual Stain Editor")
+				.title("可视化染色编辑器")
 				.content(panelMain)
 				.buttons(ButtonType.OK, ButtonType.CANCEL)
 				.showAndWait()

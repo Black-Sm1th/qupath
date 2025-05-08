@@ -168,8 +168,8 @@ public class WatershedCellDetection extends AbstractTileableDetectionPlugin<Buff
 	
 	private static final Logger logger = LoggerFactory.getLogger(WatershedCellDetection.class);
 	
-	static String IMAGE_OPTICAL_DENSITY = "Optical density sum";
-	static String IMAGE_HEMATOXYLIN = "Hematoxylin OD";
+	static String IMAGE_OPTICAL_DENSITY = "光密度和";
+	static String IMAGE_HEMATOXYLIN = "苏木精 OD";
 	
 	ParameterList params;
 	
@@ -423,7 +423,7 @@ public class WatershedCellDetection extends AbstractTileableDetectionPlugin<Buff
 
 		String microns = IJ.micronSymbol + "m";
 		
-		params.addTitleParameter("Setup parameters");
+		params.addTitleParameter("设置参数");
 
 		String defaultChannel = null;
 		List<String> channelNames = new ArrayList<>();
@@ -442,84 +442,83 @@ public class WatershedCellDetection extends AbstractTileableDetectionPlugin<Buff
 		if (defaultChannel == null)
 			defaultChannel = channelNames.get(0);
 		if (channelNames.size() != new HashSet<>(channelNames).size())
-			logger.warn("Image contains duplicate channel names! This may be confusing for detection and analysis.");
-		params.addChoiceParameter("detectionImage", "Detection channel", defaultChannel, channelNames, "Choose the channel that should be used for nucleus detection (e.g. DAPI)");
+			logger.warn("图像包含重复的通道名称！这可能会使检测和分析变得混乱。");
+		params.addChoiceParameter("detectionImage", "检测通道", defaultChannel, channelNames, "选择应该用于细胞核检测的通道（例如 DAPI）");
 
-		params.addChoiceParameter("detectionImageBrightfield", "Detection image", IMAGE_HEMATOXYLIN, Arrays.asList(IMAGE_HEMATOXYLIN, IMAGE_OPTICAL_DENSITY),
-				"Transformed image to which to apply the detection");
+		params.addChoiceParameter("detectionImageBrightfield", "检测图像", IMAGE_HEMATOXYLIN, Arrays.asList(IMAGE_HEMATOXYLIN, IMAGE_OPTICAL_DENSITY),
+				"应用检测的变换图像");
 
-		params.addDoubleParameter("requestedPixelSizeMicrons", "Requested pixel size", .5, microns, 
-				"Choose pixel size at which detection will be performed - higher values are likely to be faster, but may be less accurate; set <= 0 to use the full image resolution");
+		params.addDoubleParameter("requestedPixelSizeMicrons", "请求的像素大小", .5, microns, 
+				"选择将执行检测的像素大小 - 较高的值可能更快，但可能不太准确；设置 <= 0 以使用完整的图像分辨率");
 //		params.addDoubleParameter("requestedPixelSize", "Requested downsample factor", 1, "");
 
 		
-		params.addTitleParameter("Nucleus parameters");
+		params.addTitleParameter("细胞核参数");
 		
-		params.addDoubleParameter("backgroundRadiusMicrons", "Background radius", 8, microns, 
-				"Radius for background estimation, should be > the largest nucleus radius, or <= 0 to turn off background subtraction");
+		params.addDoubleParameter("backgroundRadiusMicrons", "背景半径", 8, microns, 
+				"背景估计的半径，应该 > 最大的细胞核半径，或 <= 0 以关闭背景减除");
 		
 		// New in v0.4.0
-		params.addBooleanParameter("backgroundByReconstruction", "Use opening by reconstruction", true, 
-				"Use opening-by-reconstruction for background estimation (default is 'Yes').\n"
-				+ "Opening by reconstruction tends to give a 'better' background estimate, because it incorporates more information across "
-				+ "the image tile used for cell detection.\n"
-				+ "*However*, in some cases (e.g. images with prominent folds, background staining, or other artefacts)  "
-				+ "this can cause problems, with the background estimate varying substantially between tiles.\n"
-				+ "Opening by reconstruction was always used in QuPath before v0.4.0, but now it is optional.");
+		params.addBooleanParameter("backgroundByReconstruction", "使用重建开运算", true, 
+				"使用重建开运算进行背景估计（默认为'是'）。\n"
+				+ "重建开运算往往能给出'更好'的背景估计，因为它在用于细胞检测的图像块中整合了更多信息。\n"
+				+ "*但是*，在某些情况下（例如有明显折痕、背景染色或其他伪影的图像）"
+				+ "这可能会导致问题，使背景估计在不同的块之间差异很大。\n"
+				+ "在 QuPath v0.4.0 之前始终使用重建开运算，但现在它是可选的。");
 		
-		params.addDoubleParameter("medianRadiusMicrons", "Median filter radius", 0, microns,
-				"Radius of median filter used to reduce image texture (optional)");
-		params.addDoubleParameter("sigmaMicrons", "Sigma", 1.5, microns,
-				"Sigma value for Gaussian filter used to reduce noise; increasing the value stops nuclei being fragmented, but may reduce the accuracy of boundaries");
-		params.addDoubleParameter("minAreaMicrons", "Minimum area", 10, microns+"^2",
-				"Detected nuclei with an area < minimum area will be discarded");
-		params.addDoubleParameter("maxAreaMicrons", "Maximum area", 400, microns+"^2",
-				"Detected nuclei with an area > maximum area will be discarded");
+		params.addDoubleParameter("medianRadiusMicrons", "中值滤波半径", 0, microns,
+				"用于减少图像纹理的中值滤波半径（可选）");
+		params.addDoubleParameter("sigmaMicrons", "西格玛", 1.5, microns,
+				"用于减少噪声的高斯滤波的西格玛值；增加该值可防止细胞核被分割，但可能降低边界的准确性");
+		params.addDoubleParameter("minAreaMicrons", "最小面积", 10, microns+"^2",
+				"面积 < 最小面积的检测到的细胞核将被丢弃");
+		params.addDoubleParameter("maxAreaMicrons", "最大面积", 400, microns+"^2",
+				"面积 > 最大面积的检测到的细胞核将被丢弃");
 
-		params.addDoubleParameter("backgroundRadius", "Background radius", 15, "px", 
-				"Radius for background estimation, should be > the largest nucleus radius, or <= 0 to turn off background subtraction");
-		params.addDoubleParameter("medianRadius", "Median filter radius", 0, "px",
-				"Radius of median filter used to reduce image texture (optional)");
-		params.addDoubleParameter("sigma", "Sigma", 3, "px",
-				"Sigma value for Gaussian filter used to reduce noise; increasing the value stops nuclei being fragmented, but may reduce the accuracy of boundaries");
-		params.addDoubleParameter("minArea", "Minimum area", 10, "px^2",
-				"Detected nuclei with an area < minimum area will be discarded");
-		params.addDoubleParameter("maxArea", "Maximum area", 1000, "px^2",
-				"Detected nuclei with an area > maximum area will be discarded");
+		params.addDoubleParameter("backgroundRadius", "背景半径", 15, "px", 
+				"背景估计的半径，应该 > 最大的细胞核半径，或 <= 0 以关闭背景减除");
+		params.addDoubleParameter("medianRadius", "中值滤波半径", 0, "px",
+				"用于减少图像纹理的中值滤波半径（可选）");
+		params.addDoubleParameter("sigma", "西格玛", 3, "px",
+				"用于减少噪声的高斯滤波的西格玛值；增加该值可防止细胞核被分割，但可能降低边界的准确性");
+		params.addDoubleParameter("minArea", "最小面积", 10, "px^2",
+				"面积 < 最小面积的检测到的细胞核将被丢弃");
+		params.addDoubleParameter("maxArea", "最大面积", 1000, "px^2",
+				"面积 > 最大面积的检测到的细胞核将被丢弃");
 
-		params.addTitleParameter("Intensity parameters");
-		params.addDoubleParameter("threshold", "Threshold", 0.1, null,
-				"Intensity threshold - detected nuclei must have a mean intensity >= threshold");
+		params.addTitleParameter("强度参数");
+		params.addDoubleParameter("threshold", "阈值", 0.1, null,
+				"强度阈值 - 检测到的细胞核必须具有平均强度 >= 阈值");
 //		params.addDoubleParameter("threshold", "Threshold", 0.1, null, 0, 2.5,
 //				"Intensity threshold - detected nuclei must have a mean intensity >= threshold");
-		params.addDoubleParameter("maxBackground", "Max background intensity", 2, null,
-				"If background radius > 0, detected nuclei occurring on a background > max background intensity will be discarded");
+		params.addDoubleParameter("maxBackground", "最大背景强度", 2, null,
+				"如果背景半径 > 0，将丢弃在背景 > 最大背景强度上检测到的细胞核");
 		
 //		params.addBooleanParameter("mergeAll", "Merge all", true);
-		params.addBooleanParameter("watershedPostProcess", "Split by shape", true,
-				"Split merged detected nuclei based on shape ('roundness')");
-		params.addBooleanParameter("excludeDAB", "Exclude DAB (membrane staining)", false,
-				"Set to 'true' if regions of high DAB staining should not be considered nuclei; useful if DAB stains cell membranes");
+		params.addBooleanParameter("watershedPostProcess", "按形状分割", true,
+				"基于形状（'圆度'）分割合并的检测细胞核");
+		params.addBooleanParameter("excludeDAB", "排除 DAB（膜染色）", false,
+				"如果 DAB 染色区域不应被视为细胞核，则设置为'true'；当 DAB 染色细胞膜时有用");
 		
 		
-		params.addTitleParameter("Cell parameters");
+		params.addTitleParameter("细胞参数");
 
-		params.addDoubleParameter("cellExpansionMicrons", "Cell expansion", 5, microns, 0, 25,
-				"Amount by which to expand detected nuclei to approximate the full cell area");
-		params.addDoubleParameter("cellExpansion", "Cell expansion", 5, "px",
-				"Amount by which to expand detected nuclei to approximate the full cell area");
+		params.addDoubleParameter("cellExpansionMicrons", "细胞扩展", 5, microns, 0, 25,
+				"扩展检测到的细胞核以近似完整细胞区域的量");
+		params.addDoubleParameter("cellExpansion", "细胞扩展", 5, "px",
+				"扩展检测到的细胞核以近似完整细胞区域的量");
 		
 //		params.addBooleanParameter("limitExpansionByNucleusSize", "Limit cell expansion by nucleus size", false, "If checked, nuclei will not be expanded by more than their (estimated) smallest diameter in any direction - may give more realistic results for smaller, or 'thinner' nuclei");
 			
-		params.addBooleanParameter("includeNuclei", "Include cell nucleus", true,
-				"If cell expansion is used, optionally include/exclude the nuclei within the detected cells");
+		params.addBooleanParameter("includeNuclei", "包括细胞核", true,
+				"如果使用细胞扩展，可选择在检测到的细胞中包含/排除细胞核");
 		
 		
-		params.addTitleParameter("General parameters");
-		params.addBooleanParameter("smoothBoundaries", "Smooth boundaries", true,
-				"Smooth the detected nucleus/cell boundaries");
-		params.addBooleanParameter("makeMeasurements", "Make measurements", true,
-				"Add default shape & intensity measurements during detection");
+		params.addTitleParameter("通用参数");
+		params.addBooleanParameter("smoothBoundaries", "平滑边界", true,
+				"平滑检测到的细胞核/细胞边界");
+		params.addBooleanParameter("makeMeasurements", "进行测量", true,
+				"在检测期间添加默认的形状和强度测量");
 		
 		return params;
 	}
@@ -575,7 +574,7 @@ public class WatershedCellDetection extends AbstractTileableDetectionPlugin<Buff
 
 	@Override
 	public String getName() {
-		return "Cell detection";
+		return "细胞检测";
 	}
 
 	
@@ -1246,7 +1245,7 @@ public class WatershedCellDetection extends AbstractTileableDetectionPlugin<Buff
 	
 	@Override
 	public String getDescription() {
-		return "Default cell detection algorithm for brightfield images with nuclear or cytoplasmic staining";
+		return "用于具有细胞核或细胞质染色的明场图像的默认细胞检测算法";
 	}
 
 

@@ -167,7 +167,7 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 		@Override
 		public String toString() {
 			// TODO: Give a better toString()
-			return "Subcellular detection";
+			return "亚细胞检测";
 		}
 		
 	}
@@ -194,7 +194,7 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 		pathObject.clearChildObjects();
 
 		// Ensure we have no existing subcellular detection measurements - if we do, remove them
-		String[] existingMeasurements = pathObject.getMeasurementList().getNames().stream().filter(n -> n.startsWith("Subcellular:")).toArray(n -> new String[n]);
+		String[] existingMeasurements = pathObject.getMeasurementList().getNames().stream().filter(n -> n.startsWith("亚细胞:")).toArray(n -> new String[n]);
 		if (existingMeasurements.length > 0) {
 			pathObject.getMeasurementList().removeAll(existingMeasurements);
 			pathObject.getMeasurementList().close();
@@ -356,14 +356,14 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 				}
 				if (spotOrCluster != null) {
 					
-					boolean isCluster = spotOrCluster.getMeasurementList().get("Num spots") > 1;
+					boolean isCluster = spotOrCluster.getMeasurementList().get("点数") > 1;
 					int rgb = imageWrapper.getChannelColor(channelName);
 					rgb = isCluster ? ColorTools.makeScaledRGB(rgb, 0.5) : ColorTools.makeScaledRGB(rgb, 1.5);
 					PathClass pathClass = PathClass.getInstance(spotOrCluster.getPathClass(), channelName + " object", rgb);
 					spotOrCluster.setPathClass(pathClass);
 					
-					spotOrCluster.getMeasurementList().put("Subcellular cluster: " + channelName + ": Area", stats.pixelCount * pixelWidth * pixelHeight);					
-					spotOrCluster.getMeasurementList().put("Subcellular cluster: " + channelName +  ": Mean channel intensity", stats.mean);
+					spotOrCluster.getMeasurementList().put("亚细胞簇: " + channelName + ": 面积", stats.pixelCount * pixelWidth * pixelHeight);					
+					spotOrCluster.getMeasurementList().put("亚细胞簇: " + channelName +  ": 平均通道强度", stats.mean);
 //					cluster.getMeasurementList().putMeasurement("Subcellular cluster: " + channelName +  ": Max channel intensity", stats.max);
 					spotOrCluster.getMeasurementList().close();
 					if (isCluster)
@@ -375,9 +375,9 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 
 			// Add measurements
 			MeasurementList measurementList = pathObject.getMeasurementList();
-			measurementList.put("Subcellular: " + channelName +  ": Num spots estimated", estimatedSpots);
-			measurementList.put("Subcellular: " + channelName +  ": Num single spots", spotObjects.size());
-			measurementList.put("Subcellular: " + channelName +  ": Num clusters", clusterObjects.size());
+			measurementList.put("亚细胞: " + channelName +  ": 估计点数", estimatedSpots);
+			measurementList.put("亚细胞: " + channelName +  ": 单点数量", spotObjects.size());
+			measurementList.put("亚细胞: " + channelName +  ": 簇数量", clusterObjects.size());
 
 			// Add spots
 			pathObject.addChildObjects(spotObjects);
@@ -393,32 +393,32 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 	public ParameterList getDefaultParameterList(final ImageData<BufferedImage> imageData) {
 		
 		ParameterList params = new ParameterList()
-				.addTitleParameter("Detection parameters");
+				.addTitleParameter("检测参数");
 		
 		for (String name : new ImageWrapper(imageData).getChannelNames(true, true)) {
-			params.addDoubleParameter("detection["+name+"]", "Detection threshold (" + name + ")", -1.0, "", "Intensity threshold for detection - if < 0, no detection will be applied to this channel");
+			params.addDoubleParameter("detection["+name+"]", "检测阈值 (" + name + ")", -1.0, "", "检测的强度阈值 - 如果 < 0，将不对此通道应用检测");
 		}
-		params.addBooleanParameter("doSmoothing", "Smooth before detection", false, "Apply 3x3 smoothing filter to reduce noise prior to detection");
-		params.addBooleanParameter("splitByIntensity", "Split by intensity", false, "Attempt to split merged spots based on intensity peaks");
-		params.addBooleanParameter("splitByShape", "Split by shape", false, "Attempt to split merged spots according to shape (i.e. looking for rounder spots)");
+		params.addBooleanParameter("doSmoothing", "检测前平滑处理", false, "应用3x3平滑滤波器以在检测前减少噪声");
+		params.addBooleanParameter("splitByIntensity", "按强度分割", false, "尝试根据强度峰值分割合并的点");
+		params.addBooleanParameter("splitByShape", "按形状分割", false, "尝试根据形状分割合并的点（即寻找更圆的点）");
 		
-		params.addTitleParameter("Spot & cluster parameters");
+		params.addTitleParameter("点和簇参数");
 		boolean hasMicrons = imageData.getServer().getPixelCalibration().hasPixelSizeMicrons();
 		if (!hasMicrons) {
-			params.addEmptyParameter("Subcellular detection works best if the pixel size information is available in " + GeneralTools.micrometerSymbol() + "!");
-			params.addEmptyParameter("Because this information is missing, the following values are in pixels.");
-			params.addEmptyParameter("If you change the pixel sizes in the image, restart this command to see the changes.");
+			params.addEmptyParameter("亚细胞检测在像素大小信息以" + GeneralTools.micrometerSymbol() + "为单位时效果最佳！");
+			params.addEmptyParameter("由于缺少此信息，以下值以像素为单位。");
+			params.addEmptyParameter("如果您更改图像中的像素大小，请重新启动此命令以查看更改。");
 		}
 		
-		params.addDoubleParameter("spotSizeMicrons", "Expected spot size", 1, GeneralTools.micrometerSymbol()+"^2", "Estimated area of a single spot - used to estimate total spot counts");
-		params.addDoubleParameter("minSpotSizeMicrons", "Min spot size", 0.5, GeneralTools.micrometerSymbol()+"^2", "Minimum spot area - smaller spots will be excluded");
-		params.addDoubleParameter("maxSpotSizeMicrons", "Max spot size", 2.0, GeneralTools.micrometerSymbol()+"^2", "Maximum spot area - larger spots will be counted as clusters");
+		params.addDoubleParameter("spotSizeMicrons", "预期点大小", 1, GeneralTools.micrometerSymbol()+"^2", "单个点的估计面积 - 用于估计总点数");
+		params.addDoubleParameter("minSpotSizeMicrons", "最小点大小", 0.5, GeneralTools.micrometerSymbol()+"^2", "最小点面积 - 更小的点将被排除");
+		params.addDoubleParameter("maxSpotSizeMicrons", "最大点大小", 2.0, GeneralTools.micrometerSymbol()+"^2", "最大点面积 - 更大的点将被计为簇");
 
-		params.addDoubleParameter("spotSizePixels", "Expected spot size", 1, "px^2", "Estimated area of a single spot - used to estimate total spot counts");
-		params.addDoubleParameter("minSpotSizePixels", "Min spot size", 1, "px^2", "Minimum spot area - smaller spots will be excluded");
-		params.addDoubleParameter("maxSpotSizePixels", "Max spot size", 4.0, "px^2", "Maximum spot area - larger spots will be counted as clusters");
+		params.addDoubleParameter("spotSizePixels", "预期点大小", 1, "px^2", "单个点的估计面积 - 用于估计总点数");
+		params.addDoubleParameter("minSpotSizePixels", "最小点大小", 1, "px^2", "最小点面积 - 更小的点将被排除");
+		params.addDoubleParameter("maxSpotSizePixels", "最大点大小", 4.0, "px^2", "最大点面积 - 更大的点将被计为簇");
 
-		params.addBooleanParameter("includeClusters", "Include clusters", true, "Store anything larger than 'Max spot size' as a cluster, instead of ignoring it");
+		params.addBooleanParameter("includeClusters", "包括簇", true, "将大于'最大点大小'的内容存储为簇，而不是忽略它");
 		
 		params.setHiddenParameters(!hasMicrons, "spotSizeMicrons", "minSpotSizeMicrons", "maxSpotSizeMicrons");
 		params.setHiddenParameters(hasMicrons, "spotSizePixels", "minSpotSizePixels", "maxSpotSizePixels");
@@ -427,7 +427,7 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 
 	@Override
 	public String getName() {
-		return "Subcellular spot detection";
+		return "亚细胞点检测";
 	}
 
 	@Override
@@ -437,7 +437,7 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 
 	@Override
 	public String getDescription() {
-		return "Add subcellular detections to existing cells";
+		return "向现有细胞添加亚细胞检测";
 	}
 
 	@Override
@@ -468,10 +468,10 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 	static PathObject createSubcellularObject(final ROI roi, final double nSpots) {
 		var pathObject = PathObjects.createDetectionObject(roi);
 		if (nSpots != 1)
-			pathObject.setPathClass(PathClass.getInstance("Subcellular cluster", ColorTools.packRGB(220, 200, 50)));
+			pathObject.setPathClass(PathClass.getInstance("亚细胞簇", ColorTools.packRGB(220, 200, 50)));
 		else
-			pathObject.setPathClass(PathClass.getInstance("Subcellular spot", ColorTools.packRGB(100, 220, 50)));
-		pathObject.getMeasurementList().put("Num spots", nSpots);
+			pathObject.setPathClass(PathClass.getInstance("亚细胞点", ColorTools.packRGB(100, 220, 50)));
+		pathObject.getMeasurementList().put("点数", nSpots);
 		pathObject.getMeasurementList().close();
 		return pathObject;
 	}
@@ -499,10 +499,10 @@ public class SubcellularDetection extends AbstractInteractivePlugin<BufferedImag
 		SubcellularObject(final ROI roi, final double nSpots) {
 			super(roi, null);
 			if (nSpots != 1)
-				setPathClass(PathClass.getInstance("Subcellular cluster", ColorTools.packRGB(220, 200, 50)));
+				setPathClass(PathClass.getInstance("亚细胞簇", ColorTools.packRGB(220, 200, 50)));
 			else
-				setPathClass(PathClass.getInstance("Subcellular spot", ColorTools.packRGB(100, 220, 50)));
-			getMeasurementList().put("Num spots", nSpots);
+				setPathClass(PathClass.getInstance("亚细胞点", ColorTools.packRGB(100, 220, 50)));
+			getMeasurementList().put("点数", nSpots);
 			getMeasurementList().close();
 //			color = isCluster ? ColorTools.makeRGB(220, 200, 50) : ColorTools.makeRGB(100, 220, 50);
 		}

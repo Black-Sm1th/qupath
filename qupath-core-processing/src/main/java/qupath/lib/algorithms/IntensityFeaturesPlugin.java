@@ -96,15 +96,15 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 		public String toString() {
 			switch(this) {
 			case CIRCLE:
-				return "Circular tiles";
+				return "圆形区块";
 			case ROI:
 				return "ROI";
 			case SQUARE:
-				return "Square tiles";
+				return "方形区块";
 			case NUCLEUS:
-				return "Cell nucleus";
+				return "细胞核";
 			default:
-				return "Unknown";
+				return "未知";
 			}
 		}
 		
@@ -200,16 +200,16 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 	
 	static enum FeatureColorTransformEnum implements FeatureColorTransform {
 		
-		OD("colorOD", "Optical density sum"),
-		STAIN_1("colorStain1", "Color Deconvolution Stain 1"),
-		STAIN_2("colorStain2", "Color Deconvolution Stain 2"),
-		STAIN_3("colorStain3", "Color Deconvolution Stain 3"),
-		RED("colorRed", "Red"),
-		GREEN("colorGreen", "Green"),
-		BLUE("colorBlue", "Blue"),
-		HUE("colorHue", "Hue (mean only)"),
-		SATURATION("colorSaturation", "Saturation"),
-		BRIGHTNESS("colorBrightness", "Brightness"),
+		OD("colorOD", "光密度和"),
+		STAIN_1("colorStain1", "颜色分解染色 1"),
+		STAIN_2("colorStain2", "颜色分解染色 2"),
+		STAIN_3("colorStain3", "颜色分解染色 3"),
+		RED("colorRed", "红色"),
+		GREEN("colorGreen", "绿色"),
+		BLUE("colorBlue", "蓝色"),
+		HUE("colorHue", "色调（仅均值）"),
+		SATURATION("colorSaturation", "饱和度"),
+		BRIGHTNESS("colorBrightness", "亮度"),
 		;
 		
 		private String key;
@@ -377,17 +377,17 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 	static String getDiameterString(final ImageServer<BufferedImage> server, final ParameterList params) {
 		RegionType regionType = (RegionType)params.getChoiceParameterValue("region");
 		PixelCalibration cal = server.getPixelCalibration();
-		String shape = regionType == RegionType.SQUARE ? "Square" : (regionType == RegionType.CIRCLE ? "Circle" : "ROI");
+		String shape = regionType == RegionType.SQUARE ? "方形" : (regionType == RegionType.CIRCLE ? "圆形" : "ROI");
 		String unit = cal.hasPixelSizeMicrons() ? GeneralTools.micrometerSymbol() : "px";
 		double pixelSize = cal.hasPixelSizeMicrons() ? params.getDoubleParameterValue("pixelSizeMicrons") : params.getDoubleParameterValue("downsample");
 		double regionSize = cal.hasPixelSizeMicrons() ? params.getDoubleParameterValue("tileSizeMicrons") : params.getDoubleParameterValue("tileSizePixels");
 		
 		if (regionType == RegionType.ROI) {
-			return String.format("ROI: %.2f %s per pixel", pixelSize, unit);
+			return String.format("ROI: 每像素 %.2f %s", pixelSize, unit);
 		} else if (regionType == RegionType.NUCLEUS) {
-			return String.format("Nucleus: %.2f %s per pixel", pixelSize, unit);
+			return String.format("细胞核: 每像素 %.2f %s", pixelSize, unit);
 		} else {
-			return String.format("%s: Diameter %.1f %s: %.2f %s per pixel", shape, regionSize, unit, pixelSize, unit);
+			return String.format("%s: 直径 %.1f %s: 每像素 %.2f %s", shape, regionSize, unit, pixelSize, unit);
 		}
 	}
 	
@@ -648,16 +648,16 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 			params = new ParameterList();
 			
 			// Regions & resolution
-			params.addTitleParameter("Resolution");
-			params.addDoubleParameter("downsample", "Downsample", 1, null, "Amount to downsample the image before calculating textures; choose 1 to use full resolution, or a higher value to use a smaller image").
-					addDoubleParameter("pixelSizeMicrons", "Preferred pixel size", 2, GeneralTools.micrometerSymbol(), "Preferred pixel size of the image used to calculate the textures - higher values means coarser (lower resolution) images")
+			params.addTitleParameter("分辨率");
+			params.addDoubleParameter("downsample", "下采样", 1, null, "计算纹理前对图像进行下采样的量；选择1使用完整分辨率，或选择更高的值使用较小的图像").
+					addDoubleParameter("pixelSizeMicrons", "首选像素大小", 2, GeneralTools.micrometerSymbol(), "用于计算纹理的图像首选像素大小 - 较高的值意味着更粗糙（较低分辨率）的图像")
 					;
 
 			// Regions & resolution
-			params.addTitleParameter("Regions");
-			params.addChoiceParameter("region", "Region", RegionType.ROI, Arrays.asList(RegionType.values()), "The region within which to calculate the features");
-			params.addDoubleParameter("tileSizeMicrons", "Tile diameter", 25, GeneralTools.micrometerSymbol(), "Diameter of tile around the object centroid used to calculate textures.\nOnly matters if tiles are being used (i.e. the region parameter isn't ROI).");
-			params.addDoubleParameter("tileSizePixels", "Tile diameter", 200, "px (full resolution image)", "Diameter of tile around the object centroid used to calculate textures.\nOnly matters if tiles are being used (i.e. the region parameter isn't ROI).");
+			params.addTitleParameter("区域");
+			params.addChoiceParameter("region", "区域", RegionType.ROI, Arrays.asList(RegionType.values()), "计算特征的区域");
+			params.addDoubleParameter("tileSizeMicrons", "区块直径", 25, GeneralTools.micrometerSymbol(), "用于计算纹理的对象中心周围区块的直径。\n仅当使用区块时（即区域参数不是ROI）才有影响。");
+			params.addDoubleParameter("tileSizePixels", "区块直径", 200, "像素（全分辨率图像）", "用于计算纹理的对象中心周围区块的直径。\n仅当使用区块时（即区域参数不是ROI）才有影响。");
 			
 			boolean hasMicrons = imageData.getServer().getPixelCalibration().hasPixelSizeMicrons();
 			
@@ -668,7 +668,7 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 			params.getParameters().get("tileSizePixels").setHidden(hasMicrons);
 			
 			// Color transforms
-			params.addTitleParameter("Channels/Color transforms");
+			params.addTitleParameter("通道/颜色变换");
 			if (imageData.getServer().isRGB()) {
 				for (FeatureColorTransform transform : FeatureColorTransformEnum.values()) {
 					if (transform.supportsImage(imageData))
@@ -693,7 +693,7 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 
 	@Override
 	public String getName() {
-		return "Compute intensity features";
+		return "计算强度特征";
 	}
 
 	@Override
@@ -703,7 +703,7 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 
 	@Override
 	public String getDescription() {
-		return "Add intensity features to existing object measurements";
+		return "向现有对象测量添加强度特征";
 	}
 
 	@Override
@@ -783,10 +783,10 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 	static class BasicFeatureComputer implements FeatureComputer {
 		
 		static enum Feature {
-			MEAN("doMean", "Mean", "Compute mean intensity"),
-			STD_DEV("doStdDev", "Standard deviation", "Compute standard deviation of intensities"),
-			MIN_MAX("doMinMax", "Min & Max", "Compute minimum & maximum of intensities"),
-//			SKEW_KURTOSIS("doSkewKurtosis", "Skew & Kurtosis", "Compute skew & kurtosis of intensities"),
+			MEAN("doMean", "均值", "计算强度均值"),
+			STD_DEV("doStdDev", "标准差", "计算强度标准差"),
+			MIN_MAX("doMinMax", "最小值和最大值", "计算强度的最小值和最大值"),
+//			SKEW_KURTOSIS("doSkewKurtosis", "偏度和峰度", "计算强度的偏度和峰度"),
 			;
 			
 			private String key, prompt, help;
@@ -868,7 +868,7 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 			this.originalBitsPerPixel = imageData.getServer().getPixelType().getBitsPerPixel();
 			if (originalBitsPerPixel > 16)
 				return;
-			params.addBooleanParameter("doMedian", "Median", false, "Calculate approximate median of pixel values (based on a generated histogram)");
+			params.addBooleanParameter("doMedian", "中位数", false, "计算像素值的近似中位数（基于生成的直方图）");
 		}
 
 		@Override
@@ -1011,7 +1011,7 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 		
 		@Override
 		public void addParameters(ImageData<?> imageData, ParameterList params) {
-			params.addTitleParameter("Basic features");
+			params.addTitleParameter("基本特征");
 			for (Feature feature : Arrays.asList(Feature.MEAN, Feature.STD_DEV, Feature.MIN_MAX)) {
 				params.addBooleanParameter(feature.key, feature.prompt, false, feature.help);
 			}
@@ -1082,15 +1082,15 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 
 		@Override
 		public void addParameters(ImageData<?> imageData, ParameterList params) {
-			params.addTitleParameter("Haralick features");
-			params.addBooleanParameter("doHaralick", "Compute Haralick features", false, "Calculate Haralick texture features (13 features in total, non-RGB images require min/max values to be set based on the range of the data)");
+			params.addTitleParameter("Haralick特征");
+			params.addBooleanParameter("doHaralick", "计算Haralick特征", false, "计算Haralick纹理特征（共13个特征，非RGB图像需要根据数据范围设置最小值/最大值）");
 			
 			if (!imageData.getServer().isRGB()) {
-				params.addDoubleParameter("haralickMin", "Haralick min", Double.NaN, null, "Minimum value used when calculating grayscale cooccurrence matrix for Haralick features -\nThis should be approximately the lowest pixel value in the image for which textures are meaningful.")
-						.addDoubleParameter("haralickMax", "Haralick max", Double.NaN, null, "Maximum value used when calculating grayscale cooccurrence matrix for Haralick features -\nThis should be approximately the highest pixel value in the image for which textures are meaningful.");
+				params.addDoubleParameter("haralickMin", "Haralick最小值", Double.NaN, null, "计算Haralick特征的灰度共现矩阵时使用的最小值 -\n这应该大约是图像中对纹理有意义的最低像素值。")
+						.addDoubleParameter("haralickMax", "Haralick最大值", Double.NaN, null, "计算Haralick特征的灰度共现矩阵时使用的最大值 -\n这应该大约是图像中对纹理有意义的最高像素值。");
 			}
-			params.addIntParameter("haralickDistance", "Haralick distance", 1, null, "Spacing between pixels used in computing the co-occurrence matrix for Haralick textures (default = 1)")
-					.addIntParameter("haralickBins", "Haralick number of bins", 32, null, 8, 256, "Number of intensity bins to use when computing the co-occurrence matrix for Haralick textures (default = 32)");
+			params.addIntParameter("haralickDistance", "Haralick距离", 1, null, "计算Haralick纹理的共现矩阵时使用的像素间距（默认= 1）")
+					.addIntParameter("haralickBins", "Haralick箱数", 32, null, 8, 256, "计算Haralick纹理的共现矩阵时使用的强度箱数（默认= 32）");
 			
 		}
 
@@ -1146,11 +1146,11 @@ public class IntensityFeaturesPlugin extends AbstractInteractivePlugin<BufferedI
 			this.originalBitsPerPixel = imageData.getServer().getPixelType().getBitsPerPixel();
 			if (originalBitsPerPixel > 16)
 				return;
-			params.addTitleParameter("Cumulative histogram");
-			params.addBooleanParameter("doCumulativeHistogram", "Cumulative histogram", false);
-			params.addDoubleParameter("chMinValue", "Min histogram value", 0);
-			params.addDoubleParameter("chMaxValue", "Max histogram value", 1);
-			params.addIntParameter("chBins", "Number of bins", 5);
+			params.addTitleParameter("累积直方图");
+			params.addBooleanParameter("doCumulativeHistogram", "累积直方图", false);
+			params.addDoubleParameter("chMinValue", "直方图最小值", 0);
+			params.addDoubleParameter("chMaxValue", "直方图最大值", 1);
+			params.addIntParameter("chBins", "箱数", 5);
 		}
 
 		@Override

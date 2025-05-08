@@ -623,24 +623,26 @@ class QuPathMainPaneManager {
 		}
 
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
-		var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
-		var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
+		// var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
+		// var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
 		
 		// Add all panes to container but make them invisible initially
-		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane, analysisPane, classifyPane);
+		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane/*,analysisPane, classifyPane*/);
 		projectPane.setVisible(true);
 		imagePane.setVisible(false);
 		annotationPane.setVisible(false);
 		workflowPane.setVisible(false);
-		analysisPane.setVisible(false);
-		classifyPane.setVisible(false);
+		// analysisPane.setVisible(false);
+		// classifyPane.setVisible(false);
 		// Add navigation buttons
 		var projectBtn = (ToggleButton)createNavButton("project", "项目");
 		var imageBtn = (ToggleButton)createNavButton("image", "图像");
 		var annotationBtn = (ToggleButton)createNavButton("annotation", "标注");
 		var workflowBtn = (ToggleButton)createNavButton("workflow", "工作流");
 		var analysisBtn = (ToggleButton)createNavButton("analysis", "分析");
+		analysisBtn.setDisable(true);
 		var classifyBtn = (ToggleButton)createNavButton("classify", "分类");
+		classifyBtn.setDisable(true);
 
 		// Set default selected button
 		projectBtn.setSelected(true);
@@ -653,8 +655,8 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			analysisPane.setVisible(false);
-			classifyPane.setVisible(false);
+			// analysisPane.setVisible(false);
+			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -668,8 +670,8 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(true);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			analysisPane.setVisible(false);
-			classifyPane.setVisible(false);
+			// analysisPane.setVisible(false);
+			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -683,8 +685,8 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(true);
 			workflowPane.setVisible(false);
-			analysisPane.setVisible(false);
-			classifyPane.setVisible(false);
+			// analysisPane.setVisible(false);
+			// classifyPane.setVisible(false);
 			// 清除所有标签选中效果
 			customAnnotationPane.clearAllCountLabelSelections();
 		});
@@ -696,8 +698,8 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(true);
-			analysisPane.setVisible(false);
-			classifyPane.setVisible(false);
+			// analysisPane.setVisible(false);
+			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -711,8 +713,8 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			analysisPane.setVisible(true);
-			classifyPane.setVisible(false);
+			// analysisPane.setVisible(true);
+			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -727,8 +729,8 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			analysisPane.setVisible(false);
-			classifyPane.setVisible(true);
+			// analysisPane.setVisible(false);
+			// classifyPane.setVisible(true);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
