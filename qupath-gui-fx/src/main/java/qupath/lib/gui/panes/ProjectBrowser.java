@@ -26,6 +26,7 @@ package qupath.lib.gui.panes;
 import java.awt.Desktop;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.ScrollPane;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
@@ -57,7 +58,7 @@ import org.controlsfx.control.action.ActionUtils;
 import org.controlsfx.control.textfield.TextFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import javafx.geometry.Insets;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -109,6 +110,8 @@ import qupath.fx.prefs.controlsfx.PropertyItemBuilder;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import qupath.lib.gui.actions.ActionTools;
 import qupath.lib.gui.commands.ProjectCommands;
 import qupath.lib.gui.panes.ProjectTreeRow.ImageRow;
@@ -215,7 +218,6 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		tree.setCellFactory(n -> new ProjectTreeRowCell());
 		
 		thumbnailSize.addListener((v, o, n) -> tree.refresh());
-
 		tree.setRoot(null);
 
 		tree.setContextMenu(getPopup());
@@ -499,7 +501,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 				miAddMetadata,
 				miEditDescription,
 				miMaskImages,
-				createThumbnailSizeMenu(),
+				// createThumbnailSizeMenu(),
 				miRefreshThumbnail,
 				separator,
 				menuSort,
@@ -1356,8 +1358,8 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 			viewTooltip.setFitWidth(250);
 			viewTooltip.setPreserveRatio(true);
 			viewCanvas.getStyleClass().add("project-thumbnail");
-			viewCanvas.widthProperty().bind(viewWidth);
-			viewCanvas.heightProperty().bind(viewHeight);
+			viewCanvas.setWidth(20);
+			viewCanvas.setHeight(20);
 			viewPane.getChildren().add(viewCanvas);
 			viewPane.prefWidthProperty().bind(viewCanvas.widthProperty());
 			viewPane.prefHeightProperty().bind(viewCanvas.heightProperty());
@@ -1387,15 +1389,14 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
                 showTooltip.set(false);
                 return;
             }
-
 			getStyleClass().setAll("tree-cell");
 			urisMissing.set(false);
 
 			if (item.getType() == ProjectTreeRow.Type.ROOT) {
 				var children = getTreeItem().getChildren();
+				getStyleClass().add("tree-cell-root");
 				setText(item.getDisplayableString() + (!children.isEmpty() ? " (" + children.size() + ")" : ""));
 				setGraphic(null);
-				getStyleClass().add("tree-cell-root");
 				return;
 			} else if (item.getType() == ProjectTreeRow.Type.METADATA) {
 				var children = getTreeItem().getChildren();

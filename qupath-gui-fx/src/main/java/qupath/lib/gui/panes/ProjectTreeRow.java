@@ -77,7 +77,7 @@ abstract class ProjectTreeRow {
 		private String originalString;
 
 		RootRow(Project<?> project) {
-			this.originalString = project == null ? "No project" : project.getName();
+			this.originalString = project == null ? "未找到项目" : project.getName();
 			this.project = project;
 		}
 

@@ -651,7 +651,7 @@ public class QuPathGUI {
 		Scene scene;
 		try {
 			Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-			scene = new Scene(content, 1920, 1080);
+			scene = new Scene(content, 1440, 800);
 		} catch (Exception e) {
 			logger.debug("Unable to set stage size using primary screen {}", Screen.getPrimary());
 			scene = new Scene(content, 1440, 800);

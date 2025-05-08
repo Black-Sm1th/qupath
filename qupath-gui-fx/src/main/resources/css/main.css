@@ -544,6 +544,31 @@
 
 .project-browser .tree-cell {
     -fx-font-family: arial;
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+    -fx-font-size: 14px;
+    -fx-background-radius: 8px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-margin: 0 12 0 12;
+    -fx-indent: 0;
+}
+
+.project-browser .tree-cell:hover {
+    -fx-background-color: rgba(22, 146, 255, 0.06);
+}
+
+.project-browser .tree-cell:selected {
+    -fx-background-color: rgba(22, 146, 255, 0.06);
+    -fx-text-fill: rgba(22, 146, 255, 1);
+}
+
+.project-browser .tree-cell .tree-disclosure-node .arrow{
+    -fx-background-color: rgba(0,0,0,0.85);
+}
+
+.project-browser .tree-cell:selected .tree-disclosure-node .arrow{
+    -fx-background-color: rgba(0,0,0,0.85);
 }
 
 .project-browser .tree-cell.current-image {
@@ -575,15 +600,16 @@
 
 .project-browser .tree-pane .tree-view {
     -fx-background-color: transparent;
-    -fx-padding: 0 12;
 }
 
-/* .project-browser .tree-cell-root {
-    -fx-font-family: arial;
-    -fx-pref-height: 36px;
-    -fx-min-height: 36px;
-    -fx-max-height: 36px;
-} */
+.project-browser .tree-cell-root{
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+}
+
+.project-browser .tree-disclosure-node {
+    -fx-translate-y: 6px; /* 根据需要微调垂直偏移 */
+}
 
 .topbar-tab-container {
     -fx-pref-height: 36px;
