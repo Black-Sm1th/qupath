@@ -728,11 +728,10 @@
     -fx-padding: 0 12 0 12;
 }
 
-.custom-annotation-box .custom-annotation-top-bar {
+.custom-annotation-box .custom-annotation-top-bar{
     -fx-pref-height: 36px;
     -fx-min-height: 36px;
     -fx-max-height: 36px;
-    -fx-font-weight: bold;
     -fx-alignment: center-left;
     -fx-spacing: 8;
 }
@@ -740,6 +739,7 @@
 .custom-annotation-box .custom-annotation-label {
     -fx-font-size: 14px;
     -fx-text-fill: rgba(0, 0, 0, 0.85);
+    -fx-font-weight: bold;
 }
 
 .custom-annotation-box .custom-annotation-button {

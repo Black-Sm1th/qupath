@@ -334,7 +334,9 @@ public class QuPathGUI {
 		timeit.checkpoint("Creating main component");
 		BorderPane pane = new BorderPane();
 		pane.setCenter(initializeMainComponent());
-		// pane.setTop(menuBar);
+		pane.setTop(menuBar);
+		menuBar.setVisible(false);
+		menuBar.setManaged(false);
 		
 		// Add CSS styles
 		pane.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());

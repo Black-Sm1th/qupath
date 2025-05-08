@@ -5,68 +5,82 @@
     -fx-border-radius: 12px;
     -fx-padding: 8 0 8 0;
     -fx-font-size: 14px;
-    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Arial", sans-serif;
 }
 
 /* 一级菜单项 */
-.menu-item, .menu .menu-item {
+.menu .menu-item, .context-menu .menu-item {
     -fx-background-color: transparent;
-    -fx-padding: 8 32 8 24;
-    -fx-font-weight: 500;
-    -fx-text-fill: #222;
+    -fx-padding: 8 24 8 24;
     -fx-background-radius: 8px;
-    -fx-font-size: 14px;
     -fx-min-width: 160px;
 }
 
-/* 箭头默认样式 */
-.menu-item .arrow, .menu .menu-item .arrow {
-    -fx-background-color: rgba(0, 0, 0, 0.5);
-}
-
 /* 悬浮高亮 */
-.menu-item:hover, .menu .menu-item:hover, .menu-item:focused, .menu .menu-item:focused {
+.menu .menu-item:hover, .menu .menu-item:focused, .context-menu .menu-item:hover, .context-menu .menu-item:focused {
     -fx-background-color: rgba(0, 0, 0, 0.04);
 }
 
-/* 悬浮高亮 */
-.menu-item:hover .label, .menu .menu-item:hover .label, .menu-item:focused .label, .menu .menu-item:focused .label {
-    -fx-text-fill: rgba(0, 0, 0, 0.85);
-}
-
-/* 悬浮箭头 */
-.menu-item:hover .arrow, .menu .menu-item:hover .arrow, .menu-item:focused .arrow, .menu .menu-item:focused .arrow {
+/* 箭头默认样式 */
+.menu .menu-item .arrow, .context-menu .menu-item .arrow {
     -fx-background-color: rgba(0, 0, 0, 0.85);
 }
 
+/* 悬浮箭头 */
+.menu .menu-item:hover .arrow, .menu .menu-item:focused .arrow, .context-menu .menu-item:hover .arrow, .context-menu .menu-item:focused .arrow {
+    -fx-background-color: rgba(0, 0, 0, 0.85);
+}
+
+/* 悬浮高亮 */
+.menu .menu-item:hover .label, .menu .menu-item:focused .label, .context-menu .menu-item:hover .label, .context-menu .menu-item:focused .label {
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+}
+
 /* 分隔线 */
-.menu .separator {
-    -fx-background-color: #f0f0f0;
-    -fx-padding: 0 0 0 0;
-    -fx-min-height: 1px;
-    -fx-max-height: 1px;
-    -fx-background-insets: 0;
-    -fx-border-insets: 0;
-    -fx-margin: 4 0 4 0;
+.menu .separator, .context-menu .separator {
+    -fx-padding: 8 24 8 24;
+}
+
+.menu .separator .line, .context-menu .separator .line {
+    -fx-border-style: solid;
+    -fx-border-width: 0.5;
+    -fx-border-color: rgba(0, 0, 0, 0.04);
+    -fx-background-color: rgba(0, 0, 0, 0.04);
 }
 
 /* 禁用项 */
-.menu-item:disabled, .menu .menu-item:disabled {
+.menu .menu-item:disabled, .context-menu .menu-item:disabled {
     -fx-text-fill: #bfbfbf;
     -fx-background-color: transparent;
 }
 
 /* 禁用项箭头 */
-.menu-item:disabled .arrow, .menu .menu-item:disabled .arrow {
+.menu .menu-item:disabled .arrow, .context-menu .menu-item:disabled .arrow {
     -fx-background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* 一级菜单左侧圆角 */
-.menu-item:first-child, .menu .menu-item:first-child {
-    -fx-background-radius: 12 12 0 0;
+.menu .menu-item .check, .context-menu .menu-item .check{
+    -fx-background-color: rgba(0, 0, 0, 0.85); /* 使用您想要的颜色 */
 }
 
-/* 一级菜单右侧圆角 */
-.menu-item:last-child, .menu .menu-item:last-child {
-    -fx-background-radius: 0 0 12 12;
+.menu .menu-item:hover .check, .context-menu .menu-item:hover .check{
+    -fx-background-color: rgba(0, 0, 0, 0.85); /* 使用您想要的颜色 */
 }
+
+.menu .radio-menu-item .radio, .context-menu .radio-menu-item .radio{
+    -fx-background-color: rgba(0, 0, 0, 0.85); /* 使用您想要的颜色 */
+}
+
+.menu .radio-menu-item:hover .radio, .context-menu .radio-menu-item:hover .radio{   
+    -fx-background-color: rgba(0, 0, 0, 0.85); /* 使用您想要的颜色 */
+}
+
+.menu .menu-item  .qupath-icon, .context-menu .menu-item .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.85); /* 使用您想要的颜色 */
+}
+
+.menu .menu-item:hover .qupath-icon, .context-menu .menu-item:hover .qupath-icon {
+    -fx-text-fill: rgba(0, 0, 0, 0.85); /* 使用您想要的颜色 */
+}
+
+
+

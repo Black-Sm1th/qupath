@@ -167,7 +167,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 	 * Metadata keys that will always be present
 	 */
 	private enum BaseMetadataKeys {
-		IMAGE_NAME("Image name"), ENTRY_ID("Entry ID"), URI("URI");
+		IMAGE_NAME("图像名称"), ENTRY_ID("条目ID"), URI("URI");
 
 		private final String displayName;
 
@@ -184,8 +184,8 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		}
 
 	}
-	private static final String UNASSIGNED_NODE = "(Unassigned)";
-	private static final String UNDEFINED_VALUE = "Undefined";
+	private static final String UNASSIGNED_NODE = "(未分配)";
+	private static final String UNDEFINED_VALUE = "未定义";
 
 	/**
 	 * To load thumbnails in the background
@@ -250,9 +250,9 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		});
 			
 		var tfFilter = new PredicateTextField<String>();
-		tfFilter.setPromptText("Search entry in project");
+		tfFilter.setPromptText("在项目中搜索条目");
 		tfFilter.setSpacing(0.0);
-		var tooltip = new Tooltip("Type some text to filter the project entries by name or type.");
+		var tooltip = new Tooltip("输入文本以按名称或类型过滤项目条目。");
 		Tooltip.install(tfFilter, tooltip);
 		predicateProperty.bind(tfFilter.predicateProperty());
 		predicateProperty.addListener((m, o, n) -> refreshTree(null));
@@ -282,44 +282,44 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		qupath.getPreferencePane().getPropertySheet().getItems().add(
 				new PropertyItemBuilder<>(thumbnailSize, ProjectThumbnailSize.class)
 						.propertyType(PropertyItemBuilder.PropertyType.CHOICE)
-						.name("Project thumbnail size")
-						.category("Appearance")
+						.name("项目缩略图大小")
+						.category("外观")
 						.choices(Arrays.asList(ProjectThumbnailSize.values()))
-						.description("Choose thumbnail size for the project pane")
+						.description("选择项目窗格的缩略图大小")
 						.build()
 		);
 	}
 
 	ContextMenu getPopup() {
 		
-		Action actionOpenImage = new Action("Open image", e -> qupath.openImageEntry(getSelectedEntry()));
-		Action actionRemoveImage = new Action("Remove image(s)", e -> promptToRemoveSelectedImages());
+		Action actionOpenImage = new Action("打开图像", e -> qupath.openImageEntry(getSelectedEntry()));
+		Action actionRemoveImage = new Action("移除图像", e -> promptToRemoveSelectedImages());
 		
-		Action actionDuplicateImages = new Action("Duplicate image(s)", e -> promptToDuplicateSelectedImages());
+		Action actionDuplicateImages = new Action("复制图像", e -> promptToDuplicateSelectedImages());
 		
-		Action actionSetImageName = new Action("Rename image", e -> promptToRenameSelectedImage());
+		Action actionSetImageName = new Action("重命名图像", e -> promptToRenameSelectedImage());
 		// Add a metadata value
-		Action actionAddMetadataValue = new Action("Add metadata", e -> promptToAddMetadataToSelectedImages());
+		Action actionAddMetadataValue = new Action("添加元数据", e -> promptToAddMetadataToSelectedImages());
 		
 		// Edit the description for the image
-		Action actionEditDescription = new Action("Edit description", e -> promptToEditSelectedImageDescription());
+		Action actionEditDescription = new Action("编辑描述", e -> promptToEditSelectedImageDescription());
 		
 		// Mask the name of the images and shuffle the entry
-		Action actionMaskImageNames = ActionTools.createSelectableAction(PathPrefs.maskImageNamesProperty(), "Mask image names");
+		Action actionMaskImageNames = ActionTools.createSelectableAction(PathPrefs.maskImageNamesProperty(), "隐藏图像名称");
 		
 		// Refresh thumbnail according to current display settings
-		Action actionRefreshThumbnail = new Action("Refresh thumbnail", e -> promptToRefreshSelectedThumbnails());
+		Action actionRefreshThumbnail = new Action("刷新缩略图", e -> promptToRefreshSelectedThumbnails());
 				
 		// Open the project directory using Explorer/Finder etc.
-		Action actionOpenProjectDirectory = createBrowsePathAction("Project...", () -> getProjectPath());
-		Action actionOpenProjectEntryDirectory = createBrowsePathAction("Project entry...", () -> getProjectEntryPath());
-		Action actionOpenImageServerDirectory = createBrowsePathAction("Image...", () -> getImageServerPath());
+		Action actionOpenProjectDirectory = createBrowsePathAction("项目...", () -> getProjectPath());
+		Action actionOpenProjectEntryDirectory = createBrowsePathAction("项目条目...", () -> getProjectEntryPath());
+		Action actionOpenImageServerDirectory = createBrowsePathAction("图像...", () -> getImageServerPath());
 		
 
 		ContextMenu menu = new ContextMenu();
 		
 		var hasProjectBinding = qupath.projectProperty().isNotNull();
-		var menuOpenDirectories = MenuTools.createMenu("Open directory...",
+		var menuOpenDirectories = MenuTools.createMenu("打开目录...",
 				actionOpenProjectDirectory,
 				actionOpenProjectEntryDirectory,
 				actionOpenImageServerDirectory);
@@ -337,7 +337,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		MenuItem miMaskImages = ActionUtils.createCheckMenuItem(actionMaskImageNames);
 
 		// Create menu for sorting by metadata
-		Menu menuSort = new Menu("Sort by...");
+		Menu menuSort = new Menu("排序方式...");
 
 		// Set visibility as menu being displayed
 		menu.setOnShowing(e -> {
@@ -350,11 +350,11 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 			
 			int nSelectedEntries = ProjectTreeRow.getEntries(entries).size();
 			if (nSelectedEntries == 1) {
-				actionDuplicateImages.setText("Duplicate image");
-				actionRemoveImage.setText("Remove image");
+				actionDuplicateImages.setText("复制图像");
+				actionRemoveImage.setText("移除图像");
 			} else {
-				actionDuplicateImages.setText("Duplicate " + nSelectedEntries + " images");
-				actionRemoveImage.setText("Remove " + nSelectedEntries + " images");				
+				actionDuplicateImages.setText("复制 " + nSelectedEntries + " 张图像");
+				actionRemoveImage.setText("移除 " + nSelectedEntries + " 张图像");				
 			}
 			
 //			miOpenProjectDirectory.setVisible(project != null && project.getBaseDirectory().exists());
@@ -405,7 +405,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 	}
 
 	private Menu createThumbnailSizeMenu() {
-		Menu menu = new Menu("Thumbnail size");
+		Menu menu = new Menu("缩略图大小");
 		ToggleGroup group = new ToggleGroup();
 		for (ProjectThumbnailSize size : ProjectThumbnailSize.values()) {
 			RadioMenuItem item = new RadioMenuItem(size.toString());
@@ -1085,20 +1085,20 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 	private boolean setProjectEntryImageName(final ProjectImageEntry<BufferedImage> entry) {
 		Project<BufferedImage> project = qupath.getProject();
 		if (project == null) {
-			logger.error("Cannot set image name - project is null");
+			logger.error("无法设置图像名称 - 项目为空");
 			return false;
 		}
 		if (entry == null) {
-			logger.error("Cannot set image name - entry is null");
+			logger.error("无法设置图像名称 - 条目为空");
 			return false;
 		}
 		
-		String name = Dialogs.showInputDialog("Set Image Name", "Enter the new image name", entry.getImageName());
+		String name = Dialogs.showInputDialog("设置图像名称", "输入新的图像名称", entry.getImageName());
 		if (name == null)
 			return false;
 		
 		if (name.trim().isEmpty() || name.equals(entry.getImageName())) {
-			logger.warn("Cannot set image name to {} - will ignore", name);
+			logger.warn("无法将图像名称设置为 {} - 将忽略", name);
 			return false;
 		}
 		
@@ -1142,12 +1142,12 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 	private static synchronized <T> boolean setProjectEntryImageName(final ProjectImageEntry<T> entry, final String name) {
 		
 		if (entry.getImageName().equals(name)) {
-			logger.warn("Project image name already set to {} - will be left unchanged", name);
+			logger.warn("项目图像名称已设置为 {} - 将保持不变", name);
 			return false;
 		}
 
 		if (name == null) {
-			logger.warn("Project entry name cannot be null!");
+			logger.warn("项目条目名称不能为空！");
 			return false;
 		}
 
@@ -1259,7 +1259,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 			missingGraphic = IconFactory.createNode(
 					15, 15, PathIcons.WARNING);
 			missingGraphic.getStyleClass().add("missing-uri");
-			Tooltip.install(missingGraphic, new Tooltip("File not found"));
+			Tooltip.install(missingGraphic, new Tooltip("未找到文件"));
 
 			viewPane.getChildren().add(missingGraphic);
 			missingGraphic.visibleProperty().bind(urisMissing);
@@ -1331,7 +1331,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 
 				setText(entry.getImageName());
 				if (urisMissing.get())
-					tooltip.setText("Warning: At least one file is missing!\n\n" + entry.getSummary());
+					tooltip.setText("警告：至少有一个文件丢失！\n\n" + entry.getSummary());
 				else
 					tooltip.setText(entry.getSummary());
 
@@ -1507,13 +1507,13 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		public String toString() {
 			switch(this) {
 			case HIDDEN:
-				return "Hidden";
+				return "隐藏";
 			case LARGE:
-				return "Large";
+				return "大";
 			case MEDIUM:
-				return "Medium";
+				return "中";
 			case SMALL:
-				return "Small";
+				return "小";
 			default:
 				return super.toString();
 			}

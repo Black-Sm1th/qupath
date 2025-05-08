@@ -49,11 +49,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -109,7 +111,7 @@ class QuPathMainPaneManager {
 	
 	// 用于列表项的滚动容器
 	private VBox listContainer;
-
+	private HBox analysisContainer;
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
@@ -121,7 +123,7 @@ class QuPathMainPaneManager {
 				qupath.getAutomateActions(),
 				qupath.getOverlayActions());
 		// Create the main pane
-		pane = new StackPane();	
+		pane = new StackPane();
 		
 		// Load API key from config file
 		Properties prop = new Properties();
@@ -164,8 +166,9 @@ class QuPathMainPaneManager {
 
 		// Add topbar to overlayContainer
 		overlayContainer.setTop(createTopBarContainer());
+		analysisContainer = createLeftContainer();
 		// Add left to overlayContainer
-		overlayContainer.setLeft(createLeftContainer());
+		overlayContainer.setLeft(analysisContainer);
 		// Add bottom to overlayContainer
 		overlayContainer.setBottom(createBottomBarContainer());
 
@@ -268,6 +271,11 @@ class QuPathMainPaneManager {
 	
 	void setAnalysisPaneVisible(boolean visible) {
 		// Do nothing - analysis pane is always hidden
+		if(visible){
+			analysisContainer.setVisible(true);
+		}else{
+			analysisContainer.setVisible(false);
+		}
 	}
 	
 	private boolean analysisPanelVisible() {
@@ -285,6 +293,70 @@ class QuPathMainPaneManager {
 		var gpsBtn = createNormalButton("gps", "定位");
 		eyeBtn.getStyleClass().add("qupath-tool-button");
 		gpsBtn.getStyleClass().add("qupath-tool-button");
+		
+		// 为眼睛按钮添加弹出菜单
+		ContextMenu displayMenu = new ContextMenu();
+		
+		// 添加"概览图"选项
+		CheckMenuItem overviewItem = new CheckMenuItem("概览图");
+		overviewItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_OVERVIEW.selectedProperty());
+		
+		// 添加"网格"选项
+		CheckMenuItem gridItem = new CheckMenuItem("网格\t\t\tShift+G");
+		gridItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_GRID.selectedProperty());
+		
+		// 添加"比例尺"选项
+		CheckMenuItem scalebarItem = new CheckMenuItem("比例尺");
+		scalebarItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_SCALEBAR.selectedProperty());
+		
+		// 添加"坐标"选项
+		CheckMenuItem locationItem = new CheckMenuItem("坐标");
+		locationItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_LOCATION.selectedProperty());
+		
+		// 添加"标注名"选项
+		CheckMenuItem namesItem = new CheckMenuItem("标注名\t\t          N");
+		namesItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_NAMES.selectedProperty());
+		
+		// 添加"导航栏"选项 - 使用CommonActions中的SHOW_ANALYSIS_PANE
+		CheckMenuItem navBarItem = new CheckMenuItem("导航栏\t\tShift+A");
+		navBarItem.selectedProperty().bindBidirectional(qupath.getCommonActions().SHOW_ANALYSIS_PANE.selectedProperty());
+		
+		// 添加"AI助手"选项 - 控制底部输入框的显示
+		BooleanProperty showAIHelper = new SimpleBooleanProperty(true);
+		CheckMenuItem aiHelperItem = new CheckMenuItem("AI助手");
+		aiHelperItem.setSelected(true);
+		aiHelperItem.selectedProperty().addListener((v, o, n) -> {
+			// 获取底部容器中的输入容器
+			var bottomContainer = (BorderPane)pane.getChildren().stream()
+					.filter(node -> node instanceof BorderPane)
+					.map(node -> ((BorderPane)node).getBottom())
+					.filter(node -> node instanceof BorderPane)
+					.findFirst().orElse(null);
+					
+			if (bottomContainer != null) {
+				var inputContainer = bottomContainer.getCenter();
+				if (inputContainer != null) {
+					inputContainer.setVisible(n);
+					inputContainer.setManaged(n);
+				}
+			}
+		});
+		
+		// 将所有选项添加到菜单中
+		displayMenu.getItems().addAll(
+			navBarItem,
+			aiHelperItem,
+			overviewItem,
+			gridItem,
+			scalebarItem,
+			locationItem,
+			namesItem
+		);
+		
+		// 为眼睛按钮添加点击事件
+		eyeBtn.setOnMouseClicked(e -> {
+			displayMenu.show(eyeBtn, javafx.geometry.Side.BOTTOM, 0, 0);
+		});
 		
 		// Create left&right button container
 		var leftButtonContainer = new VBox();
