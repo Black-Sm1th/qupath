@@ -109,7 +109,7 @@ class ProjectImportImagesCommand {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ProjectImportImagesCommand.class);
 		
-	private static final String commandName = "Import images";
+	private static final String commandName = "导入图像";
 	
 	private static final BooleanProperty pyramidalizeProperty = PathPrefs.createPersistentPreference("projectImportPyramidalize", true);
 	private static final BooleanProperty importObjectsProperty = PathPrefs.createPersistentPreference("projectImportObjects", false);
@@ -135,21 +135,21 @@ class ProjectImportImagesCommand {
 		listView.setPrefWidth(480);
 		listView.setMinHeight(100);
 		listView.getItems().addAll(defaultPaths);
-		listView.setPlaceholder(new Label("Drag & drop image or project files for import, \nor choose from the options below"));
+		listView.setPlaceholder(new Label("拖放图像或项目文件进行导入，\n或从下面的选项中选择"));
 		
-		Button btnFile = new Button("Choose files");
+		Button btnFile = new Button("选择文件");
 		btnFile.setOnAction(e -> loadFromFileChooser(listView.getItems()));
 
-		Button btnURL = new Button("Input URL");
+		Button btnURL = new Button("输入URL");
 		btnURL.setOnAction(e -> loadFromSingleURL(listView.getItems()));
 
-		Button btnClipboard = new Button("From clipboard");
+		Button btnClipboard = new Button("从剪贴板");
 		btnClipboard.setOnAction(e -> loadFromClipboard(listView.getItems()));
 		
-		Button btnFileList = new Button("From path list");
+		Button btnFileList = new Button("从路径列表");
 		btnFileList.setOnAction(e -> loadFromTextFile(listView.getItems()));
 		
-		TitledPane paneList = new TitledPane("Image paths", listView);
+		TitledPane paneList = new TitledPane("图像路径", listView);
 		paneList.setCollapsible(false);
 		
 
@@ -163,7 +163,7 @@ class ProjectImportImagesCommand {
 	            	 setText(null);
 	             } else {
 	            	 if (item == null)
-	            		 setText("Default (let QuPath decide)");
+	            		 setText("默认 (让QuPath决定)");
 	            	 else {
 						 // Make the name a little more readable, without adding confusing
 						 String name = item.getName();
@@ -177,7 +177,7 @@ class ProjectImportImagesCommand {
 		
 		boolean requestBuilder = builder == null;
 		ComboBox<ImageServerBuilder<BufferedImage>> comboBuilder = new ComboBox<>();
-		Label labelBuilder = new Label("Image server");
+		Label labelBuilder = new Label("图像服务器");
 		if (requestBuilder) {
 			comboBuilder.setCellFactory(p -> new BuilderListCell());
 			comboBuilder.setButtonCell(new BuilderListCell());
@@ -192,28 +192,28 @@ class ProjectImportImagesCommand {
 		
 		ComboBox<ImageType> comboType = new ComboBox<>();
 		comboType.getItems().setAll(ImageType.values());
-		Label labelType = new Label("Set image type");
+		Label labelType = new Label("设置图像类型");
 		labelType.setLabelFor(comboType);
 		labelType.setMinWidth(Label.USE_PREF_SIZE);
 				
 		ComboBox<Rotation> comboRotate = new ComboBox<>();
 		comboRotate.getItems().setAll(Rotation.values());
-		Label labelRotate = new Label("Rotate image");
+		Label labelRotate = new Label("旋转图像");
 		labelRotate.setLabelFor(comboRotate);
 		labelRotate.setMinWidth(Label.USE_PREF_SIZE);
 		
 		TextField tfArgs = new TextField();
-		Label labelArgs = new Label("Optional args");
+		Label labelArgs = new Label("可选参数");
 		labelArgs.setLabelFor(tfArgs);
 		labelArgs.setMinWidth(Label.USE_PREF_SIZE);
 		
-		CheckBox cbPyramidalize = new CheckBox("Auto-generate pyramids");
+		CheckBox cbPyramidalize = new CheckBox("自动生成图像金字塔");
 		cbPyramidalize.setSelected(pyramidalizeProperty.get());
 		
-		CheckBox cbImportObjects = new CheckBox("Import objects");
+		CheckBox cbImportObjects = new CheckBox("导入对象");
 		cbImportObjects.setSelected(importObjectsProperty.get());
 		
-		CheckBox cbImageSelector = new CheckBox("Show image selector");
+		CheckBox cbImageSelector = new CheckBox("显示图像选择器");
 		cbImageSelector.setSelected(showImageSelectorProperty.get());
 
 		GridPaneUtils.setMaxWidth(Double.MAX_VALUE, comboBuilder, comboType, comboRotate, cbPyramidalize, cbImportObjects, tfArgs, cbImageSelector);
@@ -226,20 +226,17 @@ class ProjectImportImagesCommand {
 		paneType.setVgap(5);
 		int row = 0;
 		if (requestBuilder)
-			GridPaneUtils.addGridRow(paneType, row++, 0, "Specify the library used to open images", labelBuilder, comboBuilder);
-		GridPaneUtils.addGridRow(paneType, row++, 0, "Specify the default image type for all images being imported (required for analysis, can be changed later under the 'Image' tab)", labelType, comboType);
-		GridPaneUtils.addGridRow(paneType, row++, 0, "Optionally rotate images on import", labelRotate, comboRotate);
-		GridPaneUtils.addGridRow(paneType, row++, 0, "Optionally pass reader-specific arguments to the image provider.\nUsually this should just be left empty.", labelArgs, tfArgs);
-		GridPaneUtils.addGridRow(paneType, row++, 0, "Dynamically create image pyramids for large, single-resolution images", cbPyramidalize, cbPyramidalize);
-		GridPaneUtils.addGridRow(paneType, row++, 0, "Read and import objects (e.g. annotations) from the image file, if possible", cbImportObjects, cbImportObjects);
-		GridPaneUtils.addGridRow(paneType, row++, 0, "Show the 'Image selector' window whenever the same URI contains multiple images.\n"
-				+ "If this is turned off, then all images will be import.", cbImageSelector, cbImageSelector);
+			GridPaneUtils.addGridRow(paneType, row++, 0, "指定用于打开图像的库", labelBuilder, comboBuilder);
+		GridPaneUtils.addGridRow(paneType, row++, 0, "指定导入的所有图像的默认图像类型（分析时需要，稍后可在\"图像\"选项卡下更改）", labelType, comboType);
+		GridPaneUtils.addGridRow(paneType, row++, 0, "可选择在导入时旋转图像", labelRotate, comboRotate);
+		GridPaneUtils.addGridRow(paneType, row++, 0, "可选择传递特定于读取器的参数到图像提供者。\n通常应将此留空。", labelArgs, tfArgs);
+		GridPaneUtils.addGridRow(paneType, row++, 0, "为大型、单分辨率图像动态创建图像金字塔", cbPyramidalize, cbPyramidalize);
+		GridPaneUtils.addGridRow(paneType, row++, 0, "尝试从图像文件读取并导入对象（如标注）", cbImportObjects, cbImportObjects);
+		GridPaneUtils.addGridRow(paneType, row++, 0, "当同一URI包含多个图像时显示\"图像选择器\"窗口。\n如果关闭此选项，则将导入所有图像。", cbImageSelector, cbImageSelector);
 		
 		paneImages.setCenter(paneList);
 		paneImages.setBottom(paneType);
 		
-//		TilePane paneButtons = new TilePane();
-//		paneButtons.getChildren().addAll(btnFile, btnURL, btnClipboard, btnFileList);
 		GridPane paneButtons = GridPaneUtils.createColumnGridControls(btnFile, btnURL, btnClipboard, btnFileList);
 		paneButtons.setHgap(5);
 		paneButtons.setPadding(new Insets(5));
@@ -267,7 +264,7 @@ class ProjectImportImagesCommand {
 					if (!paths.isEmpty())
 						listView.getItems().addAll(paths);
 				} catch (Exception ex) {
-					Dialogs.showErrorMessage("Drag & Drop", ex);
+					Dialogs.showErrorMessage("拖放", ex);
 					logger.error(ex.getMessage(), ex);
 				}
 			}
@@ -280,8 +277,8 @@ class ProjectImportImagesCommand {
 		Dialog<ButtonType> dialog = new Dialog<>();
 		dialog.setResizable(true);
 		dialog.initOwner(qupath.getStage());
-		dialog.setTitle("Import images to project");
-		ButtonType typeImport = new ButtonType("Import", ButtonData.OK_DONE);
+		dialog.setTitle("导入图像到项目");
+		ButtonType typeImport = new ButtonType("导入", ButtonData.OK_DONE);
 		dialog.getDialogPane().getButtonTypes().addAll(typeImport, ButtonType.CANCEL);
 		ScrollPane scroll = new ScrollPane(pane);
 		scroll.setFitToHeight(true);
@@ -328,7 +325,7 @@ class ProjectImportImagesCommand {
 				
 				List<String> items = new ArrayList<>(listView.getItems());
 
-				updateMessage("Checking for compatible image readers...");
+				updateMessage("检查兼容的图像读取器...");
 				
 				// Limit the size of the thread pool
 				// The previous use of a cached thread pool caused trouble when importing may large, non-pyramidal images
@@ -344,7 +341,7 @@ class ProjectImportImagesCommand {
 							var tempProject = ProjectIO.loadProject(GeneralTools.toURI(item), BufferedImage.class);
 							projectImages.addAll(tempProject.getImageList());
 						} catch (Exception e) {
-							logger.error("Unable to add images from {} ({})", item, e.getLocalizedMessage());
+							logger.error("无法添加来自 {} 的图像 ({})", item, e.getLocalizedMessage());
 						}
 						continue;
 					} else if (lower.endsWith(".qpdata")) {
@@ -361,18 +358,18 @@ class ProjectImportImagesCommand {
 							if (requestedBuilder == null) {
 								support = ImageServers.getImageSupport(uri, args);
 								if (support == null)
-									logger.warn("Unable to open {} with any reader", uri);
+									logger.warn("无法用任何读取器打开 {}", uri);
 							} else {
 								support = ImageServers.getImageSupport(requestedBuilder, uri, args);
 								if (support == null)
-									logger.warn("Unable to open {} with {}", uri, requestedBuilder.getName());
+									logger.warn("无法用 {} 打开 {}", uri, requestedBuilder.getName());
 							}
 							if (support == null)
 								return Collections.emptyList();
 							else
 								return support.getBuilders();
 						} catch (Exception e) {
-							logger.error("Unable to add " + item, e);
+							logger.error("无法添加 " + item, e);
 						}
 						return new ArrayList<>();
 					}));
@@ -383,9 +380,9 @@ class ProjectImportImagesCommand {
 				// If we have projects, try adding images from these first
 				if (!projectImages.isEmpty()) {
 					if (projectImages.size() == 1)
-						updateMessage("Importing 1 image from existing projects");
+						updateMessage("从现有项目导入1张图像");
 					else
-						updateMessage("Importing " + projectImages.size() + " images from existing projects");
+						updateMessage("从现有项目导入 " + projectImages.size() + " 张图像");
 					for (var temp : projectImages) {
 						try {
 							project.addDuplicate(temp, true);
@@ -401,7 +398,7 @@ class ProjectImportImagesCommand {
 					try {
 						builders.addAll(result.get());
 					} catch (ExecutionException e) {
-						logger.error("Execution exception importing image", e);
+						logger.error("导入图像时执行异常", e);
 					}
 				}
 
@@ -412,9 +409,9 @@ class ProjectImportImagesCommand {
 				// Don't parallelize this because it might require a lot of memory for large data files
 				if (!existingDataFiles.isEmpty()) {
 					if (existingDataFiles.size() == 1)
-						updateMessage("Importing 1 image from existing data file");
+						updateMessage("从现有数据文件导入1张图像");
 					else
-						updateMessage("Importing " + existingDataFiles.size() + " images from existing data files");
+						updateMessage("从现有数据文件导入 " + existingDataFiles.size() + " 张图像");
 					for (var file : existingDataFiles) {
 						try {
 							ImageData<BufferedImage> imageData = PathIO.readImageData(file);
@@ -424,7 +421,7 @@ class ProjectImportImagesCommand {
 							updateProgress(counter.incrementAndGet(), max);
 							imageData.getServer().close();
 						} catch (Exception e) {
-							logger.warn("Unable to read image data from file: {}", file, e.getMessage());
+							logger.warn("无法从文件读取图像数据: {}", file, e.getMessage());
 						}
 					}
 				}
@@ -434,15 +431,15 @@ class ProjectImportImagesCommand {
 				List<ProjectImageEntry<BufferedImage>> allAddedEntries = new ArrayList<>();
 				if (!builders.isEmpty()) {
 					if (max == 1)
-						updateMessage("Preparing to add 1 image to project");
+						updateMessage("准备向项目添加1张图像");
 					else
-						updateMessage("Preparing " + max + " images");
+						updateMessage("准备 " + max + " 张图像");
 					
 					
 					if (showSelector && max > 1) {
 						var selector = ServerSelector.createFromBuilders(builders);
 						var selected = FXUtils.callOnApplicationThread(() -> {
-							return selector.promptToSelectImages("Import");
+							return selector.promptToSelectImages("导入");
 						});
 						builders.clear();
 						if (selected != null) {
@@ -468,13 +465,13 @@ class ProjectImportImagesCommand {
 								initializeEntry(entry, type, pyramidalize, importObjects);
 							} catch (Exception e) {
 								failures.add(entry);
-								logger.warn("Exception adding " + entry, e);
+								logger.warn("添加 " + entry + " 时异常", e);
 							} finally {
 								long i = counter.incrementAndGet();
 								updateProgress(i, max);
 								String name = entry.getImageName();
 								if (name != null) {
-									updateMessage("Added " + i + "/" + n + " - "+ name);
+									updateMessage("已添加 " + i + "/" + n + " - "+ name);
 								}
 							}
 						});
@@ -484,28 +481,28 @@ class ProjectImportImagesCommand {
 				try {
 					pool.awaitTermination(60, TimeUnit.MINUTES);
 				} catch (Exception e) {
-					logger.error("Exception waiting for project import to complete: " + e.getLocalizedMessage(), e);
+					logger.error("等待项目导入完成时出现异常: " + e.getLocalizedMessage(), e);
 				}
 
 				String errorMessage = null;
 				if (!failures.isEmpty()) {
 					if (failures.size() == 1)
-						errorMessage = "Failed to load one image.";
+						errorMessage = "加载一张图像失败。";
 					else
-						errorMessage = "Failed to load " + failures.size() + " images.";
+						errorMessage = "加载 " + failures.size() + " 张图像失败。";
 					if (requestedBuilder != null)
-						errorMessage += "\nThe image type might not be supported by '" + requestedBuilder.getName() + "'";
+						errorMessage += "\n该图像类型可能不被 '" + requestedBuilder.getName() + "' 支持";
 					var toRemove = failures.stream().filter(p -> project.getImageList().contains(p)).toList();
 					project.removeAllImages(toRemove, true);
 				} else if (max == 0 && !items.isEmpty()) {
 					// If we have items, but no images to add, then probably none of the items were supported images
-					errorMessage = "Unable to add images - see log for more details";
+					errorMessage = "无法添加图像 - 请查看日志获取更多详情";
 				}
 				if (errorMessage != null) {
 					Dialogs.builder()
 							.error()
 							.owner(qupath.getStage())
-							.title("Import images")
+							.title("导入图像")
 							.contentText(errorMessage)
 							.show();
 				}
@@ -517,20 +514,20 @@ class ProjectImportImagesCommand {
 	         }
 		};
 		ProgressDialog progress = new ProgressDialog(worker);
-		progress.setTitle("Project import");
+		progress.setTitle("项目导入");
 		qupath.getThreadPoolManager().submitShortTask(worker);
 		progress.showAndWait();
 		try {
 			project.syncChanges();
 		} catch (IOException e1) {
-			Dialogs.showErrorMessage("Sync project", e1);
+			Dialogs.showErrorMessage("同步项目", e1);
 			logger.error(e1.getMessage(), e1);
 		}
 		qupath.refreshProject();
 		
 		StringBuilder sb = new StringBuilder();
 		if (!pathSucceeded.isEmpty()) {
-			sb.append("Successfully imported " + pathSucceeded.size() + " paths:\n");
+			sb.append("成功导入 " + pathSucceeded.size() + " 个路径:\n");
 			for (String path : pathSucceeded)
 				sb.append("\t" + path + "\n");
 			sb.append("\n");
@@ -538,7 +535,7 @@ class ProjectImportImagesCommand {
 			ProjectBrowser.syncProject(qupath.getProject());
 		}
 		if (!pathFailed.isEmpty()) {
-			sb.append("Unable to import " + pathFailed.size() + " paths:\n");
+			sb.append("无法导入 " + pathFailed.size() + " 个路径:\n");
 			for (String path : pathFailed)
 				sb.append("\t" + path + "\n");
 			sb.append("\n");
@@ -558,7 +555,7 @@ class ProjectImportImagesCommand {
 		try {
 			results = worker.get();
 		} catch (Exception e) {
-			logger.error("Exception importing project entries", e);
+			logger.error("导入项目条目时异常", e);
 			results = Collections.emptyList();
 		}
 		return results;
@@ -584,7 +581,7 @@ class ProjectImportImagesCommand {
 		boolean changes = false;
 		for (File fileNew : files) {
 			if (list.contains(fileNew.getAbsolutePath())) {
-				Dialogs.showErrorMessage(commandName, "List already contains " + fileNew.getName());
+				Dialogs.showErrorMessage(commandName, "列表已包含 " + fileNew.getName());
 				continue;
 			}
 			list.add(fileNew.getAbsolutePath());
@@ -595,11 +592,11 @@ class ProjectImportImagesCommand {
 	
 	
 	static boolean loadFromSingleURL(final List<String> list) {
-		String path = FileChoosers.promptForFilePathOrURI("Choose image path", "");
+		String path = FileChoosers.promptForFilePathOrURI("选择图像路径", "");
 		if (path == null)
 			return false;
 		if (list.contains(path)) {
-			Dialogs.showErrorMessage(commandName, "List already contains " + path);
+			Dialogs.showErrorMessage(commandName, "列表已包含 " + path);
 			return false;
 		}
 		list.add(path);
@@ -609,12 +606,12 @@ class ProjectImportImagesCommand {
 
 	static int loadFromTextFile(final List<String> list) {
 		File file = FileChoosers.promptForFile(commandName,
-				FileChoosers.createExtensionFilter("Text file", "*.txt", "*.csv"));
+				FileChoosers.createExtensionFilter("文本文件", "*.txt", "*.csv"));
 		if (file == null)
 			return 0;
 		if (file.length() / 1024 / 1024 > 5) {
-			Dialogs.showErrorMessage(commandName, String.format("%s is too large (%.2f MB) - \n"
-					+ "please choose a text file containing only file paths or select another import option", file.getName(), file.length() / 1024.0 / 1024.0));
+			Dialogs.showErrorMessage(commandName, String.format("%s 太大 (%.2f MB) - \n"
+					+ "请选择只包含文件路径的文本文件或选择其他导入选项", file.getName(), file.length() / 1024.0 / 1024.0));
 			return 0;
 		}
 		return loadFromTextFile(file, list);
@@ -632,10 +629,10 @@ class ProjectImportImagesCommand {
 					list.add(s);
 					changes++;
 				} else
-					logger.warn("Cannot find image for path {}", s.trim());
+					logger.warn("找不到路径 {} 的图像", s.trim());
 			}
 		} catch (FileNotFoundException e) {
-			Dialogs.showErrorMessage(commandName, "File " + file.getName() + " not found!");
+			Dialogs.showErrorMessage(commandName, "未找到文件 " + file.getName() + "！");
 			return 0;
 		} finally {
 			if (scanner != null)
@@ -672,11 +669,11 @@ class ProjectImportImagesCommand {
 				if (isPossiblePath(s.trim()))
 					possiblePaths.add(s.trim());
 				else
-					logger.warn("Cannot find image for path {}", s.trim());
+					logger.warn("找不到路径 {} 的图像", s.trim());
 			}
 		}
 		if (possiblePaths.isEmpty()) {
-			Dialogs.showErrorMessage(commandName, "Could not find any valid paths on the clipboard!");
+			Dialogs.showErrorMessage(commandName, "剪贴板上找不到任何有效路径！");
 			return 0;
 		}
 		possiblePaths.removeAll(list);

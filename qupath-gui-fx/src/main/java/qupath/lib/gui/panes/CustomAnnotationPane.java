@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -16,7 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -34,6 +37,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.ColumnConstraints;
@@ -117,6 +121,14 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
     // 添加自动设置分类的属性
     private final BooleanProperty doAutoSetPathClass = new SimpleBooleanProperty(false);
     
+    // 添加一个过滤分类列表的谓词属性
+    private ObjectProperty<Predicate<PathClass>> classPredicateProperty = new SimpleObjectProperty<>(pc -> true);
+    
+    // 添加分类搜索框变量
+    private HBox classSearchBox;
+    private TextField classSearchField;
+    private HBox classBtnBox;
+    
     public CustomAnnotationPane(QuPathGUI qupath){
         this.qupath = qupath;
         this.disableUpdates.addListener((v, o, n) -> {
@@ -164,6 +176,78 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         filter.setPromptText("搜索...");
         filter.setIgnoreCase(true);
         filteredAnnotations.predicateProperty().bind(filter.predicateProperty());
+        
+        // 初始化分类搜索相关组件
+        classSearchBox = new HBox();
+        classSearchBox.getStyleClass().add("input-container");
+        classSearchField = new TextField();
+        classSearchField.getStyleClass().add("input-field");
+        classSearchField.setPromptText("搜索分类...");
+        HBox.setHgrow(classSearchField, Priority.ALWAYS);
+        Label classIconLabel = new Label();
+        classIconLabel.getStyleClass().add("input-icon");
+        classIconLabel.setGraphic(IconFactory.createNode(16, 16, PathIcons.SEARCH_BTN));
+        classSearchBox.getChildren().addAll(classIconLabel, classSearchField);
+        
+        // 添加分类搜索监听器
+        classSearchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isEmpty()) {
+                classPredicateProperty.set(pc -> true);
+            } else {
+                String lowerCaseSearch = newVal.toLowerCase();
+                classPredicateProperty.set(pc -> {
+                    if (pc == null || pc.getName() == null)
+                        return false;
+                    
+                    // 搜索英文原名
+                    String originalName = pc.getName();
+                    if (originalName.toLowerCase().contains(lowerCaseSearch))
+                        return true;
+                    
+                    // 搜索中文翻译名
+                    String translatedName = QuPathTranslator.getTranslatedName(originalName);
+                    if (translatedName != null && translatedName != originalName && 
+                        translatedName.toLowerCase().contains(lowerCaseSearch))
+                        return true;
+                    
+                    // 搜索完整的派生类名称（包括父类）
+                    String fullName = pc.toString();
+                    if (fullName.toLowerCase().contains(lowerCaseSearch))
+                        return true;
+                    
+                    // 搜索完整的派生类翻译名称
+                    String fullTranslatedName = QuPathTranslator.getTranslatedName(fullName);
+                    return fullTranslatedName != null && fullTranslatedName != fullName && 
+                           fullTranslatedName.toLowerCase().contains(lowerCaseSearch);
+                });
+            }
+            // 更新分类列表
+            updateClassList();
+        });
+        
+        // 搜索框失去焦点时恢复按钮
+        classSearchField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) { // 失去焦点
+                Platform.runLater(() -> {
+                    // 延迟执行，以防止点击其他元素时立即关闭
+                    if (classBtnBox != null) {
+                        HBox topBar = (HBox) classBtnBox.getParent();
+                        if (topBar == null) {
+                            // 尝试从classSearchBox的父级获取
+                            topBar = (HBox) classSearchBox.getParent();
+                        }
+                        if (topBar != null) {
+                            // 无论当前显示哪个，都确保正确替换
+                            topBar.getChildren().remove(classSearchBox);
+                            if (!topBar.getChildren().contains(classBtnBox)) {
+                                topBar.getChildren().add(classBtnBox);
+                            }
+                            classSearchField.clear();
+                        }
+                    }
+                });
+            }
+        });
     }
     
     public ScrollPane getPane(){
@@ -262,9 +346,22 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         });
         
         HBox btnBox = new HBox();
+        btnBox.setAlignment(Pos.CENTER_LEFT);
         btnBox.setSpacing(8);
         btnBox.getChildren().addAll(searchBtn, setSelectBtn, autoSetBtn, moreBtnClassification);
-
+        // 保存btnBox引用
+        this.classBtnBox = btnBox;
+        
+        // 添加搜索按钮的点击事件
+        searchBtn.setOnAction(e -> {
+            // 切换到搜索模式
+            if (classificationTopBox.getChildren().contains(btnBox)) {
+                classificationTopBox.getChildren().remove(btnBox);
+                classificationTopBox.getChildren().add(classSearchBox);
+                classSearchField.requestFocus();
+            }
+        });
+        
         Region spacerClassification = new Region();
         HBox.setHgrow(spacerClassification, Priority.ALWAYS);
         classificationTopBox.getChildren().addAll(classificationLabel, spacerClassification, btnBox);
@@ -310,12 +407,12 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         mdPane.setPadding(new Insets(0, 12, 0, 0));
         
         // 监听滚动条显示状态，动态调整右侧padding
-        pane.viewportBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
-            Platform.runLater(() -> updatePadding());
-        });
-        pane.widthProperty().addListener((obs, oldWidth, newWidth) -> {
-            Platform.runLater(() -> updatePadding());
-        });
+        // pane.viewportBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+        //     Platform.runLater(() -> updatePadding());
+        // });
+        // pane.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+        //     Platform.runLater(() -> updatePadding());
+        // });
         
         updateAnnotationList();
         
@@ -644,6 +741,14 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
         
         // 过滤掉空分类（如果有的话）
         pathClasses.removeIf(pc -> pc == null || pc.getName() == null || pc.getName().isEmpty());
+        
+        // 应用过滤器过滤分类
+        Predicate<PathClass> predicate = classPredicateProperty.get();
+        if (predicate != null) {
+            pathClasses = pathClasses.stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
+        }
         
         // 记录已处理的分类数量
         logger.debug("更新分类列表，找到 {} 个分类", pathClasses.size());

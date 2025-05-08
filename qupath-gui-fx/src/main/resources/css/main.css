@@ -864,3 +864,27 @@
     -fx-font-size: 14px;
 }
 
+.custom-annotation-box .custom-annotation-top-bar .input-container{
+    -fx-alignment: center-left;
+    -fx-background-color: rgba(22, 146, 255, 0.06);
+    -fx-border-color: rgba(22, 146, 255, 1);
+    -fx-border-radius: 110px;
+    -fx-border-width: 1;
+    -fx-background-radius: 110px;
+    -fx-min-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-width: 200px;
+    -fx-max-width: 200px;
+    -fx-padding: 2 8 2 8;
+}
+
+.custom-annotation-box .custom-annotation-top-bar .input-field{
+    -fx-background-color: transparent;
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+}
+
+.custom-annotation-box .custom-annotation-top-bar .input-icon .qupath-icon{
+    -fx-text-fill: rgba(22, 146, 255, 1);
+}
+
