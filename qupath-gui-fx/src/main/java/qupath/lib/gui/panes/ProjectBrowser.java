@@ -105,7 +105,6 @@ import javafx.scene.layout.StackPane;
 import qupath.fx.controls.PredicateTextField;
 import qupath.fx.dialogs.Dialogs;
 import qupath.fx.prefs.controlsfx.PropertyItemBuilder;
-import qupath.fx.utils.GridPaneUtils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
@@ -257,13 +256,11 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		predicateProperty.bind(tfFilter.predicateProperty());
 		predicateProperty.addListener((m, o, n) -> refreshTree(null));
 		
-		var paneUserFilter = GridPaneUtils.createRowGrid(tfFilter);
-		
 		BorderPane panelTree = new BorderPane();
 		panelTree.setCenter(mdTree);
-
-		// panel.setBottom(paneUserFilter);
 		panel.setCenter(panelTree);
+		HBox btnBox = new HBox();
+		btnBox.setSpacing(8);
 		Button btnSearch = new Button();
 		btnSearch.setGraphic(IconFactory.createNode(16, 16, PathIcons.SEARCH_BTN));
 		Button btnOpen = ActionTools.createButtonWithGraphicOnly(qupath.getCommonActions().PROJECT_OPEN);
@@ -276,7 +273,47 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		HBox topBar = new HBox();
 		topBar.getStyleClass().add("project-topbar");
 		Label label = new Label("图像列表");
-		topBar.getChildren().addAll(label, region, btnSearch, btnOpen, btnCreate, btnAdd, btnMore);
+		btnBox.getChildren().addAll(btnSearch, btnOpen, btnCreate, btnAdd, btnMore);
+		topBar.getChildren().addAll(label, region, btnBox);
+		
+		// 创建搜索框
+		HBox searchBox = new HBox();
+		searchBox.getStyleClass().add("input-container");
+		TextField searchField = new TextField();
+		searchField.getStyleClass().add("input-field");
+		searchField.setPromptText("搜索...");
+		HBox.setHgrow(searchField, Priority.ALWAYS);
+		Label iconLabel = new Label();
+		iconLabel.getStyleClass().add("input-icon");
+		iconLabel.setGraphic(IconFactory.createNode(16, 16, PathIcons.SEARCH_BTN));
+		searchBox.getChildren().addAll(iconLabel, searchField);
+		
+		// 添加搜索功能
+		btnSearch.setOnAction(e -> {
+			topBar.getChildren().remove(btnBox);
+			topBar.getChildren().add(searchBox);
+			searchField.requestFocus();
+		});
+		
+		// 搜索框失去焦点时恢复按钮
+		searchField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+			if (!newVal) { // 失去焦点
+				Platform.runLater(() -> {
+					// 延迟执行，以防止点击关闭按钮时立即关闭
+					if (!searchBox.isHover()) {
+						topBar.getChildren().remove(searchBox);
+						topBar.getChildren().add(btnBox);
+						searchField.clear();
+					}
+				});
+			}
+		});
+		
+		// 将搜索框与过滤器连接
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+			tfFilter.setText(newVal);
+		});
+		
 		panel.setTop(topBar);
 
 		qupath.getPreferencePane().getPropertySheet().getItems().add(

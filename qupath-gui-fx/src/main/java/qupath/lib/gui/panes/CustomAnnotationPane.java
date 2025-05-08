@@ -261,9 +261,13 @@ public class CustomAnnotationPane implements PathObjectSelectionListener, Change
             menu.show(moreBtnClassification, javafx.geometry.Side.BOTTOM, 0, 0);
         });
         
+        HBox btnBox = new HBox();
+        btnBox.setSpacing(8);
+        btnBox.getChildren().addAll(searchBtn, setSelectBtn, autoSetBtn, moreBtnClassification);
+
         Region spacerClassification = new Region();
         HBox.setHgrow(spacerClassification, Priority.ALWAYS);
-        classificationTopBox.getChildren().addAll(classificationLabel, spacerClassification, searchBtn, setSelectBtn, autoSetBtn, moreBtnClassification);
+        classificationTopBox.getChildren().addAll(classificationLabel, spacerClassification, btnBox);
         mdPane.getChildren().add(classificationTopBox);
 
         // 添加分类列表（使用GridPane，但初始为空）
