@@ -77,6 +77,7 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -275,6 +276,76 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		Label label = new Label("图像列表");
 		btnBox.getChildren().addAll(btnSearch, btnOpen, btnCreate, btnAdd, btnMore);
 		topBar.getChildren().addAll(label, region, btnBox);
+		
+		// 为"更多"按钮添加点击事件
+		btnMore.setOnAction(e -> {
+			ContextMenu contextMenu = new ContextMenu();
+			
+			// 创建菜单项
+			MenuItem openImage = new MenuItem("打开图像");
+			openImage.setOnAction(event -> qupath.openImageEntry(getSelectedEntry()));
+			
+			MenuItem deleteImage = new MenuItem("删除图像");
+			deleteImage.setOnAction(event -> promptToRemoveSelectedImages());
+			
+			MenuItem duplicateImage = new MenuItem("复制图像");
+			duplicateImage.setOnAction(event -> promptToDuplicateSelectedImages());
+			
+			MenuItem renameImage = new MenuItem("重命名图像");
+			renameImage.setOnAction(event -> promptToRenameSelectedImage());
+			
+			MenuItem addMetadata = new MenuItem("添加元数据");
+			addMetadata.setOnAction(event -> promptToAddMetadataToSelectedImages());
+			
+			MenuItem editDescription = new MenuItem("编辑描述");
+			editDescription.setOnAction(event -> promptToEditSelectedImageDescription());
+			
+			// 创建排序方式子菜单
+			Menu sortMenu = new Menu("排序方式");
+			populateSortByMenu(sortMenu);
+			
+			// 创建"显示/隐藏图像名称"选项
+			CheckMenuItem maskNames = new CheckMenuItem("隐藏图像名称");
+			maskNames.selectedProperty().bindBidirectional(PathPrefs.maskImageNamesProperty());
+
+			Action actionOpenProjectDirectory = createBrowsePathAction("项目...", () -> getProjectPath());
+			Action actionOpenProjectEntryDirectory = createBrowsePathAction("项目条目...", () -> getProjectEntryPath());
+			Action actionOpenImageServerDirectory = createBrowsePathAction("图像...", () -> getImageServerPath());
+			var menuOpenDirectories = MenuTools.createMenu("打开目录...",
+					actionOpenProjectDirectory,
+					actionOpenProjectEntryDirectory,
+					actionOpenImageServerDirectory);
+			
+			// 添加所有菜单项到上下文菜单
+			contextMenu.getItems().addAll(
+				openImage,
+				deleteImage,
+				duplicateImage,
+				new SeparatorMenuItem(),
+				renameImage,
+				addMetadata,
+				editDescription,
+				maskNames,
+				new SeparatorMenuItem(),
+				sortMenu,
+				menuOpenDirectories
+			);
+			
+			// 根据选中状态设置菜单项启用/禁用
+			var selected = tree.getSelectionModel().getSelectedItem();
+			ProjectImageEntry<BufferedImage> selectedEntry = selected == null ? null : ProjectTreeRow.getEntry(selected.getValue());
+			boolean isImageEntry = selectedEntry != null;
+			
+			openImage.setDisable(!isImageEntry);
+			deleteImage.setDisable(!isImageEntry);
+			duplicateImage.setDisable(!isImageEntry);
+			renameImage.setDisable(!isImageEntry);
+			addMetadata.setDisable(!isImageEntry);
+			editDescription.setDisable(!isImageEntry);
+			
+			// 显示菜单
+			contextMenu.show(btnMore, javafx.geometry.Side.BOTTOM, 0, 0);
+		});
 		
 		// 创建搜索框
 		HBox searchBox = new HBox();
