@@ -35,13 +35,6 @@
     -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
-/* 悬浮高亮 */
-.menu .menu-item .label, .menu .menu-item .label, .context-menu .menu-item .label, .context-menu .menu-item .label {
-    -fx-text-fill: rgba(0, 0, 0, 0.85);
-    -fx-font-size: 14px;
-    -fx-font-weight: normal;
-}
-
 /* 分隔线 */
 .menu .separator, .context-menu .separator {
     -fx-padding: 8 24 8 24;

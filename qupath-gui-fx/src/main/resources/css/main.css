@@ -492,13 +492,17 @@
     -fx-border-color: transparent transparent rgba(0, 0, 0, 0.04) transparent;
     -fx-border-width: 0 0 1 0;
     -fx-font-family: "Alibaba PuHuiTi";
-    -fx-font-size: 14;
-    -fx-font-weight: bold;
     -fx-pref-height: 36px;
     -fx-min-height: 36px;
     -fx-max-height: 36px;
     -fx-padding: 4 12 4 12;
     -fx-spacing: 8;
+}
+
+.project-browser .project-topbar .project-topbar-label{
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
 }
 
 .project-browser .project-topbar .input-container{

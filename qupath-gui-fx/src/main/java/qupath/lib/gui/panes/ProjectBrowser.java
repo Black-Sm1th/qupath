@@ -276,6 +276,7 @@ public class ProjectBrowser implements ChangeListener<ImageData<BufferedImage>> 
 		HBox topBar = new HBox();
 		topBar.getStyleClass().add("project-topbar");
 		Label label = new Label("图像列表");
+		label.getStyleClass().add("project-topbar-label");
 		btnBox.getChildren().addAll(btnSearch, btnOpen, btnCreate, btnAdd, btnMore);
 		topBar.getChildren().addAll(label, region, btnBox);
 		
