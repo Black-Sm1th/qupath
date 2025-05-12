@@ -167,21 +167,32 @@ public class LicenseManager {
                 // 复制文件
                 Files.copy(selectedFile.toPath(), targetPath);
                 
-                // 设置文件为只读
+                // 设置文件权限
                 File targetFile = targetPath.toFile();
-                targetFile.setReadOnly();
+                String os = System.getProperty("os.name").toLowerCase();
                 
-                // 在Windows系统上设置隐藏属性
-                if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                if (os.contains("windows")) {
+                    // Windows系统：设置只读和隐藏属性
+                    targetFile.setReadOnly();
                     try {
                         Process process = Runtime.getRuntime().exec("attrib +h " + targetPath.toString());
                         process.waitFor();
                     } catch (Exception e) {
                         logger.warn("设置文件隐藏属性失败: " + e.getMessage());
                     }
+                } else if (os.contains("linux")) {
+                    // Linux系统：设置只读权限
+                    try {
+                        Process process = Runtime.getRuntime().exec("chmod 400 " + targetPath.toString());
+                        process.waitFor();
+                    } catch (Exception e) {
+                        logger.warn("设置文件权限失败: " + e.getMessage());
+                        // 如果chmod失败，尝试使用Java的方式设置只读
+                        targetFile.setReadOnly();
+                    }
                 }
                 
-                logger.info("许可证文件已成功导入并设置为只读和隐藏");
+                logger.info("许可证文件已成功导入并设置权限");
                 return true;
             } catch (IOException e) {
                 logger.error("导入许可证失败: " + e.getMessage());
@@ -200,35 +211,78 @@ public class LicenseManager {
     }
 
     private static String getMachineUuid() {
-        // 尝试方法1：使用wmic命令
-        try {
-            Process process = Runtime.getRuntime().exec("wmic csproduct get uuid");
-            Scanner scanner = new Scanner(process.getInputStream());
-            scanner.nextLine(); // 跳过标题行
-            String uuid = scanner.nextLine().trim();
-            scanner.close();
-            if (uuid != null && !uuid.isEmpty() && !uuid.equals("UUID")) {
-                logger.info("通过wmic获取到的机器UUID: " + uuid);
-                return uuid;
+        String os = System.getProperty("os.name").toLowerCase();
+        
+        if (os.contains("windows")) {
+            // Windows系统：尝试方法1：使用wmic命令
+            try {
+                Process process = Runtime.getRuntime().exec("wmic csproduct get uuid");
+                Scanner scanner = new Scanner(process.getInputStream());
+                scanner.nextLine(); // 跳过标题行
+                String uuid = scanner.nextLine().trim();
+                scanner.close();
+                if (uuid != null && !uuid.isEmpty() && !uuid.equals("UUID")) {
+                    logger.info("通过wmic获取到的机器UUID: " + uuid);
+                    return uuid;
+                }
+            } catch (Exception e) {
+                logger.error("wmic获取UUID失败: " + e.getMessage());
             }
-        } catch (Exception e) {
-            logger.error("wmic获取UUID失败: " + e.getMessage());
-        }
 
-        // 尝试方法2：使用powershell命令
-        try {
-            Process process = Runtime.getRuntime().exec("powershell -Command \"Get-CimInstance -ClassName Win32_ComputerSystemProduct | Select-Object -ExpandProperty UUID\"");
-            Scanner scanner = new Scanner(process.getInputStream());
-            String uuid = scanner.nextLine().trim();
-            scanner.close();
-            if (uuid != null && !uuid.isEmpty()) {
-                logger.info("通过powershell获取到的机器UUID: " + uuid);
-                return uuid;
+            // Windows系统：尝试方法2：使用powershell命令
+            try {
+                Process process = Runtime.getRuntime().exec("powershell -Command \"Get-CimInstance -ClassName Win32_ComputerSystemProduct | Select-Object -ExpandProperty UUID\"");
+                Scanner scanner = new Scanner(process.getInputStream());
+                String uuid = scanner.nextLine().trim();
+                scanner.close();
+                if (uuid != null && !uuid.isEmpty()) {
+                    logger.info("通过powershell获取到的机器UUID: " + uuid);
+                    return uuid;
+                }
+            } catch (Exception e) {
+                logger.error("powershell获取UUID失败: " + e.getMessage());
             }
-        } catch (Exception e) {
-            logger.error("powershell获取UUID失败: " + e.getMessage());
+        } else if (os.contains("linux")) {
+            // Linux系统：尝试方法1：使用dmidecode命令
+            try {
+                Process process = Runtime.getRuntime().exec("sudo dmidecode -s system-uuid");
+                Scanner scanner = new Scanner(process.getInputStream());
+                String uuid = scanner.nextLine().trim();
+                scanner.close();
+                if (uuid != null && !uuid.isEmpty()) {
+                    logger.info("通过dmidecode获取到的机器UUID: " + uuid);
+                    return uuid;
+                }
+            } catch (Exception e) {
+                logger.error("dmidecode获取UUID失败: " + e.getMessage());
+            }
+
+            // Linux系统：尝试方法2：使用product_uuid文件
+            try {
+                File uuidFile = new File("/sys/class/dmi/id/product_uuid");
+                if (uuidFile.exists()) {
+                    String uuid = new String(Files.readAllBytes(uuidFile.toPath())).trim();
+                    if (uuid != null && !uuid.isEmpty()) {
+                        logger.info("通过product_uuid文件获取到的机器UUID: " + uuid);
+                        return uuid;
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("读取product_uuid文件失败: " + e.getMessage());
+            }
         }
-        return null;
+        
+        // 如果以上方法都失败，使用备用方法：生成基于系统信息的唯一标识符
+        try {
+            String systemInfo = System.getProperty("os.name") + 
+                              System.getProperty("os.version") + 
+                              System.getProperty("user.name") + 
+                              System.getProperty("user.home");
+            return java.util.UUID.nameUUIDFromBytes(systemInfo.getBytes()).toString();
+        } catch (Exception e) {
+            logger.error("生成备用UUID失败: " + e.getMessage());
+            return null;
+        }
     }
 
     private static File getLicenseFile() {
