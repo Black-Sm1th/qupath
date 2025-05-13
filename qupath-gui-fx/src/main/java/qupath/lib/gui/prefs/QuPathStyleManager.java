@@ -107,9 +107,9 @@ public class QuPathStyleManager {
 	private static final ReadOnlyObjectProperty<ColorScheme> systemColorScheme = Platform.getPreferences().colorSchemeProperty();
 
 	private static final ObservableList<StyleOption> styles = FXCollections.observableArrayList(
-			DEFAULT_SYSTEM_STYLE,
-			DEFAULT_LIGHT_STYLE,
-			DEFAULT_DARK_STYLE
+			// DEFAULT_SYSTEM_STYLE,
+			DEFAULT_LIGHT_STYLE
+			// DEFAULT_DARK_STYLE
 			);
 	
 	private static final ObservableList<StyleOption> stylesUnmodifiable = FXCollections.unmodifiableObservableList(styles);
@@ -122,7 +122,8 @@ public class QuPathStyleManager {
 	 * @return
 	 */
 	private static StyleOption findByName(String name) {
-		return styles.stream().filter(s -> Objects.equals(s.getName(), name)).findFirst().orElse(DEFAULT_LIGHT_STYLE);
+		return DEFAULT_LIGHT_STYLE;
+		// return styles.stream().filter(s -> Objects.equals(s.getName(), name)).findFirst().orElse(DEFAULT_LIGHT_STYLE);
 	}
 	
 	/**
