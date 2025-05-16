@@ -286,18 +286,6 @@ public class LicenseManager {
                 logger.error("读取product_uuid文件失败: " + e.getMessage());
             }
         }
-        
-        // 如果以上方法都失败，使用备用方法：生成基于系统信息的唯一标识符
-        try {
-            String systemInfo = System.getProperty("os.name") + 
-                              System.getProperty("os.version") + 
-                              System.getProperty("user.name") + 
-                              System.getProperty("user.home");
-            return java.util.UUID.nameUUIDFromBytes(systemInfo.getBytes()).toString();
-        } catch (Exception e) {
-            logger.error("生成备用UUID失败: " + e.getMessage());
-            return null;
-        }
     }
 
     private static File getLicenseFile() {
