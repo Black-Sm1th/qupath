@@ -302,7 +302,7 @@ class QuPathMainPaneManager {
 		overviewItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_OVERVIEW.selectedProperty());
 		
 		// 添加"网格"选项
-		CheckMenuItem gridItem = new CheckMenuItem("网格\t\t\tShift+G");
+		CheckMenuItem gridItem = new CheckMenuItem("网格 \t\tShift+G");
 		gridItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_GRID.selectedProperty());
 		
 		// 添加"比例尺"选项
@@ -314,7 +314,7 @@ class QuPathMainPaneManager {
 		locationItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_LOCATION.selectedProperty());
 		
 		// 添加"标注名"选项
-		CheckMenuItem namesItem = new CheckMenuItem("标注名\t\t          N");
+		CheckMenuItem namesItem = new CheckMenuItem("标注名\t\t            N");
 		namesItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_NAMES.selectedProperty());
 		
 		// 添加"导航栏"选项 - 使用CommonActions中的SHOW_ANALYSIS_PANE
