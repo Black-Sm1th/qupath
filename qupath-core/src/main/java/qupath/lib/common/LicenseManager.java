@@ -286,6 +286,7 @@ public class LicenseManager {
                 logger.error("读取product_uuid文件失败: " + e.getMessage());
             }
         }
+        return null;
     }
 
     private static File getLicenseFile() {
