@@ -283,6 +283,10 @@
     -fx-cursor: hand;
 }
 
+.qupath-icon {
+    -fx-text-overrun: clip;
+}
+
 .qupath-tool-button:hover {
     -fx-background-color: rgba(0, 0, 0, 0.05);
 }
