@@ -257,33 +257,19 @@ public class LicenseManager {
             } catch (Exception e) {
                 logger.error("powershell获取UUID失败: " + e.getMessage());
             }
-        } else if (os.contains("linux")) {
-            // Linux系统：尝试方法1：使用dmidecode命令
+        } else if (os.contains("linux")) {           
+            // Linux系统：尝试方法：使用machine-id文件
             try {
-                Process process = Runtime.getRuntime().exec("sudo dmidecode -s system-uuid");
-                Scanner scanner = new Scanner(process.getInputStream());
-                String uuid = scanner.nextLine().trim();
-                scanner.close();
-                if (uuid != null && !uuid.isEmpty()) {
-                    logger.info("通过dmidecode获取到的机器UUID: " + uuid);
-                    return uuid;
-                }
-            } catch (Exception e) {
-                logger.error("dmidecode获取UUID失败: " + e.getMessage());
-            }
-
-            // Linux系统：尝试方法2：使用product_uuid文件
-            try {
-                File uuidFile = new File("/sys/class/dmi/id/product_uuid");
-                if (uuidFile.exists()) {
-                    String uuid = new String(Files.readAllBytes(uuidFile.toPath())).trim();
+                File machineIdFile = new File("/etc/machine-id");
+                if (machineIdFile.exists()) {
+                    String uuid = new String(Files.readAllBytes(machineIdFile.toPath())).trim();
                     if (uuid != null && !uuid.isEmpty()) {
-                        logger.info("通过product_uuid文件获取到的机器UUID: " + uuid);
+                        logger.info("通过/etc/machine-id文件获取到的机器UUID: " + uuid);
                         return uuid;
                     }
                 }
             } catch (Exception e) {
-                logger.error("读取product_uuid文件失败: " + e.getMessage());
+                logger.error("读取/etc/machine-id文件失败: " + e.getMessage());
             }
         }
         return null;
