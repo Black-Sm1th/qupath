@@ -158,15 +158,30 @@ public class LicenseManager {
 
                 // 验证通过，复制许可证文件到当前目录
                 Path targetPath = Paths.get(LICENSE_FILE_NAME);
-                
+
                 // 如果目标文件已存在，先删除
                 if (Files.exists(targetPath)) {
+                    File existingFile = targetPath.toFile();
+                    // 如果文件为只读，先取消只读属性
+                    if (existingFile.exists() && !existingFile.canWrite()) {
+                        existingFile.setWritable(true);
+                        // 如果是Windows系统，也取消隐藏属性
+                        String os = System.getProperty("os.name").toLowerCase();
+                        if (os.contains("windows")) {
+                            try {
+                                Process process = Runtime.getRuntime().exec("attrib -h " + targetPath.toString());
+                                process.waitFor();
+                            } catch (Exception e) {
+                                logger.warn("取消文件隐藏属性失败: " + e.getMessage());
+                            }
+                        }
+                    }
                     Files.delete(targetPath);
                 }
                 
                 // 复制文件
                 Files.copy(selectedFile.toPath(), targetPath);
-                
+
                 // 设置文件权限
                 File targetFile = targetPath.toFile();
                 String os = System.getProperty("os.name").toLowerCase();
