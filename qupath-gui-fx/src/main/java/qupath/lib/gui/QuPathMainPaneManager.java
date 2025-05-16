@@ -296,13 +296,17 @@ class QuPathMainPaneManager {
 		
 		// 为眼睛按钮添加弹出菜单
 		ContextMenu displayMenu = new ContextMenu();
-		
+		String os = System.getProperty("os.name").toLowerCase();
 		// 添加"概览图"选项
 		CheckMenuItem overviewItem = new CheckMenuItem("概览图");
 		overviewItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_OVERVIEW.selectedProperty());
-		
 		// 添加"网格"选项
-		CheckMenuItem gridItem = new CheckMenuItem("网格 \t\tShift+G");
+		CheckMenuItem gridItem = new CheckMenuItem();
+		if(os.contains("windows")){
+			gridItem.setText("网格\t\t\tShift+G");
+		}else{
+			gridItem.setText("网格 \t\tShift+G");
+		}
 		gridItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_GRID.selectedProperty());
 		
 		// 添加"比例尺"选项
@@ -314,7 +318,12 @@ class QuPathMainPaneManager {
 		locationItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_LOCATION.selectedProperty());
 		
 		// 添加"标注名"选项
-		CheckMenuItem namesItem = new CheckMenuItem("标注名\t\t            N");
+		CheckMenuItem namesItem = new CheckMenuItem();
+		if(os.contains("windows")){
+			namesItem.setText("标注名\t\t          N");
+		}else{
+			namesItem.setText("标注名\t\t            N");
+		}
 		namesItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_NAMES.selectedProperty());
 		
 		// 添加"导航栏"选项 - 使用CommonActions中的SHOW_ANALYSIS_PANE
