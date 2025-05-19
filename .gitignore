@@ -45,3 +45,6 @@ hs_err*.log
 *thumbs.db
 bin/
 .kotlin
+qupath-gui-fx/src/main/resources/config.properties
+QuPath_license.lic
+untranslated_keywords.txt
