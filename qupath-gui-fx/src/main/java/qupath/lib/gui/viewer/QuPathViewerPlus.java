@@ -30,7 +30,6 @@ import java.awt.image.BufferedImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.scene.paint.Color;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -40,6 +39,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import qupath.lib.gui.images.stores.DefaultImageRegionStore;
 import qupath.lib.gui.prefs.PathPrefs;
@@ -113,6 +113,9 @@ public class QuPathViewerPlus extends QuPathViewer {
 				return temp == null ? null : "-fx-font-size: 12px;";
 		}, PathPrefs.locationFontSizeProperty());
 		labelLocation.styleProperty().bind(fontBinding);
+		if(System.getProperty("os.name").contains("Linux")) {
+			labelLocation.setLineSpacing(-3);
+		}
 		panelLocation.setCenter(labelLocation);
 		basePane.getChildren().add(panelLocation);
 		
