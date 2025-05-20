@@ -88,9 +88,9 @@ public class QuPathApp extends Application {
 		
 		if (!params.requestQuietLaunch()) {
 
-			if (PathPrefs.showStartupMessageProperty().get()) {
-				showWelcomeMessage(qupath);
-			}
+			// if (PathPrefs.showStartupMessageProperty().get()) {
+			// 	showWelcomeMessage(qupath);
+			// }
 
 			if (promptForExtensions.get() && QuPathGUI.getExtensionCatalogManager().getCatalogManagedInstalledJars().isEmpty()) {
 				promptToOpenExtensionManager(qupath);
