@@ -17,34 +17,16 @@ import javafx.application.Platform;
 
 public class LLMClient {
     private static final Logger logger = LoggerFactory.getLogger(LLMClient.class);
-    private String API_URL = "";
+    private static final String API_URL = "http://localhost:10000/process";
     private final ExecutorService executor = Executors.newCachedThreadPool();
-    private final String apiKey;
-    private final LLMType llmType;
-    public enum LLMType {
-        PATHOLOGY,
-        DEEP_SEEK
-    }
-    public LLMClient(String apiKey, LLMType llmType) {
-        this.apiKey = apiKey;
-        this.llmType = llmType;
-        switch (llmType) {
-            case PATHOLOGY:
-                API_URL = "http://111.6.178.34:25423/chat";
-                break;
-            case DEEP_SEEK:
-                API_URL = "https://api.deepseek.com/v1/chat/completions";
-                break;
-            default:
-                API_URL = "http://111.6.178.34:25423/chat";
-                break;
-        }
+
+    public LLMClient() {
     }
 
-    public void getCompletionAsync(String prompt, Consumer<String> onSuccess, Consumer<Exception> onError) {
+    public void getCompletionAsync(String question, String image, Consumer<String> onSuccess, Consumer<Exception> onError) {
         executor.execute(() -> {
             try {
-                String result = sendRequest(prompt);
+                String result = sendRequest(question, image);
                 Platform.runLater(() -> onSuccess.accept(result));
             } catch (Exception e) {
                 Platform.runLater(() -> onError.accept(e));
@@ -52,84 +34,34 @@ public class LLMClient {
         });
     }
 
-    public void getStreamingCompletionAsync(String prompt, Consumer<String> onChunk, Consumer<Exception> onError) {
-        executor.execute(() -> {
-            try {
-                streamRequest(prompt, onChunk);
-            } catch (Exception e) {
-                Platform.runLater(() -> onError.accept(e));
-            }
-        });
-    }
-
-    private void streamRequest(String prompt, Consumer<String> onChunk) throws IOException {
+    private String sendRequest(String question, String image) throws IOException {
         HttpURLConnection conn = createConnection();
-        writeRequestBody(conn, createStreamingRequestJson(prompt));
+        writeRequestBody(conn, createRequestJson(question, image));
         validateResponse(conn);
-
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("data: ")) {
-                    String data = line.substring(6);
-                    if (data.equals("[DONE]")) {
-                        break;
-                    }
-                    String content = parseContent(data);
-                    if (content != null && !content.isEmpty()) {
-                        Platform.runLater(() -> onChunk.accept(content));
-                    }
-                }
-            }
-        }
-    }
-
-    private String sendRequest(String prompt) throws IOException {
-        HttpURLConnection conn = createConnection();
-        writeRequestBody(conn, createRequestJson(prompt));
-        validateResponse(conn);
-        return parseContent(readResponse(conn));
+        return readResponse(conn);
     }
 
     private HttpURLConnection createConnection() throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(API_URL).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        if (llmType == LLMType.DEEP_SEEK) {
-            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
-        } else {
-            conn.setRequestProperty("X-API-Key", apiKey);
-        }
         conn.setDoOutput(true);
         return conn;
     }
 
     private void writeRequestBody(HttpURLConnection conn, String json) throws IOException {
-        logger.info("Sending {} request to URL: {}", llmType, API_URL);
+        logger.info("Sending request to URL: {}", API_URL);
+        logger.info("Request body: {}", json);
         try (OutputStream os = conn.getOutputStream()) {
             os.write(json.getBytes(StandardCharsets.UTF_8));
         }
     }
 
-    private String createRequestJson(String prompt) {
-        if (llmType == LLMType.DEEP_SEEK) {
-            return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
-                    escapeJson(prompt));
-        } else {
-            return String.format("{\"prompt\":\"%s\",\"temperature\":0.6}",
-                    escapeJson(prompt));
-        }
-    }
-
-    private String createStreamingRequestJson(String prompt) {
-        if (llmType == LLMType.DEEP_SEEK) {
-            return String.format("{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}],\"stream\":true}",
-                    escapeJson(prompt));
-        } else {
-            return String.format("{\"prompt\":\"%s\",\"temperature\":0.6,\"stream\":true}",
-                    escapeJson(prompt));
-        }
+    private String createRequestJson(String question, String image) {
+        String json = String.format("{\"question\":\"%s\",\"image\":\"%s\"}",
+                escapeJson(question),
+                escapeJson(image));
+        return json;
     }
 
     private String escapeJson(String input) {
@@ -157,27 +89,6 @@ public class LLMClient {
             }
         }
         return response.toString();
-    }
-
-    private String parseContent(String json) {
-        int responseStart;
-        int responseEnd;
-        if (llmType == LLMType.DEEP_SEEK) {
-            responseStart = json.indexOf("\"content\":\"") + 11;
-            responseEnd = json.indexOf("\"", responseStart);
-        } else {
-            responseStart = json.indexOf("\"response\":\"") + 12;
-            responseEnd = json.indexOf("\"", responseStart);
-        }
-        return unescapeJson(json.substring(responseStart, responseEnd));
-    }
-
-    private String unescapeJson(String input) {
-        return input.replace("\\\"", "\"")
-                .replace("\\n", "\n")
-                .replace("\\r", "\r")
-                .replace("\\t", "\t")
-                .replace("\\\\", "\\");
     }
 
     @FunctionalInterface

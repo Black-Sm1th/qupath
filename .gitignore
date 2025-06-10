@@ -1,6 +1,3 @@
-# Configuration files
-qupath-gui-fx/src/main/resources/config.properties
-
 # IDE files
 .idea/
 *.iml

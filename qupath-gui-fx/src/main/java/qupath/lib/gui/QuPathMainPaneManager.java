@@ -33,6 +33,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import qupath.lib.images.servers.ImageServer;
+import qupath.lib.regions.RegionRequest;
+import qupath.lib.images.servers.TransformedServerBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +108,6 @@ class QuPathMainPaneManager {
 	private ToggleGroup navToggleGroup;
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
 	private LLMClient client;
-	private LLMClient.LLMType llmtype = LLMClient.LLMType.PATHOLOGY;
 	
 	// 添加自定义标注面板
 	private CustomAnnotationPane customAnnotationPane;
@@ -125,35 +132,8 @@ class QuPathMainPaneManager {
 		// Create the main pane
 		pane = new StackPane();
 		
-		// Load API key from config file
-		Properties prop = new Properties();
-		try (InputStream input = getClass().getResourceAsStream("/config.properties")) {
-			if (input == null) {
-				logger.error("Unable to find config.properties");
-				return;
-			}
-			prop.load(input);
-			String apiKey;
-			switch (llmtype) {
-				case PATHOLOGY:
-					apiKey = prop.getProperty("llm.pathology.api.key");
-					break;
-				case DEEP_SEEK:
-					apiKey = prop.getProperty("llm.deepseek.api.key");
-					break;
-				default:
-					apiKey = prop.getProperty("llm.pathology.api.key");
-					break;
-			}
-			if (apiKey == null || apiKey.isEmpty()) {
-				logger.error("API key not found in config.properties");
-				return;
-			}
-			client = new LLMClient(apiKey, llmtype);
-		} catch (IOException ex) {
-			logger.error("Error loading config.properties", ex);
-			return;
-		}
+		// 初始化 LLMClient
+		client = new LLMClient();
 		
 		// Get viewer pane
 		mainViewerPane = qupath.getViewerManager().getRegion();
@@ -431,30 +411,58 @@ class QuPathMainPaneManager {
 		sendBtn.getStyleClass().add("toolbar-message-button");
 
 		sendBtn.setOnMouseClicked(value -> {
-			client.getCompletionAsync(input.getText(), 
-				response -> {
-					// 更新UI
-					Platform.runLater(() -> logger.info(response));
-				},
-				error -> {
-					Platform.runLater(() -> logger.error(error.getMessage()));
+			// 获取当前图片真实路径
+			String currentImage = "";
+			if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+				try {
+					ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+					final String tempImagePath = "@" + convertImageToTempFile(server);
+					client.getCompletionAsync(input.getText(), tempImagePath,
+						response -> {
+							// 更新UI
+							Platform.runLater(() -> logger.info(response));
+							// 删除临时文件
+							deleteTempFile(tempImagePath);
+						},
+						error -> {
+							Platform.runLater(() -> logger.error(error.getMessage()));
+							// 发生错误时也要删除临时文件
+							deleteTempFile(tempImagePath);
+						}
+					);
+				} catch (Exception e) {
+					logger.error("获取图片路径失败", e);
 				}
-			);
+			}
 			input.setText("");
 		});
 
 		// 添加回车键事件监听
 		input.setOnKeyPressed(e -> {
 			if (e.getCode() == KeyCode.ENTER) {
-				client.getStreamingCompletionAsync(input.getText(), 
-					response -> {
-						// 更新UI
-						Platform.runLater(() -> logger.info(response));
-					},
-					error -> {
-						Platform.runLater(() -> logger.error(error.getMessage()));
+				// 获取当前图片真实路径
+				String currentImage = "";
+				if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+					try {
+						ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+						final String tempImagePath = "@" + convertImageToTempFile(server);
+						client.getCompletionAsync(input.getText(), tempImagePath,
+							response -> {
+								// 更新UI
+								Platform.runLater(() -> logger.info(response));
+								// 删除临时文件
+								deleteTempFile(tempImagePath);
+							},
+							error -> {
+								Platform.runLater(() -> logger.error(error.getMessage()));
+								// 发生错误时也要删除临时文件
+								deleteTempFile(tempImagePath);
+							}
+						);
+					} catch (Exception ex) {
+						logger.error("获取图片路径失败", ex);
 					}
-				);
+				}
 				input.setText("");
 				e.consume();
 			}
@@ -1027,6 +1035,36 @@ class QuPathMainPaneManager {
 					}
 				}
 			);
+		}
+	}
+
+	private String convertImageToTempFile(ImageServer<BufferedImage> server) {
+		try {
+			// 创建临时文件
+			Path tempFile = Files.createTempFile("qupath_image_", ".jpg");
+			
+			// 获取图片的缩略图（降低分辨率以提高性能）
+			double downsample = Math.max(server.getWidth(), server.getHeight()) / 1024.0;
+			RegionRequest request = RegionRequest.createInstance(server.getPath(), downsample, 0, 0, server.getWidth(), server.getHeight());
+			BufferedImage img = server.readRegion(request);
+			
+			// 保存为jpg格式
+			ImageIO.write(img, "jpg", tempFile.toFile());
+			
+			return tempFile.toString();
+		} catch (Exception e) {
+			logger.error("转换图片失败", e);
+			return null;
+		}
+	}
+
+	private void deleteTempFile(String filePath) {
+		if (filePath != null) {
+			try {
+				Files.deleteIfExists(Path.of(filePath));
+			} catch (Exception e) {
+				logger.error("删除临时文件失败: " + filePath, e);
+			}
 		}
 	}
 }
