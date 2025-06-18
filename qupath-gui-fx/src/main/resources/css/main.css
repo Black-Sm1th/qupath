@@ -185,6 +185,10 @@
     -fx-padding: 4;
 }
 
+.toolbar-left-container .scale-container {
+    -fx-padding: 14 0 0 0;
+}
+
 /* 工具栏内层容器样式 */
 .toolbar-center-container {
     -fx-background-color: rgba(255, 255, 255, 0.5);
@@ -363,11 +367,7 @@
     -fx-font-size: 14px;
 }
 
-.toolbar-main-container .scale-container {
-    -fx-padding: 24 0 0 0;
-}
-
-.toolbar-main-container .toolbar-rightScale-container {
+.toolbar-main-container .toolbar-scale-container {
     -fx-background-color: rgba(255, 255, 255, 0.5);
     -fx-border-color: rgba(255, 255, 255, 0.8);
     -fx-background-radius: 100px;
@@ -377,7 +377,7 @@
 }
 
 /* 放大倍数控制按钮样式 */
-.toolbar-main-container .toolbar-rightScale-container .mag-button {
+.toolbar-main-container .toolbar-scale-container .mag-button {
     -fx-min-width: 24px;
     -fx-min-height: 24px;
     -fx-max-width: 24px;
@@ -388,19 +388,19 @@
     -fx-cursor: hand;
 }
 
-.toolbar-main-container .toolbar-rightScale-container .mag-button .qupath-icon {
+.toolbar-main-container .toolbar-scale-container .mag-button .qupath-icon {
     -fx-text-fill: rgba(0, 0, 0, 0.45);
 }
 
-.toolbar-main-container .toolbar-rightScale-container .mag-button:hover .qupath-icon {
+.toolbar-main-container .toolbar-scale-container .mag-button:hover .qupath-icon {
     -fx-text-fill: rgba(0, 0, 0, 0.3);
 }
 
-.toolbar-main-container .toolbar-rightScale-container .mag-button:pressed .qupath-icon {
+.toolbar-main-container .toolbar-scale-container .mag-button:pressed .qupath-icon {
     -fx-text-fill: rgba(0, 0, 0, 0.2);
 }
 
-.toolbar-main-container .toolbar-rightScale-container .mag-label {
+.toolbar-main-container .toolbar-scale-container .mag-label {
     -fx-font-size: 12px;
     -fx-text-fill: rgba(0, 0, 0, 0.85);
     -fx-alignment: center;

@@ -90,6 +90,7 @@ import qupath.lib.gui.viewer.QuPathViewerPlus;
 import qupath.lib.objects.DefaultPathObjectComparator;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathObjectTools;
+import qupath.lib.gui.panes.AnalysisToolsPane;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -108,7 +109,7 @@ class QuPathMainPaneManager {
 	private ToggleGroup navToggleGroup;
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
 	private LLMClient client;
-	
+	private AnalysisToolsPane analysisToolsPane;
 	// 添加自定义标注面板
 	private CustomAnnotationPane customAnnotationPane;
 	
@@ -265,15 +266,20 @@ class QuPathMainPaneManager {
 	private BorderPane createBottomBarContainer() {
 		// Create bottombar container
 		var bottomBarContainer = new BorderPane();
+		bottomBarContainer.setPrefHeight(56);
+		bottomBarContainer.setMinHeight(56);
+		bottomBarContainer.setMaxHeight(56);
 		BorderPane.setMargin(bottomBarContainer,new Insets(0,16,16,16));
-		bottomBarContainer.getStyleClass().add("toolbar-main-container");
 		
+		HBox leftBottomContainer = new HBox();
+		leftBottomContainer.getStyleClass().add("toolbar-main-container");
+		leftBottomContainer.setSpacing(4);
+		bottomBarContainer.setLeft(leftBottomContainer);
 		// Create button	
 		var eyeBtn = createNormalButton("eye", "显示/隐藏");
 		var gpsBtn = createNormalButton("gps", "定位");
 		eyeBtn.getStyleClass().add("qupath-tool-button");
 		gpsBtn.getStyleClass().add("qupath-tool-button");
-		
 		// 为眼睛按钮添加弹出菜单
 		ContextMenu displayMenu = new ContextMenu();
 		String os = System.getProperty("os.name").toLowerCase();
@@ -288,15 +294,12 @@ class QuPathMainPaneManager {
 			gridItem.setText("网格 \t\tShift+G");
 		}
 		gridItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_GRID.selectedProperty());
-		
 		// 添加"比例尺"选项
 		CheckMenuItem scalebarItem = new CheckMenuItem("比例尺");
 		scalebarItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_SCALEBAR.selectedProperty());
-		
 		// 添加"坐标"选项
 		CheckMenuItem locationItem = new CheckMenuItem("坐标");
 		locationItem.selectedProperty().bindBidirectional(qupath.getViewerActions().SHOW_LOCATION.selectedProperty());
-		
 		// 添加"标注名"选项
 		CheckMenuItem namesItem = new CheckMenuItem();
 		if(os.contains("windows")){
@@ -305,65 +308,33 @@ class QuPathMainPaneManager {
 			namesItem.setText("标注名\t\t            N");
 		}
 		namesItem.selectedProperty().bindBidirectional(qupath.getOverlayActions().SHOW_NAMES.selectedProperty());
-		
 		// 添加"导航栏"选项 - 使用CommonActions中的SHOW_ANALYSIS_PANE
 		CheckMenuItem navBarItem = new CheckMenuItem("导航栏\t\tShift+A");
 		navBarItem.selectedProperty().bindBidirectional(qupath.getCommonActions().SHOW_ANALYSIS_PANE.selectedProperty());
-		
-		// 添加"AI助手"选项 - 控制底部输入框的显示
-		BooleanProperty showAIHelper = new SimpleBooleanProperty(true);
-		CheckMenuItem aiHelperItem = new CheckMenuItem("AI助手");
-		aiHelperItem.setSelected(true);
-		aiHelperItem.selectedProperty().addListener((v, o, n) -> {
-			// 获取底部容器中的输入容器
-			var bottomContainer = (BorderPane)pane.getChildren().stream()
-					.filter(node -> node instanceof BorderPane)
-					.map(node -> ((BorderPane)node).getBottom())
-					.filter(node -> node instanceof BorderPane)
-					.findFirst().orElse(null);
-					
-			if (bottomContainer != null) {
-				var inputContainer = bottomContainer.getCenter();
-				if (inputContainer != null) {
-					inputContainer.setVisible(n);
-					inputContainer.setManaged(n);
-				}
-			}
-		});
-		
 		// 将所有选项添加到菜单中
 		displayMenu.getItems().addAll(
 			navBarItem,
-			aiHelperItem,
 			overviewItem,
 			gridItem,
 			scalebarItem,
 			locationItem,
 			namesItem
 		);
-		
 		// 为眼睛按钮添加点击事件
 		eyeBtn.setOnMouseClicked(e -> {
 			displayMenu.show(eyeBtn, javafx.geometry.Side.BOTTOM, 0, 0);
 		});
-		
 		// Create left&right button container
-		var leftButtonContainer = new VBox();
-		leftButtonContainer.getStyleClass().add("toolbar-left-container");
-		leftButtonContainer.getChildren().add(eyeBtn);
-		
-		var rightButtonContainer = new VBox();
-		rightButtonContainer.getStyleClass().add("toolbar-left-container");
-		rightButtonContainer.getChildren().add(gpsBtn);
-
-		var rightScaleContainer = new BorderPane();
-		rightScaleContainer.getStyleClass().add("toolbar-rightScale-container");
-
+		var eyeButtonContainer = new VBox();
+		eyeButtonContainer.getStyleClass().add("toolbar-left-container");
+		eyeButtonContainer.getChildren().add(eyeBtn);
+		var gpsButtonContainer = new VBox();
+		gpsButtonContainer.getStyleClass().add("toolbar-left-container");
+		gpsButtonContainer.getChildren().add(gpsBtn);
 		// 创建放大倍数控制容器
 		var magContainer = new HBox();
 		magContainer.setSpacing(8);
 		magContainer.setAlignment(Pos.CENTER);
-		
 		// 创建减号按钮
 		var minusBtn = createNormalButton("minus", "减少");
 		minusBtn.getStyleClass().addAll("mag-button");
@@ -374,7 +345,6 @@ class QuPathMainPaneManager {
 				viewer.setDownsampleFactor(currentDownsample * 1.25);
 			}
 		});
-
 		var magLabel = new ViewerMagnificationLabel();
 		var viewerProperty = qupath.getViewerActions().getViewerManager().activeViewerProperty();
 		viewerProperty.addListener((v, o, n) -> magLabel.setViewer(n));
@@ -389,117 +359,101 @@ class QuPathMainPaneManager {
 				viewer.setDownsampleFactor(currentDownsample / 1.25);
 			}
 		});
-
 		magContainer.getChildren().addAll(minusBtn, magLabel, plusBtn);
-		rightScaleContainer.setCenter(magContainer);
+		var scaleContainer = new BorderPane();
+		scaleContainer.getStyleClass().add("toolbar-scale-container");
+		scaleContainer.setCenter(magContainer);
+		leftBottomContainer.getChildren().addAll(eyeButtonContainer, scaleContainer, gpsButtonContainer);
 		
-		// Create input container
-		var inputContainer = new HBox();
-		inputContainer.getStyleClass().add("toolbar-input-container");
 		
-		// Create input field
-		var input = new TextField();
-		input.getStyleClass().add("toolbar-input");
-		input.setPromptText("请输入您的问题");
-		
-		// Create left icon
-		var leftIcon = new Region();
-		leftIcon.getStyleClass().addAll("toolbar-input-icon", "left");
-		
-		// Create right icon
-		var sendBtn = createNormalButton("send", "发送");
-		sendBtn.getStyleClass().add("toolbar-message-button");
-
-		sendBtn.setOnMouseClicked(value -> {
-			// 获取当前图片真实路径
-			String currentImage = "";
-			if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
-				try {
-					ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
-					final String tempImagePath = "@" + convertImageToTempFile(server);
-					client.getCompletionAsync(input.getText(), tempImagePath,
-						response -> {
-							// 更新UI
-							Platform.runLater(() -> logger.info(response));
-							// 删除临时文件
-							deleteTempFile(tempImagePath);
-						},
-						error -> {
-							Platform.runLater(() -> logger.error(error.getMessage()));
-							// 发生错误时也要删除临时文件
-							deleteTempFile(tempImagePath);
-						}
-					);
-				} catch (Exception e) {
-					logger.error("获取图片路径失败", e);
-				}
-			}
-			input.setText("");
-		});
-
-		// 添加回车键事件监听
-		input.setOnKeyPressed(e -> {
-			if (e.getCode() == KeyCode.ENTER) {
-				// 获取当前图片真实路径
-				String currentImage = "";
-				if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
-					try {
-						ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
-						final String tempImagePath = "@" + convertImageToTempFile(server);
-						client.getCompletionAsync(input.getText(), tempImagePath,
-							response -> {
-								// 更新UI
-								Platform.runLater(() -> logger.info(response));
-								// 删除临时文件
-								deleteTempFile(tempImagePath);
-							},
-							error -> {
-								Platform.runLater(() -> logger.error(error.getMessage()));
-								// 发生错误时也要删除临时文件
-								deleteTempFile(tempImagePath);
-							}
-						);
-					} catch (Exception ex) {
-						logger.error("获取图片路径失败", ex);
-					}
-				}
-				input.setText("");
-				e.consume();
-			}
-		});
-
-		HBox.setHgrow(input, Priority.ALWAYS);
-		// Add components to input container in specific order
-		inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
-
+		// // Create input container
+		// var inputContainer = new HBox();
+		// inputContainer.getStyleClass().add("toolbar-input-container");
+		// // Create input field
+		// var input = new TextField();
+		// input.getStyleClass().add("toolbar-input");
+		// input.setPromptText("请输入您的问题");
+		// // Create left icon
+		// var leftIcon = new Region();
+		// leftIcon.getStyleClass().addAll("toolbar-input-icon", "left");
+		// // Create right icon
+		// var sendBtn = createNormalButton("send", "发送");
+		// sendBtn.getStyleClass().add("toolbar-message-button");
+		// sendBtn.setOnMouseClicked(value -> {
+		// 	// 获取当前图片真实路径
+		// 	String currentImage = "";
+		// 	if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+		// 		try {
+		// 			ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+		// 			final String tempImagePath = "@" + convertImageToTempFile(server);
+		// 			client.getCompletionAsync(input.getText(), tempImagePath,
+		// 				response -> {
+		// 					// 更新UI
+		// 					Platform.runLater(() -> logger.info(response));
+		// 					// 删除临时文件
+		// 					deleteTempFile(tempImagePath);
+		// 				},
+		// 				error -> {
+		// 					Platform.runLater(() -> logger.error(error.getMessage()));
+		// 					// 发生错误时也要删除临时文件
+		// 					deleteTempFile(tempImagePath);
+		// 				}
+		// 			);
+		// 		} catch (Exception e) {
+		// 			logger.error("获取图片路径失败", e);
+		// 		}
+		// 	}
+		// 	input.setText("");
+		// });
+		// // 添加回车键事件监听
+		// input.setOnKeyPressed(e -> {
+		// 	if (e.getCode() == KeyCode.ENTER) {
+		// 		// 获取当前图片真实路径
+		// 		String currentImage = "";
+		// 		if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+		// 			try {
+		// 				ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+		// 				final String tempImagePath = "@" + convertImageToTempFile(server);
+		// 				client.getCompletionAsync(input.getText(), tempImagePath,
+		// 					response -> {
+		// 						// 更新UI
+		// 						Platform.runLater(() -> logger.info(response));
+		// 						// 删除临时文件
+		// 						deleteTempFile(tempImagePath);
+		// 					},
+		// 					error -> {
+		// 						Platform.runLater(() -> logger.error(error.getMessage()));
+		// 						// 发生错误时也要删除临时文件
+		// 						deleteTempFile(tempImagePath);
+		// 					}
+		// 				);
+		// 			} catch (Exception ex) {
+		// 				logger.error("获取图片路径失败", ex);
+		// 			}
+		// 		}
+		// 		input.setText("");
+		// 		e.consume();
+		// 	}
+		// });
+		// HBox.setHgrow(input, Priority.ALWAYS);
+		// // Add components to input container in specific order
+		// inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
+		HBox rightBottomContainer = new HBox();
+		rightBottomContainer.getStyleClass().add("toolbar-left-container");
 		var leftContainer = new HBox();
-		leftContainer.setPrefWidth(400);
-		leftContainer.setMinWidth(400);
-		leftContainer.setPrefWidth(400);
-		leftContainer.getChildren().add(leftButtonContainer);
-
-		var rightContainer = new HBox();
-		rightContainer.setPrefWidth(400);
-		rightContainer.setMinWidth(400);
-		rightContainer.setPrefWidth(400);
-		rightContainer.setSpacing(4);
-		var spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-		rightContainer.getChildren().addAll(spacer,rightScaleContainer, rightButtonContainer);
 		// 获取viewer中的panelLocation和scalebarNode
 		var viewer = qupath.getViewerManager().getActiveViewer();
 		if (viewer instanceof QuPathViewerPlus) {
 			var viewerPlus = (QuPathViewerPlus)viewer;
 			var scalebarNode = viewerPlus.getScalebarNode();
 			scalebarNode.getStyleClass().add("scale-container");
-			HBox.setMargin(scalebarNode, new Insets(0,0,0,33));
+			HBox.setMargin(scalebarNode, new Insets(0,0,0,20));
 			var panelLocation = viewerPlus.getPanelLocation();
 			HBox.setMargin(panelLocation, new Insets(0,0,0,20));
 			leftContainer.getChildren().addAll(scalebarNode,panelLocation);
 		}
-		bottomBarContainer.setLeft(leftContainer);
-		bottomBarContainer.setCenter(inputContainer);
-		bottomBarContainer.setRight(rightContainer);
+		rightBottomContainer.getChildren().addAll(leftContainer);
+		bottomBarContainer.setRight(rightBottomContainer);
 		return bottomBarContainer;
 	}
 
@@ -579,6 +533,9 @@ class QuPathMainPaneManager {
 		this.customAnnotationPane = new CustomAnnotationPane(qupath);
 		var annotationPane = customAnnotationPane.getPane();
 		
+		this.analysisToolsPane = new AnalysisToolsPane(qupath);
+		var analysisPane = analysisToolsPane.getPane();
+
 		// 注册到CustomAnnotationPane的点击事件
 		this.customAnnotationPane.addCountLabelClickListener(new CustomAnnotationPane.CountLabelClickListener() {
 			@Override
@@ -640,16 +597,15 @@ class QuPathMainPaneManager {
 		}
 
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
-		// var analysisPane = analysisTabPane.getTabPane().getTabs().get(2).getContent();
 		// var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
 		
 		// Add all panes to container but make them invisible initially
-		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane/*,analysisPane, classifyPane*/);
+		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane,analysisPane/*, classifyPane*/);
 		projectPane.setVisible(true);
 		imagePane.setVisible(false);
 		annotationPane.setVisible(false);
 		workflowPane.setVisible(false);
-		// analysisPane.setVisible(false);
+		analysisPane.setVisible(false);
 		// classifyPane.setVisible(false);
 		// Add navigation buttons
 		var projectBtn = (ToggleButton)createNavButton("project", "项目");
@@ -657,7 +613,7 @@ class QuPathMainPaneManager {
 		var annotationBtn = (ToggleButton)createNavButton("annotation", "标注");
 		var workflowBtn = (ToggleButton)createNavButton("workflow", "工作流");
 		var analysisBtn = (ToggleButton)createNavButton("analysis", "分析");
-		analysisBtn.setDisable(true);
+		// analysisBtn.setDisable(true);
 		var classifyBtn = (ToggleButton)createNavButton("classify", "分类");
 		classifyBtn.setDisable(true);
 
@@ -672,7 +628,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			// analysisPane.setVisible(false);
+			analysisPane.setVisible(false);
 			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
@@ -687,7 +643,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(true);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			// analysisPane.setVisible(false);
+			analysisPane.setVisible(false);
 			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
@@ -702,7 +658,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(true);
 			workflowPane.setVisible(false);
-			// analysisPane.setVisible(false);
+			analysisPane.setVisible(false);
 			// classifyPane.setVisible(false);
 			// 清除所有标签选中效果
 			customAnnotationPane.clearAllCountLabelSelections();
@@ -715,7 +671,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(true);
-			// analysisPane.setVisible(false);
+			analysisPane.setVisible(false);
 			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
@@ -730,7 +686,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			// analysisPane.setVisible(true);
+			analysisPane.setVisible(true);
 			// classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
@@ -746,7 +702,7 @@ class QuPathMainPaneManager {
 			imagePane.setVisible(false);
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
-			// analysisPane.setVisible(false);
+			analysisPane.setVisible(false);
 			// classifyPane.setVisible(true);
 			// 隐藏扩展面板
 			showExtendContainer(false);
