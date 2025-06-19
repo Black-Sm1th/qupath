@@ -166,6 +166,7 @@ class QuPathMainPaneManager {
 			case "eye" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.EYE_BTN);
 			case "gps" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.GPS_BTN);
 			case "send" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.SEND_BTN);
+			case "ai" -> IconFactory.createNode(QuPathGUI.NAVBAR_ICON_SIZE, QuPathGUI.NAVBAR_ICON_SIZE, PathIcons.AI_BTN);
 			case "plus" -> IconFactory.createNode(24, 24, PathIcons.PLUS_BTN);
 			case "minus" -> IconFactory.createNode(24, 24, PathIcons.MINUS_BTN);
 			default -> null;
@@ -439,7 +440,9 @@ class QuPathMainPaneManager {
 		// // Add components to input container in specific order
 		// inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
 		HBox rightBottomContainer = new HBox();
-		rightBottomContainer.getStyleClass().add("toolbar-left-container");
+		rightBottomContainer.getStyleClass().add("toolbar-rightBottom-container");
+		rightBottomContainer.setAlignment(Pos.CENTER_LEFT);
+		rightBottomContainer.setPadding(new Insets(4,8,4,20));
 		var leftContainer = new HBox();
 		// 获取viewer中的panelLocation和scalebarNode
 		var viewer = qupath.getViewerManager().getActiveViewer();
@@ -447,12 +450,14 @@ class QuPathMainPaneManager {
 			var viewerPlus = (QuPathViewerPlus)viewer;
 			var scalebarNode = viewerPlus.getScalebarNode();
 			scalebarNode.getStyleClass().add("scale-container");
-			HBox.setMargin(scalebarNode, new Insets(0,0,0,20));
 			var panelLocation = viewerPlus.getPanelLocation();
-			HBox.setMargin(panelLocation, new Insets(0,0,0,20));
+			HBox.setMargin(panelLocation, new Insets(0,0,0,16));
 			leftContainer.getChildren().addAll(scalebarNode,panelLocation);
 		}
-		rightBottomContainer.getChildren().addAll(leftContainer);
+		Button aiBtn = new Button();
+		aiBtn.getStyleClass().add("ai-button");
+		HBox.setMargin(aiBtn, new Insets(0,0,0,12));
+		rightBottomContainer.getChildren().addAll(leftContainer,aiBtn);
 		bottomBarContainer.setRight(rightBottomContainer);
 		return bottomBarContainer;
 	}

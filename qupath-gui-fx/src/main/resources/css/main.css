@@ -185,8 +185,37 @@
     -fx-padding: 4;
 }
 
-.toolbar-left-container .scale-container {
+.toolbar-rightBottom-container {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-background-radius: 100px;
+    -fx-border-radius: 100px;
+}
+
+.toolbar-rightBottom-container .scale-container {
     -fx-padding: 14 0 0 0;
+}
+
+.toolbar-rightBottom-container .ai-button {
+    -fx-background-radius: 111px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-image: url("/images/openAI.png");
+}
+
+.toolbar-rightBottom-container .ai-button:hover {
+    -fx-background-image: url("/images/openAI-hover.png");
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
+}
+
+.toolbar-rightBottom-container .ai-button:pressed {
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
+    -fx-translate-y: 1px;
 }
 
 /* 工具栏内层容器样式 */
@@ -336,7 +365,7 @@
     -fx-background-image: url("/images/magic.png");
 }
 
-.toolbar-main-container .toolbar-input-container .toolbar-message-button {
+.toolbar-left-container .toolbar-message-button {
     -fx-background-radius: 111px;
     -fx-min-width: 40px;
     -fx-min-height: 40px;
@@ -346,18 +375,18 @@
     -fx-cursor: hand;
 }
 
-.toolbar-main-container .toolbar-input-container .toolbar-message-button:hover {
+.toolbar-left-container .toolbar-message-button:hover {
     -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #CCE7FF 8.47%, #47AAFF 97.78%);
     -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
 }
 
-.toolbar-main-container .toolbar-input-container .toolbar-message-button:pressed {
+.toolbar-left-container .toolbar-message-button:pressed {
     -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #A4D1FF 8.47%, #1F96FF 97.78%);
     -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
     -fx-translate-y: 1px;
 }
 
-.toolbar-main-container .toolbar-input-container .toolbar-message-button .qupath-icon {
+.toolbar-left-container .toolbar-message-button .qupath-icon {
     -fx-text-fill: white;
 }
 

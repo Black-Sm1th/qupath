@@ -357,6 +357,7 @@ public class IconFactory {
 									LOCK_BTN(IconSuppliers.icoMoon('\ue950')),
 									SET_SELECT_BTN(IconSuppliers.icoMoon('\ue951')),
 									AUTO_SET_BTN(IconSuppliers.icoMoon('\ue952')),
+									AI_BTN(IconSuppliers.icoMoon('\ue953')),
 									OVERVIEW(IconSuppliers.icoMoon('\ue911')),
 									
 									PIXEL_CLASSIFICATION(IconSuppliers.icoMoon('\ue92F')),
