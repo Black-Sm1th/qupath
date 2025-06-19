@@ -442,8 +442,10 @@ class QuPathMainPaneManager {
 		HBox rightBottomContainer = new HBox();
 		rightBottomContainer.getStyleClass().add("toolbar-rightBottom-container");
 		rightBottomContainer.setAlignment(Pos.CENTER_LEFT);
-		rightBottomContainer.setPadding(new Insets(4,8,4,20));
+		rightBottomContainer.setPadding(new Insets(4,8,4,8));
 		var leftContainer = new HBox();
+		leftContainer.setPadding(new Insets(0,12,0,12));
+		leftContainer.setSpacing(20);
 		// 获取viewer中的panelLocation和scalebarNode
 		var viewer = qupath.getViewerManager().getActiveViewer();
 		if (viewer instanceof QuPathViewerPlus) {
@@ -451,15 +453,56 @@ class QuPathMainPaneManager {
 			var scalebarNode = viewerPlus.getScalebarNode();
 			scalebarNode.getStyleClass().add("scale-container");
 			var panelLocation = viewerPlus.getPanelLocation();
-			HBox.setMargin(panelLocation, new Insets(0,0,0,16));
 			leftContainer.getChildren().addAll(scalebarNode,panelLocation);
+			// 添加对坐标和比例尺显示状态的监听器
+			qupath.getViewerActions().SHOW_LOCATION.selectedProperty().addListener((obs, oldVal, newVal) -> {
+				// 当坐标显示状态改变时调整布局
+				Platform.runLater(() -> adjustLeftContainerSize(leftContainer, rightBottomContainer));
+			});
+			
+			qupath.getViewerActions().SHOW_SCALEBAR.selectedProperty().addListener((obs, oldVal, newVal) -> {
+				// 当比例尺显示状态改变时调整布局
+				Platform.runLater(() -> adjustLeftContainerSize(leftContainer, rightBottomContainer));
+			});
+			// 初始调整一次布局
+			adjustLeftContainerSize(leftContainer, rightBottomContainer);
 		}
 		Button aiBtn = new Button();
 		aiBtn.getStyleClass().add("ai-button");
-		HBox.setMargin(aiBtn, new Insets(0,0,0,12));
+		aiBtn.setTooltip(new Tooltip("打开AI助手"));
 		rightBottomContainer.getChildren().addAll(leftContainer,aiBtn);
 		bottomBarContainer.setRight(rightBottomContainer);
 		return bottomBarContainer;
+	}
+	
+	/**
+	 * 根据坐标和比例尺的显示状态调整leftContainer的大小
+	 * @param leftContainer 包含坐标和比例尺的容器
+	 */
+	private void adjustLeftContainerSize(HBox leftContainer, HBox rightBottomContainer) {
+		if (leftContainer == null || leftContainer.getChildren().size() < 2)
+			return;
+			
+		Node scalebarNode = leftContainer.getChildren().get(0);
+		Node panelLocation = leftContainer.getChildren().get(1);
+		
+		// 根据显示状态设置visibility和managed
+		boolean showLocation = qupath.getViewerActions().SHOW_LOCATION.isSelected();
+		boolean showScalebar = qupath.getViewerActions().SHOW_SCALEBAR.isSelected();
+		
+		panelLocation.setVisible(showLocation);
+		panelLocation.setManaged(showLocation);
+		scalebarNode.setVisible(showScalebar);
+		scalebarNode.setManaged(showScalebar);
+		
+		// 设置leftContainer的首选宽度
+		// 如果两个都不显示，设置最小宽度
+		if (!showLocation && !showScalebar) {
+			leftContainer.setPrefWidth(0);
+		} else {
+			// 否则让布局自动计算宽度
+			leftContainer.setPrefWidth(Region.USE_COMPUTED_SIZE);
+		}
 	}
 
 	private MenuItem copyMenuItem(MenuItem item) {
