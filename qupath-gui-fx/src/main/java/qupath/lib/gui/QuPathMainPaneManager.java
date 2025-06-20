@@ -69,6 +69,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -91,6 +92,8 @@ import qupath.lib.objects.DefaultPathObjectComparator;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.PathObjectTools;
 import qupath.lib.gui.panes.AnalysisToolsPane;
+import javafx.scene.image.ImageView;
+import javafx.scene.text.Text;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -251,58 +254,70 @@ class QuPathMainPaneManager {
 		var sendBtn = createNormalButton("send", "发送");
 		sendBtn.getStyleClass().add("toolbar-message-button");
 		sendBtn.setOnMouseClicked(value -> {
-			// 获取当前图片真实路径
-			String currentImage = "";
-			if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+			String userMessage = input.getText().trim();
+			if (userMessage.isEmpty()) return;
+			
+			// 发送用户消息
+			BufferedImage image = null;
+			if (qupath.getImageData() != null && qupath.getImageData().getServer() != null && selected.get()) {
 				try {
 					ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+					// 获取图片缩略图用于显示
+					double downsample = Math.max(server.getWidth(), server.getHeight()) / 240.0;
+					RegionRequest request = RegionRequest.createInstance(server.getPath(), downsample, 0, 0, server.getWidth(), server.getHeight());
+					image = server.readRegion(request);
+					
+					// 添加用户消息到聊天界面
+					addUserMessage(userMessage, image);
+					
+					// 为AI调用创建临时文件
 					final String tempImagePath = "@" + convertImageToTempFile(server);
-					client.getCompletionAsync(input.getText(), tempImagePath,
+					client.getCompletionAsync(userMessage, tempImagePath,
 						response -> {
-							// 更新UI
-							Platform.runLater(() -> logger.info(response));
+							// 添加AI响应到聊天界面
+							addAIResponse(response);
 							// 删除临时文件
 							deleteTempFile(tempImagePath);
 						},
 						error -> {
-							Platform.runLater(() -> logger.error(error.getMessage()));
+							// 显示错误消息
+							Platform.runLater(() -> {
+								addAIResponse("抱歉，处理您的请求时出现错误: " + error.getMessage());
+								logger.error(error.getMessage());
+							});
 							// 发生错误时也要删除临时文件
 							deleteTempFile(tempImagePath);
 						}
 					);
 				} catch (Exception e) {
 					logger.error("获取图片路径失败", e);
+					addUserMessage(userMessage, null);
+					addAIResponse("抱歉，处理图片时出现错误，无法完成您的请求。");
 				}
+			} else {
+				// 如果没有选择图片或没有图片，只处理文本
+				addUserMessage(userMessage, null);
+				client.getCompletionAsync(userMessage, null,
+					response -> addAIResponse(response),
+					error -> Platform.runLater(() -> {
+						addAIResponse("抱歉，处理您的请求时出现错误: " + error.getMessage());
+						logger.error(error.getMessage());
+					})
+				);
 			}
+			
 			input.setText("");
 		});
+		
 		// 添加回车键事件监听
 		input.setOnKeyPressed(e -> {
-			if (e.getCode() == KeyCode.ENTER) {
-				// 获取当前图片真实路径
-				String currentImage = "";
-				if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
-					try {
-						ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
-						final String tempImagePath = "@" + convertImageToTempFile(server);
-						client.getCompletionAsync(input.getText(), tempImagePath,
-							response -> {
-								// 更新UI
-								Platform.runLater(() -> logger.info(response));
-								// 删除临时文件
-								deleteTempFile(tempImagePath);
-							},
-							error -> {
-								Platform.runLater(() -> logger.error(error.getMessage()));
-								// 发生错误时也要删除临时文件
-								deleteTempFile(tempImagePath);
-							}
-						);
-					} catch (Exception ex) {
-						logger.error("获取图片路径失败", ex);
-					}
-				}
-				input.setText("");
+			if (e.getCode() == KeyCode.ENTER && !input.getText().trim().isEmpty()) {
+				// 触发发送按钮的点击事件
+				sendBtn.fireEvent(
+					new javafx.scene.input.MouseEvent(javafx.scene.input.MouseEvent.MOUSE_CLICKED, 
+							0, 0, 0, 0, javafx.scene.input.MouseButton.PRIMARY, 1, 
+							false, false, false, false, true, false, false, true, true, true, null)
+				);
 				e.consume();
 			}
 		});
@@ -432,7 +447,7 @@ class QuPathMainPaneManager {
 		bottomBarContainer.setLeft(leftBottomContainer);
 		// Create button	
 		var eyeBtn = createNormalButton("eye", "显示/隐藏");
-		var gpsBtn = createNormalButton("gps", "定位");
+		var gpsBtn = createNormalButton("gps", "适应窗口");
 		eyeBtn.getStyleClass().add("qupath-tool-button");
 		gpsBtn.getStyleClass().add("qupath-tool-button");
 		// 为眼睛按钮添加弹出菜单
@@ -478,6 +493,13 @@ class QuPathMainPaneManager {
 		// 为眼睛按钮添加点击事件
 		eyeBtn.setOnMouseClicked(e -> {
 			displayMenu.show(eyeBtn, javafx.geometry.Side.BOTTOM, 0, 0);
+		});
+		// 为gps按钮添加点击事件，实现ZOOM_TO_FIT功能
+		gpsBtn.setOnMouseClicked(e -> {
+			var viewer = qupath.getViewerManager().getActiveViewer();
+			if (viewer != null) {
+				viewer.zoomToFit();
+			}
 		});
 		// Create left&right button container
 		var eyeButtonContainer = new VBox();
@@ -1168,5 +1190,101 @@ class QuPathMainPaneManager {
 				logger.error("删除临时文件失败: " + filePath, e);
 			}
 		}
+	}
+
+	// 添加处理用户输入和AI响应的方法
+	private void addUserMessage(String message, BufferedImage image) {
+		Platform.runLater(() -> {
+			// 添加日期
+			HBox dateBox = new HBox();
+			dateBox.setAlignment(Pos.CENTER);
+			dateBox.setPrefWidth(Double.MAX_VALUE);
+			
+			Label dateLabel = new Label(getCurrentDateTime());
+			dateLabel.getStyleClass().add("chat-date");
+			dateBox.getChildren().add(dateLabel);
+			
+			// 添加用户消息容器
+			HBox userContainer = new HBox();
+			userContainer.getStyleClass().add("chat-user-container");
+			VBox messageColumn = new VBox();
+			messageColumn.setAlignment(Pos.CENTER_RIGHT);
+			
+			// 如果有图片并且选中了图片按钮，添加图片
+			if (image != null) {
+				ImageView imageView = createImageView(image);
+				HBox imageContainer = new HBox();
+				imageContainer.getStyleClass().add("chat-image-container");
+				imageContainer.setAlignment(Pos.CENTER_RIGHT);
+				imageContainer.getChildren().add(imageView);
+				messageColumn.getChildren().add(imageContainer);
+			}
+			
+			// 添加文本气泡
+			HBox bubbleBox = new HBox();
+			bubbleBox.setAlignment(Pos.CENTER_RIGHT);
+			VBox bubble = new VBox();
+			bubble.getStyleClass().add("chat-bubble-user");
+			
+			Text text = new Text(message);
+			text.getStyleClass().add("chat-bubble-user-text");
+			text.setWrappingWidth(250);
+			
+			bubble.getChildren().add(text);
+			bubbleBox.getChildren().add(bubble);
+			
+			messageColumn.getChildren().add(bubbleBox);
+			userContainer.getChildren().add(messageColumn);
+			
+			// 添加到聊天内容
+			aiContent.getChildren().addAll(dateBox, userContainer);
+		});
+	}
+	
+	private void addAIResponse(String response) {
+		Platform.runLater(() -> {
+			// 添加AI响应容器
+			HBox aiResponseContainer = new HBox();
+			aiResponseContainer.getStyleClass().add("chat-ai-container");
+			
+			// 添加AI文本气泡
+			VBox bubble = new VBox();
+			bubble.getStyleClass().add("chat-bubble-ai");
+			
+			Text text = new Text(response);
+			text.getStyleClass().add("chat-bubble-ai-text");
+			text.setWrappingWidth(250);
+			
+			bubble.getChildren().add(text);
+			aiResponseContainer.getChildren().add(bubble);
+			
+			// 添加到聊天内容
+			aiContent.getChildren().add(aiResponseContainer);
+			
+			// 添加免责声明
+			HBox disclaimerBox = new HBox();
+			disclaimerBox.setAlignment(Pos.CENTER);
+			disclaimerBox.setPrefWidth(Double.MAX_VALUE);
+			
+			Label disclaimerLabel = new Label("内容由AI生成，仅供参考");
+			disclaimerLabel.getStyleClass().add("chat-disclaimer");
+			disclaimerBox.getChildren().add(disclaimerLabel);
+			
+			aiContent.getChildren().add(disclaimerBox);
+		});
+	}
+	
+	private ImageView createImageView(BufferedImage image) {
+		// 创建ImageView并设置样式
+		ImageView imageView = new ImageView(SwingFXUtils.toFXImage(image, null));
+		imageView.setPreserveRatio(true);
+		imageView.setFitWidth(120);
+		imageView.setFitHeight(120);
+		imageView.getStyleClass().add("chat-image");
+		return imageView;
+	}
+	
+	private String getCurrentDateTime() {
+		return java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 	}
 }

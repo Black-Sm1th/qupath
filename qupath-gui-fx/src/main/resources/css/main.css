@@ -1020,3 +1020,66 @@
     -fx-text-fill: rgba(22, 146, 255, 1);
 }
 
+/* 聊天气泡和日期样式 */
+.chat-date {
+    -fx-font-size: 12px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-padding: 8 0 8 0;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.chat-bubble-user {
+    -fx-background-color: rgba(22, 146, 255, 1);
+    -fx-background-radius: 12px;
+    -fx-padding: 12px;
+    -fx-max-width: 320px;
+    -fx-wrap-text: true;
+}
+
+.chat-bubble-user-text {
+    -fx-fill: white;
+    -fx-font-size: 14px;
+}
+
+.chat-bubble-ai {
+    -fx-background-color: rgba(233, 233, 233, 1);
+    -fx-background-radius: 12px;
+    -fx-padding: 12px;
+    -fx-max-width: 320px;
+    -fx-wrap-text: true;
+}
+
+.chat-bubble-ai-text {
+    -fx-fill: rgba(0, 0, 0, 0.85);
+    -fx-font-size: 14px;
+}
+
+.chat-image-container {
+    -fx-padding: 8 0 8 0;
+    -fx-max-width: 120px;
+    -fx-max-height: 120px;
+}
+
+.chat-image {
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 4, 0, 0, 2);
+}
+
+.chat-user-container {
+    -fx-padding: 8 16 8 0;
+    -fx-alignment: center-right;
+}
+
+.chat-ai-container {
+    -fx-padding: 8 0 8 16;
+    -fx-alignment: center-left;
+}
+
+.chat-disclaimer {
+    -fx-font-size: 12px;
+    -fx-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-padding: 8px;
+    -fx-alignment: center;
+}
+
