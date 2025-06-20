@@ -185,39 +185,6 @@
     -fx-padding: 4;
 }
 
-.toolbar-rightBottom-container {
-    -fx-background-color: rgba(255, 255, 255, 0.5);
-    -fx-border-color: rgba(255, 255, 255, 0.8);
-    -fx-background-radius: 100px;
-    -fx-border-radius: 100px;
-}
-
-.toolbar-rightBottom-container .scale-container {
-    -fx-padding: 14 0 0 0;
-}
-
-.toolbar-rightBottom-container .ai-button {
-    -fx-background-radius: 111px;
-    -fx-min-width: 40px;
-    -fx-min-height: 40px;
-    -fx-max-width: 40px;
-    -fx-max-height: 40px;
-    -fx-cursor: hand;
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-background-image: url("/images/openAI.png");
-}
-
-.toolbar-rightBottom-container .ai-button:hover {
-    -fx-background-image: url("/images/openAI-hover.png");
-    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
-}
-
-.toolbar-rightBottom-container .ai-button:pressed {
-    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
-    -fx-translate-y: 1px;
-}
-
 /* 工具栏内层容器样式 */
 .toolbar-center-container {
     -fx-background-color: rgba(255, 255, 255, 0.5);
@@ -251,7 +218,6 @@
     -fx-min-height: 14;
     -fx-max-height: 14;
 }
-
 
 .toolbar-center-container .slider-container {
     -fx-padding: 0 0 0 8;
@@ -338,62 +304,37 @@
     -fx-shape: "";
 }
 
-/* 底部工具栏输入框容器样式 */
-.toolbar-main-container .toolbar-input-container {
-    -fx-alignment: center-left;
-    -fx-padding: 4 4 4 16;
-    -fx-pref-width: 480px;
-    -fx-min-width: 480px;
-    -fx-max-width: 480px;
-    -fx-background-color: rgba(255, 255, 255, 1);
-    -fx-background-radius: 120px;
-    -fx-border-radius: 120px;
+.toolbar-rightBottom-container {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-background-radius: 100px;
+    -fx-border-radius: 100px;
 }
 
-/* 底部工具栏输入框样式 */
-.toolbar-main-container .toolbar-input-container .toolbar-input {
-    -fx-background-color: transparent;
-    -fx-padding: 0 8 0 8;
-    -fx-font-size: 14px;
+.toolbar-rightBottom-container .scale-container {
+    -fx-padding: 14 0 0 0;
 }
 
-.toolbar-main-container .toolbar-input-container .toolbar-input-icon.left {
-    -fx-min-width: 20px;
-    -fx-min-height: 20px;
-    -fx-max-width: 20px;
-    -fx-max-height: 20px;
-    -fx-background-image: url("/images/magic.png");
-}
-
-.toolbar-left-container .toolbar-message-button {
+.toolbar-rightBottom-container .ai-button {
     -fx-background-radius: 111px;
     -fx-min-width: 40px;
     -fx-min-height: 40px;
     -fx-max-width: 40px;
     -fx-max-height: 40px;
-    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #B8DEFF 8.47%, #33A0FF 97.78%);
     -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-image: url("/images/openAI.png");
 }
 
-.toolbar-left-container .toolbar-message-button:hover {
-    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #CCE7FF 8.47%, #47AAFF 97.78%);
+.toolbar-rightBottom-container .ai-button:hover {
+    -fx-background-image: url("/images/openAI-hover.png");
     -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
 }
 
-.toolbar-left-container .toolbar-message-button:pressed {
-    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #A4D1FF 8.47%, #1F96FF 97.78%);
+.toolbar-rightBottom-container .ai-button:pressed {
     -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
     -fx-translate-y: 1px;
-}
-
-.toolbar-left-container .toolbar-message-button .qupath-icon {
-    -fx-text-fill: white;
-}
-
-/* 输入框占位符文本样式 */
-.toolbar-main-container .toolbar-input-container .toolbar-input .text-field {
-    -fx-prompt-text-fill: rgba(0, 0, 0, 0.45);
-    -fx-font-size: 14px;
 }
 
 .toolbar-main-container .toolbar-scale-container {
@@ -434,6 +375,133 @@
     -fx-text-fill: rgba(0, 0, 0, 0.85);
     -fx-alignment: center;
     -fx-padding: 0 0 1 0;
+}
+
+
+.ai-container {
+    -fx-background-color: rgba(255, 255, 255, 0.8);
+    -fx-background-radius: 28px;
+    -fx-pref-width: 360px;
+    -fx-min-width: 360px;
+    -fx-max-width: 360px;
+    -fx-spacing: 8;
+}
+
+.ai-container .ai-top-bar {
+    -fx-pref-height: 48;
+    -fx-min-height: 48;
+    -fx-max-height: 48;
+    -fx-alignment: center-left;
+    -fx-padding: 12;
+    -fx-spacing: 4;
+}
+
+.ai-container .ai-top-bar .magic-icon {
+    -fx-pref-width: 20px;
+    -fx-min-width: 20px;
+    -fx-max-width: 20px;
+    -fx-pref-height: 20px;
+    -fx-min-height: 20px;
+    -fx-max-height: 20px;
+    -fx-background-image: url("/images/magic.png");
+}
+
+.ai-container .ai-top-bar .ai-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(0, 0, 0, 0.85);
+}
+
+.ai-container .ai-top-bar .close-btn {
+    -fx-background-color: transparent;
+    -fx-background-radius: 100px;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-max-width: 24px;
+    -fx-max-height: 24px;
+    -fx-cursor: hand;
+    -fx-graphic: url("/images/close.png");
+}
+
+.ai-container .close-btn:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+.ai-container .close-btn:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 底部工具栏输入框容器样式 */
+.ai-container .toolbar-input-container {
+    -fx-alignment: center-left;
+    -fx-padding: 4;
+    -fx-background-color: rgba(255, 255, 255, 1);
+    -fx-background-radius: 120px;
+    -fx-border-radius: 120px;
+}
+
+/* 底部工具栏输入框样式 */
+.ai-container .toolbar-input-container .toolbar-input {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8 0 8;
+    -fx-font-size: 14px;
+}
+
+.ai-container .toolbar-input-container .toolbar-input-icon{
+    -fx-pref-width: 40px;
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-height: 40px;
+    -fx-min-height: 40px;
+    -fx-max-height: 40px;
+    -fx-background-image: url("/images/image.png");
+    -fx-background-size: 20 20;
+    -fx-background-color: transparent;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-radius: 111px;
+    -fx-border-radius: 111px;
+    -fx-cursor: hand;
+}
+
+.ai-container .toolbar-input-container .toolbar-input-icon:hover{
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+.ai-container .toolbar-input-container .toolbar-input-icon.selected {
+    -fx-background-image: url("/images/image-selected.png");
+    -fx-background-color: rgba(22, 146, 255, 0.1);
+}
+
+.ai-container .toolbar-message-button {
+    -fx-background-radius: 111px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #B8DEFF 8.47%, #33A0FF 97.78%);
+    -fx-cursor: hand;
+}
+
+.ai-container .toolbar-message-button:hover {
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #CCE7FF 8.47%, #47AAFF 97.78%);
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.2), 8, 0, 0, 0);
+}
+
+.ai-container.toolbar-message-button:pressed {
+    -fx-background-color: linear-gradient(from 100% 100% to 0% 0%, #A4D1FF 8.47%, #1F96FF 97.78%);
+    -fx-effect: dropshadow(three-pass-box, rgba(51, 160, 255, 0.1), 4, 0, 0, 0);
+    -fx-translate-y: 1px;
+}
+
+.ai-container .toolbar-message-button .qupath-icon {
+    -fx-text-fill: white;
+}
+
+/* 输入框占位符文本样式 */
+.ai-container.toolbar-input-container .toolbar-input .text-field {
+    -fx-prompt-text-fill: rgba(0, 0, 0, 0.45);
+    -fx-font-size: 14px;
 }
 
 /* 左侧容器样式 */

@@ -109,7 +109,12 @@ class QuPathMainPaneManager {
 	private ToggleGroup navToggleGroup;
 	private Map<String, ToggleButton> navButtons = new HashMap<>();
 	private LLMClient client;
+	private BorderPane aiContainer;
 	private AnalysisToolsPane analysisToolsPane;
+	private VBox aiContent;
+	// 存储右下角容器和概览图状态
+	private HBox rightBottomContainer;
+	private boolean wasOverviewVisible;
 	// 添加自定义标注面板
 	private CustomAnnotationPane customAnnotationPane;
 	
@@ -153,9 +158,158 @@ class QuPathMainPaneManager {
 		// Add bottom to overlayContainer
 		overlayContainer.setBottom(createBottomBarContainer());
 
-		
+		aiContainer = new BorderPane();
+		aiContainer.setPickOnBounds(false);
+		aiContainer.setPadding(new Insets(88, 16, 16, 0));
+		aiContainer.setRight(createAIContainer());
+		pane.getChildren().add(aiContainer);
+		aiContainer.setVisible(false);
+
 		// 添加选择监听器 
 		setupSelectionListener();
+	}
+
+	private BorderPane createAIContainer() {
+		var aiPane = new BorderPane();
+		aiPane.getStyleClass().add("ai-container");
+
+		// 创建AI顶部栏
+		HBox aiTopBar = new HBox();
+		aiTopBar.getStyleClass().add("ai-top-bar");
+		Pane magicIcon = new Pane();
+		magicIcon.getStyleClass().add("magic-icon");
+		Label aiLabel = new Label("AI助手");
+		aiLabel.getStyleClass().add("ai-label");
+		Region aiRegion = new Region();
+		HBox.setHgrow(aiRegion, Priority.ALWAYS);
+		Button closeBtn = new Button();
+		closeBtn.getStyleClass().add("close-btn");
+		// 添加关闭按钮点击事件
+		closeBtn.setOnAction(event -> {
+			// 隐藏AI容器
+			aiContainer.setVisible(false);
+			
+			// 如果原先概览图是显示的，恢复显示
+			if (wasOverviewVisible) {
+				qupath.getViewerActions().SHOW_OVERVIEW.setSelected(true);
+			}
+			
+			// 显示右下角容器
+			if (rightBottomContainer != null) {
+				rightBottomContainer.setVisible(true);
+			}
+		});
+		aiTopBar.getChildren().addAll(magicIcon, aiLabel, aiRegion, closeBtn);
+		aiPane.setTop(aiTopBar);
+
+		// 创建AI内容容器
+		aiContent = new VBox();
+		ScrollPane aiScrollPane = new ScrollPane(aiContent);
+		aiScrollPane.setFitToWidth(true);
+		aiScrollPane.setFitToHeight(true);
+		aiScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		aiScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		aiPane.setCenter(aiScrollPane);
+
+
+		var inputPane = new HBox();
+		inputPane.setPadding(new Insets(4,4,4,4));
+		HBox.setHgrow(inputPane, Priority.ALWAYS);
+		// 创建AI底部栏
+		var inputContainer = new HBox();
+		inputContainer.getStyleClass().add("toolbar-input-container");
+		HBox.setHgrow(inputContainer, Priority.ALWAYS);
+		inputPane.getChildren().add(inputContainer);
+		// Create input field
+		var input = new TextField();
+		input.getStyleClass().add("toolbar-input");
+		input.setPromptText("请输入您的问题");
+		// Create left icon
+		Button leftIcon = new Button();
+		leftIcon.getStyleClass().add("toolbar-input-icon");
+		
+		// 设置初始tooltip
+		Tooltip defaultTooltip = new Tooltip("点击启动对当前图片提问");
+		Tooltip selectedTooltip = new Tooltip("已启用对当前图片问答，点击禁用");
+		leftIcon.setTooltip(defaultTooltip);
+		
+		// 添加点击事件，使其可以被选中
+		BooleanProperty selected = new SimpleBooleanProperty(false);
+		leftIcon.setOnAction(e -> {
+			boolean isSelected = !selected.get();
+			selected.set(isSelected);
+			if (isSelected) {
+				leftIcon.getStyleClass().add("selected");
+				leftIcon.setTooltip(selectedTooltip);
+			} else {
+				leftIcon.getStyleClass().remove("selected");
+				leftIcon.setTooltip(defaultTooltip);
+			}
+		});
+		
+		// Create right icon
+		var sendBtn = createNormalButton("send", "发送");
+		sendBtn.getStyleClass().add("toolbar-message-button");
+		sendBtn.setOnMouseClicked(value -> {
+			// 获取当前图片真实路径
+			String currentImage = "";
+			if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+				try {
+					ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+					final String tempImagePath = "@" + convertImageToTempFile(server);
+					client.getCompletionAsync(input.getText(), tempImagePath,
+						response -> {
+							// 更新UI
+							Platform.runLater(() -> logger.info(response));
+							// 删除临时文件
+							deleteTempFile(tempImagePath);
+						},
+						error -> {
+							Platform.runLater(() -> logger.error(error.getMessage()));
+							// 发生错误时也要删除临时文件
+							deleteTempFile(tempImagePath);
+						}
+					);
+				} catch (Exception e) {
+					logger.error("获取图片路径失败", e);
+				}
+			}
+			input.setText("");
+		});
+		// 添加回车键事件监听
+		input.setOnKeyPressed(e -> {
+			if (e.getCode() == KeyCode.ENTER) {
+				// 获取当前图片真实路径
+				String currentImage = "";
+				if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
+					try {
+						ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
+						final String tempImagePath = "@" + convertImageToTempFile(server);
+						client.getCompletionAsync(input.getText(), tempImagePath,
+							response -> {
+								// 更新UI
+								Platform.runLater(() -> logger.info(response));
+								// 删除临时文件
+								deleteTempFile(tempImagePath);
+							},
+							error -> {
+								Platform.runLater(() -> logger.error(error.getMessage()));
+								// 发生错误时也要删除临时文件
+								deleteTempFile(tempImagePath);
+							}
+						);
+					} catch (Exception ex) {
+						logger.error("获取图片路径失败", ex);
+					}
+				}
+				input.setText("");
+				e.consume();
+			}
+		});
+		HBox.setHgrow(input, Priority.ALWAYS);
+		inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
+		aiPane.setBottom(inputPane);
+		return aiPane;
 	}
 
 	private Node createNormalButton(String icon, String tooltip) {
@@ -366,79 +520,6 @@ class QuPathMainPaneManager {
 		scaleContainer.setCenter(magContainer);
 		leftBottomContainer.getChildren().addAll(eyeButtonContainer, scaleContainer, gpsButtonContainer);
 		
-		
-		// // Create input container
-		// var inputContainer = new HBox();
-		// inputContainer.getStyleClass().add("toolbar-input-container");
-		// // Create input field
-		// var input = new TextField();
-		// input.getStyleClass().add("toolbar-input");
-		// input.setPromptText("请输入您的问题");
-		// // Create left icon
-		// var leftIcon = new Region();
-		// leftIcon.getStyleClass().addAll("toolbar-input-icon", "left");
-		// // Create right icon
-		// var sendBtn = createNormalButton("send", "发送");
-		// sendBtn.getStyleClass().add("toolbar-message-button");
-		// sendBtn.setOnMouseClicked(value -> {
-		// 	// 获取当前图片真实路径
-		// 	String currentImage = "";
-		// 	if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
-		// 		try {
-		// 			ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
-		// 			final String tempImagePath = "@" + convertImageToTempFile(server);
-		// 			client.getCompletionAsync(input.getText(), tempImagePath,
-		// 				response -> {
-		// 					// 更新UI
-		// 					Platform.runLater(() -> logger.info(response));
-		// 					// 删除临时文件
-		// 					deleteTempFile(tempImagePath);
-		// 				},
-		// 				error -> {
-		// 					Platform.runLater(() -> logger.error(error.getMessage()));
-		// 					// 发生错误时也要删除临时文件
-		// 					deleteTempFile(tempImagePath);
-		// 				}
-		// 			);
-		// 		} catch (Exception e) {
-		// 			logger.error("获取图片路径失败", e);
-		// 		}
-		// 	}
-		// 	input.setText("");
-		// });
-		// // 添加回车键事件监听
-		// input.setOnKeyPressed(e -> {
-		// 	if (e.getCode() == KeyCode.ENTER) {
-		// 		// 获取当前图片真实路径
-		// 		String currentImage = "";
-		// 		if (qupath.getImageData() != null && qupath.getImageData().getServer() != null) {
-		// 			try {
-		// 				ImageServer<BufferedImage> server = (ImageServer<BufferedImage>)qupath.getImageData().getServer();
-		// 				final String tempImagePath = "@" + convertImageToTempFile(server);
-		// 				client.getCompletionAsync(input.getText(), tempImagePath,
-		// 					response -> {
-		// 						// 更新UI
-		// 						Platform.runLater(() -> logger.info(response));
-		// 						// 删除临时文件
-		// 						deleteTempFile(tempImagePath);
-		// 					},
-		// 					error -> {
-		// 						Platform.runLater(() -> logger.error(error.getMessage()));
-		// 						// 发生错误时也要删除临时文件
-		// 						deleteTempFile(tempImagePath);
-		// 					}
-		// 				);
-		// 			} catch (Exception ex) {
-		// 				logger.error("获取图片路径失败", ex);
-		// 			}
-		// 		}
-		// 		input.setText("");
-		// 		e.consume();
-		// 	}
-		// });
-		// HBox.setHgrow(input, Priority.ALWAYS);
-		// // Add components to input container in specific order
-		// inputContainer.getChildren().addAll(leftIcon, input, sendBtn);
 		HBox rightBottomContainer = new HBox();
 		rightBottomContainer.getStyleClass().add("toolbar-rightBottom-container");
 		rightBottomContainer.setAlignment(Pos.CENTER_LEFT);
@@ -470,7 +551,24 @@ class QuPathMainPaneManager {
 		Button aiBtn = new Button();
 		aiBtn.getStyleClass().add("ai-button");
 		aiBtn.setTooltip(new Tooltip("打开AI助手"));
+		
+		// 添加AI按钮点击事件
+		aiBtn.setOnAction(event -> {
+			// 显示AI容器
+			aiContainer.setVisible(true);
+			
+			// 记录概览图当前状态并隐藏
+			wasOverviewVisible = qupath.getViewerActions().SHOW_OVERVIEW.isSelected();
+			if (wasOverviewVisible) {
+				qupath.getViewerActions().SHOW_OVERVIEW.setSelected(false);
+			}
+			
+			// 隐藏右下角容器
+			rightBottomContainer.setVisible(false);
+		});
+		
 		rightBottomContainer.getChildren().addAll(leftContainer,aiBtn);
+		this.rightBottomContainer = rightBottomContainer;  // 保存引用
 		bottomBarContainer.setRight(rightBottomContainer);
 		return bottomBarContainer;
 	}
