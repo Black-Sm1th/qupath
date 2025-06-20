@@ -1062,24 +1062,23 @@
 }
 
 .chat-image {
-    -fx-background-radius: 8px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 4, 0, 0, 2);
+    -fx-background-radius: 24px;
 }
 
 .chat-user-container {
-    -fx-padding: 8 16 8 0;
     -fx-alignment: center-right;
+    -fx-padding: 0 0 16 0;
 }
 
 .chat-ai-container {
-    -fx-padding: 8 0 8 16;
     -fx-alignment: center-left;
+    -fx-padding: 0 0 8 0;
 }
 
 .chat-disclaimer {
     -fx-font-size: 12px;
+    -fx-padding: 0 0 8 0;
     -fx-text-fill: rgba(0, 0, 0, 0.45);
-    -fx-padding: 8px;
     -fx-alignment: center;
 }
 

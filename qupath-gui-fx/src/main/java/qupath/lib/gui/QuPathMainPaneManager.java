@@ -94,6 +94,7 @@ import qupath.lib.objects.PathObjectTools;
 import qupath.lib.gui.panes.AnalysisToolsPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -207,6 +208,7 @@ class QuPathMainPaneManager {
 
 		// 创建AI内容容器
 		aiContent = new VBox();
+		aiContent.setPadding(new Insets(0, 20, 0, 20));
 		ScrollPane aiScrollPane = new ScrollPane(aiContent);
 		aiScrollPane.setFitToWidth(true);
 		aiScrollPane.setFitToHeight(true);
@@ -1226,11 +1228,15 @@ class QuPathMainPaneManager {
 			VBox bubble = new VBox();
 			bubble.getStyleClass().add("chat-bubble-user");
 			
+			// 使用TextFlow实现文本自适应
+			TextFlow textFlow = new TextFlow();
+			textFlow.setMaxWidth(320);
+			
 			Text text = new Text(message);
 			text.getStyleClass().add("chat-bubble-user-text");
-			text.setWrappingWidth(250);
 			
-			bubble.getChildren().add(text);
+			textFlow.getChildren().add(text);
+			bubble.getChildren().add(textFlow);
 			bubbleBox.getChildren().add(bubble);
 			
 			messageColumn.getChildren().add(bubbleBox);
@@ -1251,11 +1257,15 @@ class QuPathMainPaneManager {
 			VBox bubble = new VBox();
 			bubble.getStyleClass().add("chat-bubble-ai");
 			
+			// 使用TextFlow实现文本自适应
+			TextFlow textFlow = new TextFlow();
+			textFlow.setMaxWidth(320);
+			
 			Text text = new Text(response);
 			text.getStyleClass().add("chat-bubble-ai-text");
-			text.setWrappingWidth(250);
 			
-			bubble.getChildren().add(text);
+			textFlow.getChildren().add(text);
+			bubble.getChildren().add(textFlow);
 			aiResponseContainer.getChildren().add(bubble);
 			
 			// 添加到聊天内容
