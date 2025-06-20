@@ -1021,7 +1021,7 @@
 }
 
 /* 聊天气泡和日期样式 */
-.chat-date {
+.ai-container .chat-date {
     -fx-font-size: 12px;
     -fx-text-fill: rgba(0, 0, 0, 0.45);
     -fx-padding: 8 0 8 0;
@@ -1029,7 +1029,7 @@
     -fx-alignment: center;
 }
 
-.chat-bubble-user {
+.ai-container .chat-bubble-user {
     -fx-background-color: rgba(22, 146, 255, 1);
     -fx-background-radius: 12px;
     -fx-padding: 12px;
@@ -1037,12 +1037,12 @@
     -fx-wrap-text: true;
 }
 
-.chat-bubble-user-text {
+.ai-container .chat-bubble-user-text {
     -fx-fill: white;
     -fx-font-size: 14px;
 }
 
-.chat-bubble-ai {
+.ai-container .chat-bubble-ai {
     -fx-background-color: rgba(233, 233, 233, 1);
     -fx-background-radius: 12px;
     -fx-padding: 12px;
@@ -1050,32 +1050,32 @@
     -fx-wrap-text: true;
 }
 
-.chat-bubble-ai-text {
+.ai-container .chat-bubble-ai-text {
     -fx-fill: rgba(0, 0, 0, 0.85);
     -fx-font-size: 14px;
 }
 
-.chat-image-container {
+.ai-container .chat-image-container {
     -fx-padding: 8 0 8 0;
     -fx-max-width: 120px;
     -fx-max-height: 120px;
 }
 
-.chat-image {
+.ai-container .chat-image {
     -fx-background-radius: 24px;
 }
 
-.chat-user-container {
+.ai-container .chat-user-container {
     -fx-alignment: center-right;
     -fx-padding: 0 0 16 0;
 }
 
-.chat-ai-container {
+.ai-container .chat-ai-container {
     -fx-alignment: center-left;
     -fx-padding: 0 0 8 0;
 }
 
-.chat-disclaimer {
+.ai-container .chat-disclaimer {
     -fx-font-size: 12px;
     -fx-padding: 0 0 8 0;
     -fx-text-fill: rgba(0, 0, 0, 0.45);
