@@ -95,6 +95,9 @@ import qupath.lib.gui.panes.AnalysisToolsPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -129,6 +132,16 @@ class QuPathMainPaneManager {
 	// 用于列表项的滚动容器
 	private VBox listContainer;
 	private HBox analysisContainer;
+	
+	// 加载动画相关属性和方法
+	private Timeline loadingAnimation;
+	private HBox loadingContainer;
+	private Text loadingText;
+	private int dotCount = 1;
+	
+	// 添加ScrollPane引用
+	private ScrollPane aiScrollPane;
+	
 	QuPathMainPaneManager(QuPathGUI qupath) {
 		this.qupath = qupath;
 		this.navToggleGroup = new ToggleGroup();
@@ -214,6 +227,10 @@ class QuPathMainPaneManager {
 		aiScrollPane.setFitToHeight(true);
 		aiScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 		aiScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		
+		// 保存ScrollPane的引用，以便稍后滚动
+		this.aiScrollPane = aiScrollPane;
+		
 		aiPane.setCenter(aiScrollPane);
 
 
@@ -272,8 +289,11 @@ class QuPathMainPaneManager {
 					// 添加用户消息到聊天界面
 					addUserMessage(userMessage, image);
 					
+					// 显示加载状态
+					showLoadingMessage();
+					
 					// 为AI调用创建临时文件
-					final String tempImagePath = "@" + convertImageToTempFile(server);
+					final String tempImagePath = convertImageToTempFile(server);
 					client.getCompletionAsync(userMessage, tempImagePath,
 						response -> {
 							// 添加AI响应到聊天界面
@@ -299,7 +319,11 @@ class QuPathMainPaneManager {
 			} else {
 				// 如果没有选择图片或没有图片，只处理文本
 				addUserMessage(userMessage, null);
-				client.getCompletionAsync(userMessage, null,
+				
+				// 显示加载状态
+				showLoadingMessage();
+				
+				client.getCompletionAsync(userMessage, "",
 					response -> addAIResponse(response),
 					error -> Platform.runLater(() -> {
 						addAIResponse("抱歉，处理您的请求时出现错误: " + error.getMessage());
@@ -783,7 +807,6 @@ class QuPathMainPaneManager {
 		var annotationBtn = (ToggleButton)createNavButton("annotation", "标注");
 		var workflowBtn = (ToggleButton)createNavButton("workflow", "工作流");
 		var analysisBtn = (ToggleButton)createNavButton("analysis", "分析");
-		// analysisBtn.setDisable(true);
 		var classifyBtn = (ToggleButton)createNavButton("classify", "分类");
 		classifyBtn.setDisable(true);
 
@@ -981,7 +1004,7 @@ class QuPathMainPaneManager {
 				PathObject selectedObject = qupath.getImageData().getHierarchy().getSelectionModel().getSelectedObject();
 				updateChildSelectionState(selectedObject);
 			});
-		}
+		} 
 	}
 	
 	// 更新子对象的选中状态
@@ -1194,6 +1217,15 @@ class QuPathMainPaneManager {
 		}
 	}
 
+	// 滚动到底部的方法
+	private void scrollToBottom() {
+		if (aiScrollPane != null) {
+			Platform.runLater(() -> {
+				aiScrollPane.setVvalue(1.0);
+			});
+		}
+	}
+	
 	// 添加处理用户输入和AI响应的方法
 	private void addUserMessage(String message, BufferedImage image) {
 		Platform.runLater(() -> {
@@ -1244,11 +1276,46 @@ class QuPathMainPaneManager {
 			
 			// 添加到聊天内容
 			aiContent.getChildren().addAll(dateBox, userContainer);
+			
+			// 滚动到底部
+			scrollToBottom();
 		});
 	}
 	
 	private void addAIResponse(String response) {
 		Platform.runLater(() -> {
+			// 从聊天内容移除加载提示（如果有）
+			removeLoadingMessage();
+			
+			// 尝试解析JSON响应
+			String responseText = response;
+			if (response.startsWith("{") && response.endsWith("}")) {
+				try {
+					// 简单的JSON解析，获取response字段
+					int startIndex = response.indexOf("\"response\":\"");
+					if (startIndex > 0) {
+						startIndex += "\"response\":\"".length();
+						int endIndex = response.indexOf("\"}", startIndex);
+						if (endIndex > startIndex) {
+							responseText = response.substring(startIndex, endIndex)
+									.replace("\\\"", "\"")
+									.replace("\\n", "\n")
+									.replace("\\r", "\r")
+									.replace("\\t", "\t")
+									.replace("\\\\", "\\");
+						}
+					}
+				} catch (Exception e) {
+					logger.error("解析响应时出错", e);
+					// 如果解析失败，使用原始响应
+				}
+			}
+			
+			// 移除结尾的</s>标记
+			if (responseText.endsWith("</s>")) {
+				responseText = responseText.substring(0, responseText.length() - 4);
+			}
+			
 			// 添加AI响应容器
 			HBox aiResponseContainer = new HBox();
 			aiResponseContainer.getStyleClass().add("chat-ai-container");
@@ -1261,7 +1328,7 @@ class QuPathMainPaneManager {
 			TextFlow textFlow = new TextFlow();
 			textFlow.setMaxWidth(320);
 			
-			Text text = new Text(response);
+			Text text = new Text(responseText);
 			text.getStyleClass().add("chat-bubble-ai-text");
 			
 			textFlow.getChildren().add(text);
@@ -1281,7 +1348,68 @@ class QuPathMainPaneManager {
 			disclaimerBox.getChildren().add(disclaimerLabel);
 			
 			aiContent.getChildren().add(disclaimerBox);
+			
+			// 滚动到底部
+			scrollToBottom();
 		});
+	}
+	
+	// 加载动画相关属性和方法
+	private void showLoadingMessage() {
+		Platform.runLater(() -> {
+			// 创建加载提示容器
+			loadingContainer = new HBox();
+			loadingContainer.getStyleClass().add("chat-ai-container");
+			
+			// 创建加载提示气泡
+			VBox bubble = new VBox();
+			bubble.getStyleClass().add("chat-bubble-ai");
+			
+			// 使用TextFlow实现文本自适应
+			TextFlow textFlow = new TextFlow();
+			textFlow.setMaxWidth(320);
+			
+			loadingText = new Text("生成中.");
+			loadingText.getStyleClass().add("chat-bubble-ai-text");
+			loadingText.getStyleClass().add("loading-text");
+			
+			textFlow.getChildren().add(loadingText);
+			bubble.getChildren().add(textFlow);
+			loadingContainer.getChildren().add(bubble);
+			
+			// 添加到聊天内容
+			aiContent.getChildren().add(loadingContainer);
+			
+			// 滚动到底部
+			scrollToBottom();
+			
+			// 创建动画效果
+			if (loadingAnimation != null) {
+				loadingAnimation.stop();
+			}
+			
+			loadingAnimation = new Timeline(new KeyFrame(Duration.millis(500), event -> {
+				dotCount = (dotCount % 3) + 1; // 在1、2、3之间循环
+				String dots = ".".repeat(dotCount);
+				loadingText.setText("生成中" + dots);
+			}));
+			loadingAnimation.setCycleCount(Timeline.INDEFINITE);
+			loadingAnimation.play();
+		});
+	}
+	
+	private void removeLoadingMessage() {
+		// 停止加载动画
+		if (loadingAnimation != null) {
+			loadingAnimation.stop();
+			loadingAnimation = null;
+		}
+		
+		// 从聊天内容中移除加载提示
+		if (loadingContainer != null && aiContent.getChildren().contains(loadingContainer)) {
+			aiContent.getChildren().remove(loadingContainer);
+			loadingContainer = null;
+		}
 	}
 	
 	private ImageView createImageView(BufferedImage image) {

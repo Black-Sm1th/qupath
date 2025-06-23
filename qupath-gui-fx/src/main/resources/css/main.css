@@ -1082,3 +1082,13 @@
     -fx-alignment: center;
 }
 
+/* 加载状态样式 */
+.ai-container .loading-text {
+    -fx-fill: rgba(22, 146, 255, 1);
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.analysis-pane{
+    -fx-padding: 0 12 0 12;
+}

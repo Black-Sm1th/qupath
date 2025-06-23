@@ -17,7 +17,7 @@ import javafx.application.Platform;
 
 public class LLMClient {
     private static final Logger logger = LoggerFactory.getLogger(LLMClient.class);
-    private static final String API_URL = "http://localhost:10000/process";
+    private static final String API_URL = "http://localhost:12000/process";
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public LLMClient() {
@@ -58,13 +58,16 @@ public class LLMClient {
     }
 
     private String createRequestJson(String question, String image) {
-        String json = String.format("{\"question\":\"%s\",\"image\":\"%s\"}",
+        String json = String.format("{\"question\":\"%s\",\"image_path\":\"%s\"}",
                 escapeJson(question),
                 escapeJson(image));
         return json;
     }
 
     private String escapeJson(String input) {
+        if (input == null) {
+            return "";
+        }
         return input.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
@@ -88,6 +91,7 @@ public class LLMClient {
                 response.append(line);
             }
         }
+        logger.info("Response: {}", response.toString());
         return response.toString();
     }
 

@@ -2,19 +2,15 @@ package qupath.lib.gui.panes;
 
 import java.util.function.Consumer;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.layout.HBox;
 import qupath.imagej.detect.cells.WatershedCellDetection;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.commands.Commands;
-// import qupath.process.gui.commands.DensityMapCommand;
 
 /**
  * 分析工具面板，提供各种分析功能的访问
@@ -31,66 +27,56 @@ public class AnalysisToolsPane {
     public AnalysisToolsPane(QuPathGUI qupath) {
         this.qupath = qupath;
         this.pane = new BorderPane();
-        
-        pane.setPadding(new Insets(10));
-        pane.getStyleClass().add("analysis-tools-pane");
-        
+        pane.getStyleClass().add("analysis-pane");
         // 创建卡片式布局
         GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        
+        gridPane.setHgap(8);
+        gridPane.setVgap(8);
         // 添加预测染色向量功能
         Node predictStainVectorCard = createActionCard("预测染色向量", 
-                "调整图像染色向量以改善颜色分离", 
-                // IconFactory.createNode(PathIcons.ANALYSIS_BTN), 
-                Color.rgb(160, 82, 230), 
+                "-fx-border-radius: 20px;-fx-background-radius: 20px; -fx-background-color: linear-gradient(to right,white 0%,#D6BBFB 50%,white 100%);-fx-border-color: rgba(0, 0, 0, 0.08); -fx-border-width: 1px;-fx-min-height: 80px;-fx-max-height: 80px;-fx-min-width: 276px;-fx-max-width: 276px;-fx-cursor: hand;", 
+                "/images/icon1.png", 
                 e -> handlePredictStainVector());
                 
-        // 添加细胞检测功能
-        Node cellDetectionCard = createActionCard("细胞检测", 
-                "检测和分析图像中的细胞", 
-                // IconFactory.createNode(PathIcons.ANALYSIS_BTN), 
-                Color.rgb(15, 156, 230), 
-                e -> handleCellDetection());
+        // // 添加细胞检测功能
+        // Node cellDetectionCard = createActionCard("细胞检测", 
+        //         "检测和分析图像中的细胞", 
+        //         Color.rgb(15, 156, 230), 
+        //         e -> handleCellDetection());
                 
-        // 添加密度图功能
-        Node densityMapCard = createActionCard("密度图", 
-                "创建对象密度的热力图", 
-                // IconFactory.createNode(PathIcons.ANALYSIS_BTN), 
-                null, 
-                e -> handleDensityMap());
+        // // 添加密度图功能
+        // Node densityMapCard = createActionCard("密度图", 
+        //         "创建对象密度的热力图", 
+        //         null, 
+        //         e -> handleDensityMap());
                 
-        // 添加图像块和超像素功能
-        Node tileAndSuperpixelCard = createActionCard("图像块和超像素", 
-                "创建网格块或图像分割", 
-                // IconFactory.createNode(PathIcons.ANALYSIS_BTN), 
-                null, 
-                e -> handleTileAndSuperpixel());
+        // // 添加图像块和超像素功能
+        // Node tileAndSuperpixelCard = createActionCard("图像块和超像素", 
+        //         "创建网格块或图像分割", 
+        //         null, 
+        //         e -> handleTileAndSuperpixel());
                 
-        // 添加计算特征功能
-        Node computeFeaturesCard = createActionCard("计算特征", 
-                "计算选中对象的特征", 
-                // IconFactory.createNode(PathIcons.ANALYSIS_BTN), 
-                null, 
-                e -> handleComputeFeatures());
+        // // 添加计算特征功能
+        // Node computeFeaturesCard = createActionCard("计算特征", 
+        //         "计算选中对象的特征", 
+        //         null, 
+        //         e -> handleComputeFeatures());
                 
-        // 添加空间分析功能
-        Node spatialAnalysisCard = createActionCard("空间分析", 
-                "分析对象的空间分布", 
-                // IconFactory.createNode(FontAwesome.Glyph.ANALYSIS), 
-                null, 
-                e -> handleSpatialAnalysis());
+        // // 添加空间分析功能
+        // Node spatialAnalysisCard = createActionCard("空间分析", 
+        //         "分析对象的空间分布", 
+        //         null, 
+        //         e -> handleSpatialAnalysis());
                 
         // 在网格中排列卡片
         gridPane.add(predictStainVectorCard, 0, 0, 2, 1); // 跨两列
-        gridPane.add(cellDetectionCard, 0, 1, 2, 1); // 跨两列
+        // gridPane.add(cellDetectionCard, 0, 1, 2, 1); // 跨两列
         
-        // 小卡片组
-        gridPane.add(densityMapCard, 0, 2);
-        gridPane.add(tileAndSuperpixelCard, 1, 2);
-        gridPane.add(computeFeaturesCard, 0, 3);
-        gridPane.add(spatialAnalysisCard, 1, 3);
+        // // 小卡片组
+        // gridPane.add(densityMapCard, 0, 2);
+        // gridPane.add(tileAndSuperpixelCard, 1, 2);
+        // gridPane.add(computeFeaturesCard, 0, 3);
+        // gridPane.add(spatialAnalysisCard, 1, 3);
         
         pane.setCenter(gridPane);
     }
@@ -106,82 +92,24 @@ public class AnalysisToolsPane {
     /**
      * 创建一个动作卡片，带有图标和标题
      */
-    private Node createActionCard(String title, String description/*, Node icon */, Color iconColor, Consumer<Void> action) {
+    private Node createActionCard(String title, String gradientStyle, String iconString, Consumer<Void> action) {
         BorderPane card = new BorderPane();
         card.getStyleClass().add("analysis-card");
         
-        // 设置渐变背景色和圆角边框
-        String gradientStyle = "-fx-height: 80px; -fx-border-radius: 20px; " +
-                              "-fx-background-radius: 20px; " +
-                              "-fx-border-color: rgba(233, 234, 255, 1); " +
-                              "-fx-border-width: 1px; " +
-                              "-fx-background-color: linear-gradient(to bottom right, #eee6ff, #f7f2ff);";
-        
         card.setStyle(gradientStyle);
-        card.setPadding(new Insets(15));
         
-        VBox content = new VBox(8);
+        HBox content = new HBox();
         content.setAlignment(Pos.CENTER_LEFT);
-        
-        // // 如果提供了颜色，创建带背景的圆形图标
-        // if (icon != null) {
-        //     if (iconColor != null) {
-        //         // 创建一个带颜色背景的圆形
-        //         Circle circle = new Circle(20);
-        //         circle.setFill(iconColor);
-        //         circle.setOpacity(0.2);
-                
-        //         // 放置图标在圆圈中央
-        //         BorderPane iconContainer = new BorderPane();
-        //         iconContainer.setCenter(icon);
-        //         iconContainer.setMaxWidth(40);
-        //         iconContainer.setMaxHeight(40);
-                
-        //         // 将两者组合
-        //         BorderPane combined = new BorderPane();
-        //         combined.setCenter(circle);
-        //         combined.getChildren().add(iconContainer);
-                
-        //         content.getChildren().add(combined);
-        //     } else {
-        //         content.getChildren().add(icon);
-        //     }
-        // }
-        
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("analysis-card-title");
         titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         content.getChildren().add(titleLabel);
-        
-        if (description != null) {
-            Label descLabel = new Label(description);
-            descLabel.getStyleClass().add("analysis-card-description");
-            descLabel.setWrapText(true);
-            descLabel.setTextAlignment(TextAlignment.LEFT);
-            content.getChildren().add(descLabel);
-        }
         
         card.setCenter(content);
         card.setOnMouseClicked(e -> {
             if (action != null) {
                 action.accept(null);
             }
-        });
-        
-        // 设置鼠标悬停效果 - 背景色稍微变深
-        final String originalStyle = gradientStyle;
-        final String hoverStyle = "-fx-height: 80px; -fx-border-radius: 20px; " +
-                                "-fx-background-radius: 20px; " +
-                                "-fx-border-color: rgba(233, 234, 255, 1); " +
-                                "-fx-border-width: 1px; " +
-                                "-fx-background-color: linear-gradient(to bottom right, #e8ddff, #f0eaff);";
-        
-        card.setOnMouseEntered(e -> {
-            card.setStyle(hoverStyle);
-        });
-        
-        card.setOnMouseExited(e -> {
-            card.setStyle(originalStyle);
         });
         
         return card;
