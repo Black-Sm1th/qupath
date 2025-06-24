@@ -98,6 +98,7 @@ import javafx.scene.text.TextFlow;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import qupath.lib.gui.panes.ClassifyPane;
 /**
  * Inelegantly named class to manage the main components of the main QuPath window.
  * 
@@ -119,6 +120,7 @@ class QuPathMainPaneManager {
 	private BorderPane aiContainer;
 	private AnalysisToolsPane analysisToolsPane;
 	private VBox aiContent;
+	private ClassifyPane classifyToolsPane;
 	// 存储右下角容器和概览图状态
 	private HBox rightBottomContainer;
 	private boolean wasOverviewVisible;
@@ -730,6 +732,9 @@ class QuPathMainPaneManager {
 		this.analysisToolsPane = new AnalysisToolsPane(qupath);
 		var analysisPane = analysisToolsPane.getPane();
 
+		this.classifyToolsPane = new ClassifyPane(qupath);
+		var classifyPane = classifyToolsPane.getPane();
+
 		// 注册到CustomAnnotationPane的点击事件
 		this.customAnnotationPane.addCountLabelClickListener(new CustomAnnotationPane.CountLabelClickListener() {
 			@Override
@@ -791,16 +796,15 @@ class QuPathMainPaneManager {
 		}
 
 		var workflowPane = analysisTabPane.getTabPane().getTabs().get(4).getContent();
-		// var classifyPane = analysisTabPane.getTabPane().getTabs().get(3).getContent();
 		
 		// Add all panes to container but make them invisible initially
-		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane,analysisPane/*, classifyPane*/);
+		workContainer.getChildren().addAll(projectPane, imagePane, annotationPane, workflowPane, analysisPane, classifyPane);
 		projectPane.setVisible(true);
 		imagePane.setVisible(false);
 		annotationPane.setVisible(false);
 		workflowPane.setVisible(false);
 		analysisPane.setVisible(false);
-		// classifyPane.setVisible(false);
+		classifyPane.setVisible(false);
 		// Add navigation buttons
 		var projectBtn = (ToggleButton)createNavButton("project", "项目");
 		var imageBtn = (ToggleButton)createNavButton("image", "图像");
@@ -808,7 +812,6 @@ class QuPathMainPaneManager {
 		var workflowBtn = (ToggleButton)createNavButton("workflow", "工作流");
 		var analysisBtn = (ToggleButton)createNavButton("analysis", "分析");
 		var classifyBtn = (ToggleButton)createNavButton("classify", "分类");
-		classifyBtn.setDisable(true);
 
 		// Set default selected button
 		projectBtn.setSelected(true);
@@ -822,7 +825,7 @@ class QuPathMainPaneManager {
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
-			// classifyPane.setVisible(false);
+			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -837,7 +840,7 @@ class QuPathMainPaneManager {
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
-			// classifyPane.setVisible(false);
+			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -852,7 +855,7 @@ class QuPathMainPaneManager {
 			annotationPane.setVisible(true);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
-			// classifyPane.setVisible(false);
+			classifyPane.setVisible(false);
 			// 清除所有标签选中效果
 			customAnnotationPane.clearAllCountLabelSelections();
 		});
@@ -865,7 +868,7 @@ class QuPathMainPaneManager {
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(true);
 			analysisPane.setVisible(false);
-			// classifyPane.setVisible(false);
+			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -880,7 +883,7 @@ class QuPathMainPaneManager {
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(true);
-			// classifyPane.setVisible(false);
+			classifyPane.setVisible(false);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果
@@ -896,7 +899,7 @@ class QuPathMainPaneManager {
 			annotationPane.setVisible(false);
 			workflowPane.setVisible(false);
 			analysisPane.setVisible(false);
-			// classifyPane.setVisible(true);
+			classifyPane.setVisible(true);
 			// 隐藏扩展面板
 			showExtendContainer(false);
 			// 清除所有标签选中效果

@@ -1418,7 +1418,7 @@ public class Commands {
 	 * @param signedDistances if true, use signed distances
 	 */
 	public static void distanceToAnnotations2D(ImageData<?> imageData, boolean signedDistances) {
-		String title = signedDistances ? "Signed distance to annotations 2D" : "Distance to annotations 2D";
+		String title = signedDistances ? "有符号到标注的距离 2D" : "到标注的距离 2D";
 		if (imageData == null) {
 			GuiTools.showNoImageError(title);
 			return;
@@ -1427,13 +1427,13 @@ public class Commands {
 		if (imageData.getServer().nZSlices() > 1) {
 			logger.debug("Warning user that measurements will be 2D...");
 			if (!Dialogs.showConfirmDialog(title, 
-					"Distance to annotations command works only in 2D - distances will not be calculated for objects on different z-slices or time-points")) {
+					"到标注距离命令仅在2D中有效 - 不会计算不同Z切片或时间点上对象之间的距离")) {
 				logger.debug("Command cancelled");
 				return;
 			}
 		}
 		
-		var result = Dialogs.showYesNoCancelDialog(title, "Split multi-part classifications?\nIf yes, each component of classifications such as \"Class1: Class2\" will be treated separately.");
+		var result = Dialogs.showYesNoCancelDialog(title, "拆分多部分分类？\n如果是，诸如\"Class1: Class2\"这样的分类的每个组成部分将被单独处理。");
 		boolean doSplit = false;
 		if (result == ButtonType.YES)
 			doSplit = true;
@@ -1443,12 +1443,12 @@ public class Commands {
 		if (signedDistances) {
 			DistanceTools.detectionToAnnotationDistancesSigned(imageData, doSplit);
 			imageData.getHistoryWorkflow().addStep(new DefaultScriptableWorkflowStep(
-					"Signed distance to annotations 2D",
+					"有符号到标注的距离 2D",
 					doSplit ? "detectionToAnnotationDistancesSigned(true)" : "detectionToAnnotationDistancesSigned(false)"));
 		} else {
 			DistanceTools.detectionToAnnotationDistances(imageData, doSplit);
 			imageData.getHistoryWorkflow().addStep(new DefaultScriptableWorkflowStep(
-					"Distance to annotations 2D",
+					"到标注的距离 2D",
 					doSplit ? "detectionToAnnotationDistances(true)" : "detectionToAnnotationDistances(false)"));
 		}
 	}
@@ -1458,7 +1458,7 @@ public class Commands {
 	 * @param imageData the image data to process
 	 */
 	public static void detectionCentroidDistances2D(ImageData<?> imageData) {
-		String title = "Detection centroid distances 2D";
+		String title = "检测中心点距离 2D";
 		if (imageData == null) {
 			GuiTools.showNoImageError(title);
 			return;
@@ -1467,13 +1467,13 @@ public class Commands {
 		if (imageData.getServer().nZSlices() > 1) {
 			logger.debug("Warning user that measurements will be 2D...");
 			if (!Dialogs.showConfirmDialog(title, 
-					"Detection centroid distances command works only in 2D - distances will not be calculated for objects on different z-slices or time-points")) {
+					"检测中心点距离命令仅在2D中有效 - 不会计算不同Z切片或时间点上对象之间的距离")) {
 				logger.debug("Command cancelled");
 				return;
 			}
 		}
 		
-		var result = Dialogs.showYesNoCancelDialog(title, "Split multi-part classifications?\nIf yes, each component of classifications such as \"Class1: Class2\" will be treated separately.");
+		var result = Dialogs.showYesNoCancelDialog(title, "拆分多部分分类？\n如果是，诸如\"Class1: Class2\"这样的分类的每个组成部分将被单独处理。");
 		boolean doSplit = false;
 		if (result == ButtonType.YES)
 			doSplit = true;
@@ -1482,7 +1482,7 @@ public class Commands {
 		
 		DistanceTools.detectionCentroidDistances(imageData, doSplit);
 		imageData.getHistoryWorkflow().addStep(new DefaultScriptableWorkflowStep(
-				"Detection centroid distances 2D",
+				"检测中心点距离 2D",
 				doSplit ? "detectionCentroidDistances(true)" : "detectionCentroidDistances(false)"));
 	}
 	

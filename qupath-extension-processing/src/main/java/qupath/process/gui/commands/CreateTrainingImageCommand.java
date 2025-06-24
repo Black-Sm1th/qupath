@@ -35,10 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
-import qupath.lib.gui.commands.ProjectCommands;
 import qupath.fx.dialogs.Dialogs;
+import qupath.lib.gui.commands.ProjectCommands;
 import qupath.lib.gui.tools.GuiTools;
-import qupath.lib.images.servers.CroppedImageServer;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.images.servers.ImageServerMetadata;
 import qupath.lib.images.servers.SparseImageServer;
@@ -61,7 +60,7 @@ public class CreateTrainingImageCommand {
 	
 	private static Logger logger = LoggerFactory.getLogger(CreateTrainingImageCommand.class);
 	
-	private static String NAME = "Create training image";
+	private static String NAME = "创建训练图像";
 
 	private static PathClass pathClass = PathClass.StandardPathClasses.REGION;
 	private static int maxWidth = 50000;
@@ -76,11 +75,11 @@ public class CreateTrainingImageCommand {
 	 */
 	public static ProjectImageEntry<BufferedImage> promptToCreateTrainingImage(Project<BufferedImage> project, List<PathClass> availableClasses) {
 		if (project == null) {
-			Dialogs.showErrorMessage(NAME, "You need a project!");
+			Dialogs.showErrorMessage(NAME, "您需要一个项目！");
 			return null;
 		}
 		if (availableClasses.isEmpty()) {
-			Dialogs.showErrorMessage(NAME, "Please ensure classifications are available in QuPath!");
+			Dialogs.showErrorMessage(NAME, "请确保在QuPath中有可用的分类！");
 			return null;			
 		}
 		
@@ -89,14 +88,14 @@ public class CreateTrainingImageCommand {
 			pathClass = pathClasses.get(0);
 		
 		var params = new ParameterList()
-				.addEmptyParameter("Generates a single image from regions extracted from the project.")
-				.addEmptyParameter("Before running this command, add classified rectangle annotations to select the regions.")
-				.addChoiceParameter("pathClass", "Classification", pathClass, pathClasses, "Select classification for annotated regions")
-				.addIntParameter("maxWidth", "Preferred image width", maxWidth, "px", "Preferred maximum width of the training image, in pixels")
-				.addBooleanParameter("doZ", "Do z-stacks", doZ, "Take all slices of a z-stack, where possible")
-				.addBooleanParameter("rectanglesOnly", "Rectangles only", rectanglesOnly, 
-						"Only extract regions annotated with rectangles. Otherwise, the bounding box of all regions with the classification will be taken.")
-				.addEmptyParameter("Note this command requires images to have similar bit-depths/channels/pixel sizes for compatibility.")
+				.addEmptyParameter("从项目中提取的区域生成单一图像。")
+				.addEmptyParameter("运行此命令前，请添加已分类的矩形标注来选择区域。")
+				.addChoiceParameter("pathClass", "分类", pathClass, pathClasses, "选择标注区域的分类")
+				.addIntParameter("maxWidth", "首选图像宽度", maxWidth, "px", "训练图像的首选最大宽度，以像素为单位")
+				.addBooleanParameter("doZ", "处理Z层", doZ, "尽可能提取Z层堆栈的所有切片")
+				.addBooleanParameter("rectanglesOnly", "仅矩形", rectanglesOnly, 
+						"仅提取用矩形标注的区域。否则，将采用所有具有该分类的区域的边界框。")
+				.addEmptyParameter("注意：此命令要求图像具有相似的位深度/通道/像素大小以保持兼容性。")
 				;
 		
 		if (!GuiTools.showParameterDialog(NAME, params))
@@ -117,7 +116,7 @@ public class CreateTrainingImageCommand {
 		
 		var dialog = new ProgressDialog(task);
 		dialog.setTitle(NAME);
-		dialog.setHeaderText("Creating training image...");
+		dialog.setHeaderText("正在创建训练图像...");
 				
 		Executors.newSingleThreadExecutor().submit(task);
 		
@@ -127,7 +126,7 @@ public class CreateTrainingImageCommand {
 			var server = task.get();
 //			var server = createSparseServer(project, pathClass, maxWidth, doZ, rectanglesOnly);
 			if (server == null || server.getManager().getRegions().isEmpty()) {
-				Dialogs.showErrorMessage("Sparse image server", "No suitable annotations found in the current project!");
+				Dialogs.showErrorMessage("稀疏图像服务器", "在当前项目中找不到合适的标注！");
 				return null;			
 			}
 			
@@ -136,7 +135,7 @@ public class CreateTrainingImageCommand {
 			project.syncChanges();
 			return entry;
 		} catch (Exception e) {
-			Dialogs.showErrorMessage("Sparse image server", e);
+			Dialogs.showErrorMessage("稀疏图像服务器", e);
 			logger.error(e.getMessage(), e);
 			return null;
 		}

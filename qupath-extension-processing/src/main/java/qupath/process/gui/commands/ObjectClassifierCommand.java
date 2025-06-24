@@ -149,7 +149,7 @@ import qupath.process.gui.commands.ml.ProjectClassifierBindings;
  */
 public class ObjectClassifierCommand implements Runnable {
 
-	private static final String name = "Train object classifier";
+	private static final String name = "训练对象分类器";
 
 	private QuPathGUI qupath;
 
@@ -227,9 +227,9 @@ public class ObjectClassifierCommand implements Runnable {
 			public String toString() {
 				switch(this) {
 				case ALL:
-					return "All classes";
+					return "所有类别";
 				case SELECTED:
-					return "Selected classes";
+					return "选定类别";
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -246,11 +246,11 @@ public class ObjectClassifierCommand implements Runnable {
 			public String toString() {
 				switch(this) {
 				case ALL:
-					return "All measurements";
+					return "所有测量";
 				case SELECTED:
-					return "Selected measurements";
+					return "选定测量";
 				case FILTERED:
-					return "Filtered by output classes";
+					return "按输出类别筛选";
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -267,13 +267,13 @@ public class ObjectClassifierCommand implements Runnable {
 			public String toString() {
 				switch(this) {
 				case ALL:
-					return "All annotations";
+					return "所有标注";
 				case ALL_UNLOCKED:
-					return "Unlocked annotations";
+					return "未锁定的标注";
 				case POINTS:
-					return "Points only";
+					return "仅点标注";
 				case AREAS:
-					return "Areas only";
+					return "仅区域标注";
 				default:
 					throw new IllegalArgumentException();
 				}
@@ -1149,7 +1149,7 @@ public class ObjectClassifierCommand implements Runnable {
 			/*
 			 * Input object type
 			 */
-			var labelObjects = new Label("Object filter");
+			var labelObjects = new Label("对象筛选");
 			var comboObjects = new ComboBox<PathObjectFilter>();
 			comboObjects.getItems().addAll(
 					PathObjectFilter.DETECTIONS_ALL,
@@ -1163,13 +1163,13 @@ public class ObjectClassifierCommand implements Runnable {
 			objectFilter.addListener((v, o, n) -> invalidateClassifier());
 
 			GridPaneUtils.addGridRow(pane, row++, 0,
-					"Choose object type to classify (default is all detections)",
+					"选择要分类的对象类型(默认为所有检测)",
 					labelObjects, comboObjects, comboObjects);
 
 			/*
 			 * Classifier type
 			 */
-			var labelClassifier = new Label("Classifier");
+			var labelClassifier = new Label("分类器");
 			var comboClassifier = new ComboBox<OpenCVStatModel>();
 			comboClassifier.getItems().addAll(
 					OpenCVClassifiers.createStatModel(RTrees.class),
@@ -1181,19 +1181,19 @@ public class ObjectClassifierCommand implements Runnable {
 			selectedModel = comboClassifier.getSelectionModel().selectedItemProperty();
 			comboClassifier.getSelectionModel().selectFirst();
 			selectedModel.addListener((v, o, n) -> invalidateClassifier());
-			var btnEditClassifier = new Button("Edit");
+			var btnEditClassifier = new Button("编辑");
 			btnEditClassifier.setMaxWidth(Double.MAX_VALUE);
 			btnEditClassifier.setOnAction(e -> editClassifierParameters());
 			btnEditClassifier.disableProperty().bind(selectedModel.isNull());
 
 			GridPaneUtils.addGridRow(pane, row++, 0,
-					"Choose classifier type (RTrees or ANN_MLP are generally good choices)",
+					"选择分类器类型(RTrees或ANN_MLP通常是不错的选择)",
 					labelClassifier, comboClassifier, btnEditClassifier);
 
 			/*
 			 * Feature selection
 			 */
-			var labelFeatures = new Label("Features");
+			var labelFeatures = new Label("特征");
 			var comboFeatures = new ComboBox<TrainingFeatures>();
 			labelFeatures.setLabelFor(comboFeatures);
 			comboFeatures.getItems().setAll(TrainingFeatures.values());
@@ -1201,7 +1201,7 @@ public class ObjectClassifierCommand implements Runnable {
 			labelFeatures.setLabelFor(comboFeatures);
 			trainingFeatures = comboFeatures.getSelectionModel().selectedItemProperty();
 			trainingFeatures.addListener(v -> invalidateClassifier());
-			var btnSelectFeatures = new Button("Select");
+			var btnSelectFeatures = new Button("选择");
 			btnSelectFeatures.setMaxWidth(Double.MAX_VALUE);
 			btnSelectFeatures.disableProperty().bind(
 					trainingFeatures.isNotEqualTo(TrainingFeatures.SELECTED)
@@ -1216,15 +1216,15 @@ public class ObjectClassifierCommand implements Runnable {
 
 			var tooltipFeatures = new Tooltip();
 			tooltipFeatures.setOnShowing(e -> {
-				String text = "Select measurements for the classifier\n";
+				String text = "选择分类器的测量项\n";
 				if (trainingFeatures.get() == TrainingFeatures.ALL)
-					text += "Currently, all available measurements will be used";
+					text += "当前，将使用所有可用的测量";
 				else {
 					var measurements = getRequestedMeasurements();
 					if (measurements.isEmpty())
-						text += "No measurements are currently selected - please choose some!";
+						text += "当前没有选择任何测量 - 请选择一些!";
 					else
-						text += "Current measurements: \n - " + String.join("\n - ", measurements);
+						text += "当前测量: \n - " + String.join("\n - ", measurements);
 				}
 				tooltipFeatures.setText(text);
 			});
@@ -1234,7 +1234,7 @@ public class ObjectClassifierCommand implements Runnable {
 			/*
 			 * Output classes
 			 */
-			var labelClasses = new Label("Classes");
+			var labelClasses = new Label("类别");
 			var comboClasses = new ComboBox<OutputClasses>();
 			labelClasses.setLabelFor(comboClasses);
 			comboClasses.getItems().setAll(OutputClasses.values());
@@ -1242,7 +1242,7 @@ public class ObjectClassifierCommand implements Runnable {
 			labelClasses.setLabelFor(comboClasses);
 			outputClasses = comboClasses.getSelectionModel().selectedItemProperty();
 			outputClasses.addListener(v -> invalidateClassifier());
-			var btnSelectClasses = new Button("Select");
+			var btnSelectClasses = new Button("选择");
 			btnSelectClasses.setMaxWidth(Double.MAX_VALUE);
 			btnSelectClasses.disableProperty().bind(
 					outputClasses.isEqualTo(OutputClasses.ALL)
@@ -1254,14 +1254,14 @@ public class ObjectClassifierCommand implements Runnable {
 			});
 			var tooltipClasses = new Tooltip();
 			tooltipClasses.setOnShowing(e -> {
-				String text = "Choose which classes to use when training the classifier\n";
+				String text = "选择训练分类器时使用的类别\n";
 				if (outputClasses.get() == OutputClasses.SELECTED) {
 					if (selectedClasses.isEmpty())
-						text += "No classes are currently selected - please choose some!";
+						text += "当前没有选择任何类别 - 请选择一些!";
 					else
-						text += "Current classes (where available): \n - " + selectedClasses.stream().map(c -> c == null ? "Unclassified" : c.toString()).collect(Collectors.joining("\n - "));
+						text += "当前类别(如果可用): \n - " + selectedClasses.stream().map(c -> c == null ? "未分类" : c.toString()).collect(Collectors.joining("\n - "));
 				} else {
-					text += "Currently, all available classes will be used";
+					text += "当前，将使用所有可用的类别";
 				}
 				tooltipClasses.setText(text);
 			});
@@ -1275,7 +1275,7 @@ public class ObjectClassifierCommand implements Runnable {
 			/*
 			 * Training annotations
 			 */
-			var labelTraining = new Label("Training");
+			var labelTraining = new Label("训练");
 			var comboTraining = new ComboBox<TrainingAnnotations>();
 			comboTraining.getItems().setAll(TrainingAnnotations.values());
 			comboTraining.getSelectionModel().select(TrainingAnnotations.ALL_UNLOCKED);
@@ -1283,36 +1283,36 @@ public class ObjectClassifierCommand implements Runnable {
 			trainingAnnotations.addListener(v -> invalidateClassifier());
 
 			GridPaneUtils.addGridRow(pane, row++, 0,
-					"Choose what kind of annotations to use for training",
+					"选择用于训练的标注类型",
 					labelTraining, comboTraining, comboTraining);
 
 
 			/*
 			 * Additional options & live predict
 			 */
-			var btnLoadTraining = new Button("Load training");
-			btnLoadTraining.setTooltip(new Tooltip("Train using annotations from more images in the current project"));
+			var btnLoadTraining = new Button("加载训练数据");
+			btnLoadTraining.setTooltip(new Tooltip("使用当前项目中更多图像的标注进行训练"));
 			btnLoadTraining.setOnAction(e -> {
 				if (promptToLoadTrainingImages()) {
 					invalidateClassifier();
 					int n = trainingEntries.size();
 					if (n > 0)
-						btnLoadTraining.setText("Load training (" + n + ")");
+						btnLoadTraining.setText("加载训练数据 (" + n + ")");
 					else
-						btnLoadTraining.setText("Load training");
+						btnLoadTraining.setText("加载训练数据");
 				}
 			});
 			
-			var btnAdvancedOptions = new Button("Advanced options");
-			btnAdvancedOptions.setTooltip(new Tooltip("Advanced options to customize preprocessing and classifier behavior"));
+			var btnAdvancedOptions = new Button("高级选项");
+			btnAdvancedOptions.setTooltip(new Tooltip("自定义预处理和分类器行为的高级选项"));
 			btnAdvancedOptions.setOnAction(e -> {
 				if (showAdvancedOptions())
 					invalidateClassifier();
 			});
 
-			var btnLive = new ToggleButton("Live update");
+			var btnLive = new ToggleButton("实时更新");
 			btnLive.selectedProperty().bindBidirectional(livePrediction);
-			btnLive.setTooltip(new Tooltip("Toggle whether to calculate classification 'live' while viewing the image"));
+			btnLive.setTooltip(new Tooltip("切换是否在查看图像时'实时'计算分类"));
 			btnLive.setMaxWidth(Double.MAX_VALUE);
 			livePrediction.addListener((v, o, n) -> {
 				if (n) {

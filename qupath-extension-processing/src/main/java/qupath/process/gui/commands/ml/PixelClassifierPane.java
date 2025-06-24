@@ -155,7 +155,7 @@ public class PixelClassifierPane {
 	private Slider sliderFeatureOpacity = new Slider(0.0, 1.0, 1.0);
 	private Spinner<Double> spinFeatureMin = FXUtils.createDynamicStepSpinner(-Double.MAX_VALUE, Double.MAX_VALUE, 0, 0.1, 1);
 	private Spinner<Double> spinFeatureMax = FXUtils.createDynamicStepSpinner(-Double.MAX_VALUE, Double.MAX_VALUE, 1, 0.1, 1);
-	private String DEFAULT_CLASSIFICATION_OVERLAY = "Show classification";
+	private String DEFAULT_CLASSIFICATION_OVERLAY = "显示分类";
 
 	/**
 	 * Other images from which training annotations should be used
@@ -226,44 +226,44 @@ public class PixelClassifierPane {
 		// Classifier
 		pane = new GridPane();
 		
-		var labelClassifier = new Label("Classifier");
+		var labelClassifier = new Label("分类器");
 		var comboClassifier = new ComboBox<OpenCVStatModel>();
 		labelClassifier.setLabelFor(comboClassifier);
 		
 		selectedClassifier = comboClassifier.getSelectionModel().selectedItemProperty();
 		selectedClassifier.addListener((v, o, n) -> updateClassifier());
-		var btnEditClassifier = new Button("Edit");
+		var btnEditClassifier = new Button("编辑");
 		btnEditClassifier.setOnAction(e -> editClassifierParameters());
 		btnEditClassifier.disableProperty().bind(selectedClassifier.isNull());
 		
 		GridPaneUtils.addGridRow(pane, row++, 0,
-				"Choose classifier type (RTrees or ANN_MLP are generally good choices)",
+				"选择分类器类型（RTrees或ANN_MLP通常是不错的选择）",
 				labelClassifier, comboClassifier, comboClassifier, btnEditClassifier);
 		
 		// Image resolution
-		var labelResolution = new Label("Resolution");
+		var labelResolution = new Label("分辨率");
 		labelResolution.setLabelFor(comboResolutions);
-		var btnResolution = new Button("Add");
+		var btnResolution = new Button("添加");
 		btnResolution.setOnAction(e -> addResolution());
 		selectedResolution = comboResolutions.getSelectionModel().selectedItemProperty();
 		
 		GridPaneUtils.addGridRow(pane, row++, 0,
-				"Choose the base image resolution based upon required detail in the classification (see preview on the right)",
+				"根据分类中所需的细节选择基本图像分辨率（参见右侧预览）",
 				labelResolution, comboResolutions, comboResolutions, btnResolution);
 		
 		
 		// Features
-		var labelFeatures = new Label("Features");
+		var labelFeatures = new Label("特征");
 		var comboFeatures = new ComboBox<ImageDataTransformerBuilder>();
 		comboFeatures.getItems().add(new ImageDataTransformerBuilder.DefaultFeatureCalculatorBuilder(imageData));
 //		comboFeatures.getItems().add(new FeatureCalculatorBuilder.ExtractNeighborsFeatureCalculatorBuilder(viewer.getImageData()));
 		labelFeatures.setLabelFor(comboFeatures);
 		selectedFeatureCalculatorBuilder = comboFeatures.getSelectionModel().selectedItemProperty();
 		
-		var btnShowFeatures = new Button("Show");
+		var btnShowFeatures = new Button("显示");
 		btnShowFeatures.setOnAction(e -> showFeatures());
 		
-		var btnCustomizeFeatures = new Button("Edit");
+		var btnCustomizeFeatures = new Button("编辑");
 		btnCustomizeFeatures.disableProperty().bind(Bindings.createBooleanBinding(() -> {
 			var calc = selectedFeatureCalculatorBuilder.get();
 			return calc == null || !calc.canCustomize(imageData);
@@ -280,12 +280,12 @@ public class PixelClassifierPane {
 		comboFeatures.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> updateFeatureCalculator());
 
 		GridPaneUtils.addGridRow(pane, row++, 0,
-				"Select features for the classifier",
+				"为分类器选择特征",
 				labelFeatures, comboFeatures, btnCustomizeFeatures, btnShowFeatures);
 
 		
 		// Output
-		var labelOutput = new Label("Output");
+		var labelOutput = new Label("输出");
 		var comboOutput = new ComboBox<ImageServerMetadata.ChannelType>();
 		comboOutput.getItems().addAll(ImageServerMetadata.ChannelType.CLASSIFICATION, ImageServerMetadata.ChannelType.PROBABILITY);
 		selectedOutputType = comboOutput.getSelectionModel().selectedItemProperty();
@@ -293,47 +293,47 @@ public class PixelClassifierPane {
 			updateClassifier();
 		});
 		comboOutput.getSelectionModel().clearAndSelect(0);
-		var btnShowOutput = new Button("Show");
+		var btnShowOutput = new Button("显示");
 		btnShowOutput.setOnAction(e -> showOutput());
 		
 		GridPaneUtils.addGridRow(pane, row++, 0,
-				"Choose whether to output classifications only, or estimated probabilities per class (not all classifiers support probabilities, which also require more memory)",
+				"选择是仅输出分类结果，还是每个类别的估计概率（并非所有分类器都支持概率，且概率需要更多内存）",
 				labelOutput, comboOutput, comboOutput, btnShowOutput);
 		
 		
 		// Region
-		var labelRegion = new Label("Region");
+		var labelRegion = new Label("区域");
 		var comboRegionFilter = PixelClassifierUI.createRegionFilterCombo(qupath.getOverlayOptions());
-		GridPaneUtils.addGridRow(pane,  row++, 0, "Control where the pixel classification is applied during preview",
+		GridPaneUtils.addGridRow(pane,  row++, 0, "控制预览期间像素分类的应用位置",
 				labelRegion, comboRegionFilter, comboRegionFilter, comboRegionFilter);
 
 		
 		// Live predict
-		var btnAdvancedOptions = new Button("Advanced options");
-		btnAdvancedOptions.setTooltip(new Tooltip("Advanced options to customize preprocessing and classifier behavior"));
+		var btnAdvancedOptions = new Button("高级选项");
+		btnAdvancedOptions.setTooltip(new Tooltip("自定义预处理和分类器行为的高级选项"));
 		btnAdvancedOptions.setOnAction(e -> {
 			if (showAdvancedOptions())
 				updateClassifier();
 		});
 		
 		// Live predict
-		var btnProject = new Button("Load training");
-		btnProject.setTooltip(new Tooltip("Train using annotations from more images in the current project"));
+		var btnProject = new Button("加载训练数据");
+		btnProject.setTooltip(new Tooltip("使用当前项目中更多图像的标注进行训练"));
 		btnProject.setOnAction(e -> {
 			if (promptToLoadTrainingImages()) {
 				updateClassifier();
 				int n = trainingEntries.size();
 				if (n > 0)
-					btnProject.setText("Load training (" + n + ")");
+					btnProject.setText("加载训练数据 (" + n + ")");
 				else
-					btnProject.setText("Load training");
+					btnProject.setText("加载训练数据");
 			}
 		});
 		btnProject.disableProperty().bind(qupath.projectProperty().isNull());
 		
-		var btnLive = new ToggleButton("Live prediction");
+		var btnLive = new ToggleButton("实时预测");
 		btnLive.selectedProperty().bindBidirectional(livePrediction);
-		btnLive.setTooltip(new Tooltip("Toggle whether to calculate classification 'live' while viewing the image"));
+		btnLive.setTooltip(new Tooltip("切换是否在查看图像时'实时'计算分类"));
 		livePrediction.addListener((v, o, n) -> {
 			if (overlay == null) {
 				if (n) {
@@ -381,7 +381,7 @@ public class PixelClassifierPane {
 		labelCursor.setPrefWidth(390);
 		labelCursor.setMaxWidth(390);
 		
-		labelCursor.setTooltip(new Tooltip("Prediction for current cursor location"));
+		labelCursor.setTooltip(new Tooltip("当前光标位置的预测"));
 		paneChart.setBottom(labelCursor);
 		// This tends to make it harder to read the proportions as tooltips when putting the mouse over the pie chart
 //		Tooltip.install(paneChart, new Tooltip("Relative proportion of training samples"));
@@ -663,7 +663,7 @@ public class PixelClassifierPane {
 			return;
 //		var imageData = viewer.getImageData();
 //		if (imageData == null)
-			stage.setTitle("Pixel classifier");
+			stage.setTitle("像素分类器");
 //		else
 //			stage.setTitle("Pixel classifier (" + imageData.getServer().getDisplayedImageName() + ")");
 	}

@@ -23,6 +23,17 @@
 
 package qupath.imagej.superpixels;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -31,16 +42,6 @@ import ij.process.ColorProcessor;
 import ij.process.ColorSpaceConverter;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import qupath.imagej.processing.RoiLabeling;
 import qupath.imagej.tools.IJTools;
 import qupath.lib.common.GeneralTools;
@@ -88,7 +89,7 @@ public class SLICSuperpixelsPlugin extends AbstractTileableDetectionPlugin<Buffe
 	
 	@Override
 	public String getName() {
-		return "SLIC superpixel plugin";
+		return "SLIC超像素插件";
 	}
 
 	@Override
@@ -130,16 +131,16 @@ public class SLICSuperpixelsPlugin extends AbstractTileableDetectionPlugin<Buffe
 	@Override
 	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		ParameterList params = new ParameterList()
-				.addTitleParameter("Size parameters")
-				.addDoubleParameter("sigmaPixels", "Gaussian sigma", 5, "px", "Adjust the Gaussian smoothing applied to the image, to reduce textures and give a smoother result")
-				.addDoubleParameter("sigmaMicrons", "Gaussian sigma", 5, GeneralTools.micrometerSymbol(), "Adjust the Gaussian smoothing applied to the image, to reduce textures and give a smoother result")
-				.addDoubleParameter("spacingPixels", "Superpixel spacing", 50, "px", "Control the (approximate) size of individual superpixels")
-				.addDoubleParameter("spacingMicrons", "Superpixel spacing", 50, GeneralTools.micrometerSymbol(), "Control the (approximate) size of individual superpixels")
-				.addTitleParameter("Algorithm parameters")
-				.addIntParameter("maxIterations", "Number of iterations", 10, null, "Maximum number of iterations to use for superpixel generation")
-				.addDoubleParameter("regularization", "Regularization", 0.25, null, "Control the 'squareness' of superpixels - higher values are more square")
-				.addBooleanParameter("adaptRegularization", "Auto-adapt regularization", false, "Automatically adapt regularization parameter for different superpixels")
-				.addBooleanParameter("useDeconvolved", "Use color deconvolved channels", false, "Use color-deconvolved values, rather than (standard) RGB->LAB colorspace transform")
+				.addTitleParameter("尺寸参数")
+				.addDoubleParameter("sigmaPixels", "高斯sigma值", 5, "px", "调整应用于图像的高斯平滑度，以减少纹理并获得更平滑的结果")
+				.addDoubleParameter("sigmaMicrons", "高斯sigma值", 5, GeneralTools.micrometerSymbol(), "调整应用于图像的高斯平滑度，以减少纹理并获得更平滑的结果")
+				.addDoubleParameter("spacingPixels", "超像素间距", 50, "px", "控制单个超像素的(近似)大小")
+				.addDoubleParameter("spacingMicrons", "超像素间距", 50, GeneralTools.micrometerSymbol(), "控制单个超像素的(近似)大小")
+				.addTitleParameter("算法参数")
+				.addIntParameter("maxIterations", "迭代次数", 10, null, "用于超像素生成的最大迭代次数")
+				.addDoubleParameter("regularization", "正则化", 0.25, null, "控制超像素的'方形度' - 值越高越方")
+				.addBooleanParameter("adaptRegularization", "自动调整正则化", false, "自动为不同的超像素调整正则化参数")
+				.addBooleanParameter("useDeconvolved", "使用颜色解卷积通道", false, "使用颜色解卷积值，而不是(标准的)RGB->LAB颜色空间转换")
 //				.addBooleanParameter("doMerge", "Merge similar", false, "Merge neighboring superpixels if they are similar to one another")
 				;
 		

@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,12 +93,12 @@ public class DelaunayClusteringPlugin<T> extends AbstractInteractivePlugin<T> {
 
 	@Override
 	public String getName() {
-		return "Delaunay clustering";
+		return "Delaunay聚类";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Cluster neighboring objects, optionally limited by classification and/or distance";
+		return "对邻近对象进行聚类，可选择按分类和/或距离限制";
 	}
 
 	@Override
@@ -109,10 +110,10 @@ public class DelaunayClusteringPlugin<T> extends AbstractInteractivePlugin<T> {
 	@Override
 	public ParameterList getDefaultParameterList(ImageData<T> imageData) {
 		ParameterList params = new ParameterList()
-				.addDoubleParameter("distanceThreshold", "Distance threshold", 0, "pixels", "Distance threshold - edges longer than this will be omitted")
-				.addDoubleParameter("distanceThresholdMicrons", "Distance threshold", 0, GeneralTools.micrometerSymbol(), "Distance threshold - edges longer than this will be omitted")
-				.addBooleanParameter("limitByClass", "Limit edges to same class", false, "Prevent edges linking objects with different base classifications")
-				.addBooleanParameter("addClusterMeasurements", "Add cluster measurements", false, "Add measurements derived from clustering connected objects")
+				.addDoubleParameter("distanceThreshold", "距离阈值", 0, "像素", "距离阈值 - 长度超过此值的边将被省略")
+				.addDoubleParameter("distanceThresholdMicrons", "距离阈值", 0, GeneralTools.micrometerSymbol(), "距离阈值 - 长度超过此值的边将被省略")
+				.addBooleanParameter("limitByClass", "限制为相同类别", false, "防止边连接具有不同基本分类的对象")
+				.addBooleanParameter("addClusterMeasurements", "添加聚类测量", false, "添加从连接对象的聚类中派生的测量")
 				;
 		
 		ImageServer<?> server = imageData.getServer();

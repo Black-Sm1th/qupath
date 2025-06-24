@@ -23,14 +23,6 @@
 
 package qupath.imagej.superpixels;
 
-import ij.ImagePlus;
-import ij.gui.PolygonRoi;
-import ij.plugin.filter.MaximumFinder;
-import ij.plugin.filter.RankFilters;
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +33,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.ImagePlus;
+import ij.gui.PolygonRoi;
+import ij.plugin.filter.MaximumFinder;
+import ij.plugin.filter.RankFilters;
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import qupath.imagej.processing.RoiLabeling;
 import qupath.imagej.tools.IJTools;
 import qupath.lib.common.GeneralTools;
@@ -73,7 +73,7 @@ public class DoGSuperpixelsPlugin extends AbstractTileableDetectionPlugin<Buffer
 	
 	@Override
 	public String getName() {
-		return "DoG superpixel creator";
+		return "DoG超像素创建器";
 	}
 
 	@Override
@@ -104,12 +104,12 @@ public class DoGSuperpixelsPlugin extends AbstractTileableDetectionPlugin<Buffer
 	@Override
 	public ParameterList getDefaultParameterList(ImageData<BufferedImage> imageData) {
 		ParameterList params = new ParameterList().
-				addDoubleParameter("downsampleFactor", "Downsample factor", 8, null, "Downsample factor, used to determine the resolution of the image being processed").
-				addDoubleParameter("sigmaPixels", "Gaussian sigma", 10, "px", "Sigma value used for smoothing; higher values result in larger regions being created").
-				addDoubleParameter("sigmaMicrons", "Gaussian sigma", 10, GeneralTools.micrometerSymbol(), "Sigma value used for smoothing; higher values result in larger regions being created").
-				addDoubleParameter("minThreshold", "Minimum intensity threshold", 10, null, "Regions with average values below this threshold will be discarded; this helps remove background or artefacts").
-				addDoubleParameter("maxThreshold", "Maximum intensity threshold", 230, null, "Regions with average values above this threshold will be discarded; this helps remove background or artefacts").
-				addDoubleParameter("noiseThreshold", "Noise threshold", 1, null, "Local threshold used to determine the number of regions created")
+				addDoubleParameter("downsampleFactor", "下采样因子", 8, null, "下采样因子，用于确定被处理图像的分辨率").
+				addDoubleParameter("sigmaPixels", "高斯sigma值", 10, "px", "用于平滑的sigma值；较高的值会导致创建更大的区域").
+				addDoubleParameter("sigmaMicrons", "高斯sigma值", 10, GeneralTools.micrometerSymbol(), "用于平滑的sigma值；较高的值会导致创建更大的区域").
+				addDoubleParameter("minThreshold", "最小强度阈值", 10, null, "平均值低于此阈值的区域将被丢弃；这有助于去除背景或伪影").
+				addDoubleParameter("maxThreshold", "最大强度阈值", 230, null, "平均值高于此阈值的区域将被丢弃；这有助于去除背景或伪影").
+				addDoubleParameter("noiseThreshold", "噪声阈值", 1, null, "用于确定创建区域数量的局部阈值")
 				;
 		
 		boolean hasMicrons = imageData != null && imageData.getServer().getPixelCalibration().hasPixelSizeMicrons();

@@ -70,12 +70,12 @@ public class TileClassificationsToAnnotationsPlugin<T> extends AbstractDetection
 
 	@Override
 	public String getName() {
-		return "Tile classifications to annotations";
+		return "图块分类转为标注";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Create annotations from classified tiles";
+		return "从已分类的图块创建标注";
 	}
 
 	@Override
@@ -126,10 +126,10 @@ public class TileClassificationsToAnnotationsPlugin<T> extends AbstractDetection
 //			PathClass defaultChoice = choices.contains(classTumor) ? classTumor : choices.get(0);
 			params = new ParameterList();
 			
-			params.addChoiceParameter("pathClass", "Choose class", defaultChoice, choices, "Choose PathClass to create annotations from")
-					.addBooleanParameter("deleteTiles", "Delete existing child objects", false, "Delete the tiles that were used for creating annotations - further training will not be possible after these are deleted")
-					.addBooleanParameter("clearAnnotations", "Remove existing annotations", true, "Remove all existing annotations (often a good idea if they were used to train a classifier, but are no longer needed)")
-					.addBooleanParameter("splitAnnotations", "Split new annotations", false, "Split newly-created annotations into distinct regions (rather than have one large, possibly-discontinuous object)");
+			params.addChoiceParameter("pathClass", "选择类别", defaultChoice, choices, "选择要从中创建标注的路径类别")
+					.addBooleanParameter("deleteTiles", "删除现有子对象", false, "删除用于创建标注的图块 - 删除后将无法进行进一步训练")
+					.addBooleanParameter("clearAnnotations", "移除现有标注", true, "移除所有现有标注（如果它们用于训练分类器但不再需要，这通常是个好主意）")
+					.addBooleanParameter("splitAnnotations", "拆分新标注", false, "将新创建的标注拆分为不同的区域（而不是一个可能不连续的大对象）");
 	//				.addDoubleParameter("simplify", "Simplify shapes", 0);
 		}
 		return params;
@@ -221,11 +221,11 @@ public class TileClassificationsToAnnotationsPlugin<T> extends AbstractDetection
 			
 			if (resultsString == null) {
 				if (pathAnnotations.isEmpty())
-					resultsString = "No annotation created!";
+					resultsString = "未创建标注！";
 				else if (pathAnnotations.size() == 1)
-					resultsString = "Created 1 annotation";
+					resultsString = "已创建1个标注";
 				else
-					resultsString = "Created " + pathAnnotations.size() + " annotations";
+					resultsString = "已创建" + pathAnnotations.size() + "个标注";
 			}
 			
 			long endTime = System.currentTimeMillis();
