@@ -153,14 +153,14 @@ public class DensityMapDialog {
 		logger.debug("Constructing density map dialog");
 		
 		var paneParams = buildAllObjectsPane(densityMapBuilder);
-		var titledPaneParams = new TitledPane("Create density map", paneParams);
+		var titledPaneParams = new TitledPane("创建密度图", paneParams);
 		titledPaneParams.setExpanded(true);
 		titledPaneParams.setCollapsible(false);
 		FXUtils.simplifyTitledPane(titledPaneParams, true);
 		
 		var paneDisplay = buildDisplayPane(colorModelBuilder);
 		
-		var titledPaneDisplay = new TitledPane("Customize appearance", paneDisplay);
+		var titledPaneDisplay = new TitledPane("自定义外观", paneDisplay);
 		titledPaneDisplay.setExpanded(false);
 		FXUtils.simplifyTitledPane(titledPaneDisplay, true);
 		
@@ -170,13 +170,13 @@ public class DensityMapDialog {
 		GridPaneUtils.addGridRow(pane, row++, 0, null, titledPaneDisplay, titledPaneDisplay, titledPaneDisplay);
 
 		
-		var btnAutoUpdate = new ToggleButton("Live update");
+		var btnAutoUpdate = new ToggleButton("实时更新");
 		btnAutoUpdate.setSelected(densityMapBuilder.autoUpdate.get());
 		btnAutoUpdate.setMaxWidth(Double.MAX_VALUE);
 		btnAutoUpdate.selectedProperty().bindBidirectional(densityMapBuilder.autoUpdate);
 		
-		GridPaneUtils.addGridRow(pane, row++, 0, "Automatically update the density map. "
-				+ "Turn this off if changing parameters and heatmap generation is slow.", btnAutoUpdate, btnAutoUpdate, btnAutoUpdate);
+		GridPaneUtils.addGridRow(pane, row++, 0, "自动更新密度图。"
+				+ "如果更改参数和热图生成速度较慢，请关闭此选项。", btnAutoUpdate, btnAutoUpdate, btnAutoUpdate);
 		
 		var densityMapName = new SimpleStringProperty();
 		var savePane = DensityMapUI.createSaveDensityMapPane(qupath.projectProperty(), combinedBuilder, densityMapName);
@@ -194,7 +194,7 @@ public class DensityMapDialog {
 		stage.setScene(new Scene(pane));
 		stage.setResizable(false);
 		stage.initOwner(qupath.getStage());
-		stage.setTitle("Density map");
+		stage.setTitle("密度图");
 		
 		// Update stage height when display options expanded/collapsed
 		titledPaneDisplay.heightProperty().addListener((v, o, n) -> stage.sizeToScene());
@@ -472,9 +472,9 @@ public class DensityMapDialog {
 		if (pathClass == null)
 			pathClass = PathClass.NULL_CLASS;
 		if (pathClass == DensityMapUI.ANY_CLASS)
-			return "Any";
+			return "任意";
 		if (pathClass == DensityMapUI.ANY_POSITIVE_CLASS)
-			return "Positive (inc. 1+, 2+, 3+)";
+			return "阳性 (包括 1+, 2+, 3+)";
 		return pathClass.toString();
 	}
 

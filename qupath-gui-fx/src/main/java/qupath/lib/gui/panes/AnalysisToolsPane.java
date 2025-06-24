@@ -21,9 +21,17 @@ import javafx.scene.shape.SVGPath;
 import javafx.util.Duration;
 import qupath.imagej.detect.cells.PositiveCellDetection;
 import qupath.imagej.detect.cells.WatershedCellDetection;
+import qupath.imagej.superpixels.DoGSuperpixelsPlugin;
+import qupath.imagej.superpixels.SLICSuperpixelsPlugin;
+import qupath.lib.algorithms.IntensityFeaturesPlugin;
+import qupath.lib.algorithms.TilerPlugin;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.commands.Commands;
 import qupath.lib.plugins.PathPlugin;
+import qupath.lib.plugins.objects.SmoothFeaturesPlugin;
+import qupath.lib.plugins.objects.TileClassificationsToAnnotationsPlugin;
+import qupath.opencv.features.DelaunayClusteringPlugin;
+
 /**
  * 分析工具面板，提供各种分析功能的访问
  */
@@ -349,8 +357,8 @@ public class AnalysisToolsPane {
         
         item.setOnMouseExited(e -> {
             item.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;-fx-cursor: hand;-fx-border-radius: 20px; -fx-background-radius: 20px;-fx-padding: 10;");
-            });
-            
+        });
+        
         item.setOnMouseClicked(e -> {
             if (action != null) {
                 action.accept(null);
@@ -459,122 +467,90 @@ public class AnalysisToolsPane {
               .handle(null);
     }
     
-    // 处理密度图
-    private void handleDensityMap() {
-        qupath.createImageDataAction(imageData -> {
-            // 处理密度图
-        }).handle(null);
-    }
-    
     // 处理创建密度图
     private void handleCreateDensityMap() {
         qupath.createImageDataAction(imageData -> {
-            // 创建密度图
+            // 使用反射动态调用密度图命令
+            try {
+                // 尝试通过反射调用DensityMapCommand
+                Class<?> densityMapCommandClass = Class.forName("qupath.process.gui.commands.DensityMapCommand");
+                Object densityMapCommand = densityMapCommandClass.getConstructor(QuPathGUI.class).newInstance(qupath);
+                densityMapCommandClass.getMethod("run").invoke(densityMapCommand);
+            } catch (Exception e) {
+                // 发生异常时显示错误消息
+                System.err.println("创建密度图失败: " + e.getMessage());
+            }
         }).handle(null);
     }
     
     // 处理加载密度图
     private void handleLoadDensityMap() {
         qupath.createImageDataAction(imageData -> {
-            // 加载密度图
-        }).handle(null);
-    }
-    
-    // 处理图像块和超像素
-    private void handleTileAndSuperpixel() {
-        qupath.createImageDataAction(imageData -> {
-            // 这里应该打开图像块创建对话框
+            // 使用反射动态调用加载密度图命令
+            try {
+                // 尝试通过反射调用LoadResourceCommand
+                Class<?> loadResourceCommandClass = Class.forName("qupath.process.gui.commands.ui.LoadResourceCommand");
+                Object loadCommand = loadResourceCommandClass.getMethod("createLoadDensityMapCommand", QuPathGUI.class).invoke(null, qupath);
+                loadResourceCommandClass.getMethod("run").invoke(loadCommand);
+            } catch (Exception e) {
+                // 发生异常时显示错误消息
+                System.err.println("加载密度图失败: " + e.getMessage());
+            }
         }).handle(null);
     }
     
     // 处理创建图块
     private void handleCreateTiles() {
-        qupath.createImageDataAction(imageData -> {
-            // 创建图块
-        }).handle(null);
+        qupath.createPluginAction("Create tiles", TilerPlugin.class, null).handle(null);
     }
     
     // 处理SLIC超像素分割
     private void handleSLICSuperpixels() {
-        qupath.createImageDataAction(imageData -> {
-            // SLIC超像素分割
-        }).handle(null);
+        qupath.createPluginAction("SLIC superpixel segmentation", SLICSuperpixelsPlugin.class, null).handle(null);
     }
     
     // 处理DoG超像素分割
     private void handleDoGSuperpixels() {
-        qupath.createImageDataAction(imageData -> {
-            // DoG超像素分割
-        }).handle(null);
+        qupath.createPluginAction("DoG superpixel segmentation", DoGSuperpixelsPlugin.class, null).handle(null);
     }
     
-    // 处理图块分类评择
+    // 处理图块分类到注释
     private void handleTileClassification() {
-        qupath.createImageDataAction(imageData -> {
-            // 图块分类评择
-        }).handle(null);
-    }
-    
-    // 处理计算特征
-    private void handleComputeFeatures() {
-        qupath.createImageDataAction(imageData -> {
-            // 这里应该打开特征计算对话框
-        }).handle(null);
+        qupath.createPluginAction("Tile classifications to annotations", TileClassificationsToAnnotationsPlugin.class, null).handle(null);
     }
     
     // 处理平滑特征
     private void handleSmoothFeatures() {
-        qupath.createImageDataAction(imageData -> {
-            // 平滑特征
-        }).handle(null);
+        qupath.createPluginAction("Add smoothed features", SmoothFeaturesPlugin.class, null).handle(null);
     }
     
     // 处理强度特征
     private void handleIntensityFeatures() {
-        qupath.createImageDataAction(imageData -> {
-            // 强度特征
-        }).handle(null);
+        qupath.createPluginAction("Add intensity features", IntensityFeaturesPlugin.class, null).handle(null);
     }
     
     // 处理形状特征
     private void handleShapeFeatures() {
-        qupath.createImageDataAction(imageData -> {
-            // 形状特征
-        }).handle(null);
-    }
-    
-    // 处理空间分析
-    private void handleSpatialAnalysis() {
-        qupath.createImageDataAction(imageData -> {
-            // 这里应该打开空间分析对话框
-        }).handle(null);
+        qupath.createImageDataAction(imageData -> Commands.promptToAddShapeFeatures(qupath)).handle(null);
     }
     
     // 处理点对点距离
     private void handlePointToPointDistance() {
-        qupath.createImageDataAction(imageData -> {
-            // 计算点对点距离
-        }).handle(null);
+        qupath.createImageDataAction(imageData -> Commands.distanceToAnnotations2D(imageData, false)).handle(null);
     }
     
     // 处理细胞汇聚分析
     private void handleCellConvergenceAnalysis() {
-        qupath.createImageDataAction(imageData -> {
-            // 进行细胞汇聚分析
-        }).handle(null);
+        qupath.createImageDataAction(imageData -> Commands.distanceToAnnotations2D(imageData, true)).handle(null);
     }
     
     // 处理细胞注释关联评价
     private void handleCellAnnotationEvaluation() {
-        qupath.createImageDataAction(imageData -> {
-            // 进行细胞注释关联评价
-        }).handle(null);
+        qupath.createImageDataAction(imageData -> Commands.detectionCentroidDistances2D(imageData)).handle(null);
     }
     
     // 处理德劳内三角划分
     private void handleDelaunayTriangulation() {
-        qupath.createImageDataAction(imageData -> {
-            // 进行德劳内三角划分
-        }).handle(null);
+        qupath.createPluginAction("Delaunay cluster features 2D", DelaunayClusteringPlugin.class, null).handle(null);
     }
 }
